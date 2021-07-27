@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui,viewport-fit=cover">
+        <meta name=apple-mobile-web-app-capable content=yes>
+        <meta name=apple-mobile-web-app-status-bar-style content=black>
+        <title>com.andomation.stream.stonks Property Inspector</title>
+        <link rel="stylesheet" href="css/sdpi.css">
+    </head>
+    <body>
+        <div class="sdpi-wrapper">
+
+            <div class="sdpi-heading">Symbol</div>
+            <summary>For crypto use 'coin-currency' : ETH-USD</summary>
+            <div class="sdpi-item">
+              <div class="sdpi-item-label">Symbol</div>
+              <input id="symbol" class="sdpi-item-value" type="text" value="" placeholder="GME" />
+            </div>
+            
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Decimals</div>
+                  <input id="decimals" class="sdpi-item-value" type="number" value="" placeholder="2" />
+            </div>
+            
+            <div class="sdpi-heading">Style</div>
+
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Action</div>
+                <input id="action" class="sdpi-item-value" type="url" value="" pattern="https?://.*" placeholder="http://andomation.com"/>
+            </div>
+
+            <div type="color" class="sdpi-item">
+                <div class="sdpi-item-label">Foreground</div>
+                <input id="foreground" type="color" class="sdpi-item-value" value="#d8d8d8">
+            </div>
+
+            <div type="color" class="sdpi-item">
+                <div class="sdpi-item-label">Background</div>
+                <input id="background" type="color" class="sdpi-item-value" value="#1d1e1f">
+            </div>
+
+            <div class="sdpi-heading">Upper Limit</div>
+            
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Limit</div>
+                <input id="upperlimit" class="sdpi-item-value" type="number" value="" />
+            </div>
+
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Action</div>
+                <input id="upperlimitaction" class="sdpi-item-value" type="url" value="" pattern="https?://.*" placeholder="http://andomation.com"/>
+            </div>
+
+            <div type="color" class="sdpi-item" >
+                <div class="sdpi-item-label">Foreground</div>
+                <input id="upperlimitforeground" type="color" class="sdpi-item-value" value="#1d1e1f">
+            </div>
+
+            <div type="color" class="sdpi-item" >
+                <div class="sdpi-item-label">Background</div>
+                <input id="upperlimitbackground" type="color" class="sdpi-item-value" value="#00FF00">
+            </div>
+
+            <div class="sdpi-heading">Lower Limit</div>
+            
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Limit</div>
+                <input id="lowerlimit" class="sdpi-item-value" type="number" value="" />
+            </div>
+
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Action</div>
+                <input id="lowerlimitaction" class="sdpi-item-value" type="url" value="" pattern="https?://.*" placeholder="http://andomation.com"/>
+            </div>
+
+            <div type="color" class="sdpi-item">
+                <div class="sdpi-item-label">Foreground</div>
+                <input id="lowerlimitforeground" type="color" class="sdpi-item-value" value="#1d1e1f">
+            </div>
+
+            <div type="color" class="sdpi-item">
+                <div class="sdpi-item-label">Background</div>
+                <input id="lowerlimitbackground" type="color" class="sdpi-item-value" value="#FF0000">
+            </div>
+
+            <!-- <div class="sdpi-item">
+              <div class="sdpi-item-label">Button</div>
+              <button class="sdpi-item-value" id="clickme" value="Click Me" data-localize="Click me">Click Me</button>
+            </div> -->
+        </div>
+
+        <div class="sdpi-info-label hidden" style="top: -1000;" value=""></div>
+        <script src="../action/js/common.js"></script>
+        <script src="js/common_pi.js"></script>
+        <script src="js/index_pi.js"></script>
+    </body>
+    </html>
