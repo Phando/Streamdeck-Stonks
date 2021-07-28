@@ -1,5 +1,5 @@
 class AssetManager {
-    static dataUrl = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields=symbol,regularMarketDayRange,regularMarketVolume,marketState,regularMarketPrice,regularMarketChange,preMarketPrice,preMarketChange,postMarketPrice,postMarketChange&symbols=";
+    static dataUrl = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields=symbol,regularMarketDayRange,regularMarketVolume,regularMarketPrice,marketState,preMarketPrice,postMarketPrice&symbols=";
     interval = 60000
     dataTimer = undefined
 
@@ -108,9 +108,6 @@ class AssetManager {
         console.log("Response", response)
         var data = {}
 
-        console.log(response.error)
-        console.log(typeof response.error)
-
         data.open = true;
         data.symbol = response.symbol;
         data.price = response.regularMarketPrice;
@@ -170,7 +167,6 @@ class AssetManager {
         
         // Apply decimal option
         if (typeof this.settings.decimals != "undefined") {
-            console.log("Adding Decimals", this.settings.decimals);
             displayPrice = data.price.toFixed(this.settings.decimals);
         }
 
