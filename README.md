@@ -14,7 +14,7 @@ It originated from the Elgato Plugin Template more information is available from
 `Stonks` is a simple plugin that lets you watch stocks and crypto assets. It shows the symbol, price, volume, market state and daily range. 
 
 ### Feedback
-If you find bugs or want to see new features please log at ticket in the [github repo](issues).
+If you find bugs or want to see new features please log at ticket in the [github repo](https://github.com/Phando/Streamdeck-Stonks/issues).
 
 
 ## Features:
