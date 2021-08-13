@@ -19,8 +19,8 @@
   "Description": "Stock and Ctypto Ticker", 
   "Name": "Stonks", 
   "Icon": "action/images/action", 
-  "URL": "https://andomatioin.com/projects/Stonks", 
-  "Version": "1.0.0",
+  "URL": "https://github.com/Phando/Streamdeck-Stonks", 
+  "Version": "1.0.1",
   "OS": [
     {
         "Platform": "mac", 

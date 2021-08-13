@@ -13,6 +13,10 @@ It originated from the Elgato Plugin Template more information is available from
 
 `Stonks` is a simple plugin that lets you watch stocks and crypto assets. It shows the symbol, price, volume, market state and daily range. 
 
+### Feedback
+If you find bugs or want to see new features please log at ticket in the [github repo](issues).
+
+
 ## Features:
 
 - Stock Market Lookups
@@ -21,6 +25,8 @@ It originated from the Elgato Plugin Template more information is available from
 - Dynamic button press web actions
 - Cross-platform (macOS, Windows)
 - Localization support
+
+You can see a [changelog](changelog.md) as well.
 
 ## Quickstart: Start watching your assets
 
@@ -34,9 +40,11 @@ A short guide to help you getting started quickly.
 
 ### Set the symbol:
 
-For stocks use the stock symbol. You would enter GME. For crypto you will need the coin symbol and the currency you want to display. For Etherium in USD you would enter ETH-USD.
+For stocks use the stock symbol. GME, TSLA... 
 
-If the plugin runs into any issues or can not find a symbol, you will see a 'Not Found' error state
+For crypto you will need the coin symbol and the currency you want to display. ETH-USD, BTC_EUR...
+
+If the plugin runs into any issues or can not find a symbol, you will see a 'Not Found' error state. If the plugin doesn't recover, restart the Streamdeck app.
 
 ![Error](images/Error.png)
 

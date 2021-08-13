@@ -101,7 +101,6 @@ class AssetManager {
         this.drawingCtx.fillText('Not Found', 140, 70);
         
         $SD.api.setImage(this.deckCtx, this.canvas.toDataURL());
-        return
     }
 
     handleResponse(response) {
