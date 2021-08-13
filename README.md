@@ -26,7 +26,7 @@ If you find bugs or want to see new features please log at ticket in the [github
 - Cross-platform (macOS, Windows)
 - Localization support
 
-You can see a [changelog](changelog.md) as well.
+You can see a [changelog](Changelog.md) as well.
 
 ## Quickstart: Start watching your assets
 
