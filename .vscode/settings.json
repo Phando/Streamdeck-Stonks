@@ -1,0 +1,12 @@
+{
+    "saveAndRun": {
+        "commands": [
+          {
+            "match": ".*",
+            "cmd": "${workspaceRoot}/build.sh",
+            "useShortcut": false,
+            "silent": false
+          }
+        ]
+      }
+}

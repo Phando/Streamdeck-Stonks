@@ -1,5 +1,5 @@
 {
-  "Description": "Use this to create your own plugin", 
+  "Description": "Stonks - A stock and crypto ticker.", 
   "Name": "Stonks", 
   "Category": "Stock Ticker", 
   "com.andomation.stream.stonks.action": {

@@ -8,7 +8,7 @@
           "Image": "action/images/action"
         }
       ], 
-      "Tooltip": "This is an example tooltip", 
+      "Tooltip": "Add a symbol to see prices.", 
       "UUID": "com.andomation.stream.stonks.action"
     }
   ], 
@@ -20,7 +20,7 @@
   "Name": "Stonks", 
   "Icon": "action/images/action", 
   "URL": "https://github.com/Phando/Streamdeck-Stonks", 
-  "Version": "1.0.1",
+  "Version": "1.0.2",
   "OS": [
     {
         "Platform": "mac", 

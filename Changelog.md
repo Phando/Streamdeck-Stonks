@@ -1,6 +1,17 @@
 # Changelog
 
-## v1.0.1 (8/13/2021)
+## v1.0.2 (8/26/2021) -----
+
+#### Enhancements:
+- Added price abbreviations for prices >= $100,000
+[issue #1](https://github.com/Phando/Streamdeck-Stonks/issues/1)
+
+#### Bug Fixes:
+- Upper and Lower limit colors initial values not persisting
+[issue #2](https://github.com/Phando/Streamdeck-Stonks/issues/2)
+
+
+## v1.0.1 (8/13/2021) -----
 
 #### Enhancements:
 - Reduced the verbosity of the plugin on the console
@@ -13,10 +24,5 @@
 
 ---
 
-## v1.0.0 (7/26/2021)
+## v1.0.0 (7/26/2021) -----
 *Initial Release*
-
--- Format reference
-#### Enhancements:
-#### Bug Fixes:
-- [#1](https://github.com/Phando/Streamdeck-Stonks/issues/1) Some bug or enhancement description

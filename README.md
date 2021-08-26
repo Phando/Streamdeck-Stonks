@@ -48,6 +48,6 @@ If the plugin runs into any issues or can not find a symbol, you will see a 'Not
 
 ![Error](images/Error.png)
 
-### Limits:
+### Price Limits:
 
 The plugin will change colors if a high or low limit are set. Aditionally, the url where the button links to can be changed if a limit is triggered.

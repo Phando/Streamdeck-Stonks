@@ -14,19 +14,22 @@ class AssetManager {
 
     updateSettings(jsn) {
         console.log("Update Settings", jsn);
-        
         this.jsonObj = jsn
         
+        // Settings Initialization
         this.settings = Utils.getProp(this.jsonObj, "payload.settings", {});
+        this.settings.symbol = this.settings.symbol || "GME";
+        this.settings.decimals  = this.settings.decimals || 2;
+        this.settings.foreground = this.settings.foreground || "#D8D8D8";
+        this.settings.background = this.settings.background || "#1D1E1F";
         
-        if (Object.keys(this.settings).length === 0) {
-            console.log("Initializing Settings");
-            this.settings.decimals = 2;
-            this.settings.symbol = "GME";
-            this.settings.foreground = "#d8d8d8";
-            this.settings.background = "#1d1e1f";
-            $SD.api.setSettings(this.deckCtx, this.settings);   
-        }
+        // Fix for - https://github.com/Phando/Streamdeck-Stonks/issues/2
+        this.settings.upperlimitforeground = this.settings.upperlimitforeground || "#1D1E1F";
+        this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#00FF00";
+        this.settings.lowerlimitforeground = this.settings.lowerlimitforeground || "#1D1E1F";
+        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#FF0000"; 
+
+        $SD.api.setSettings(this.deckCtx, this.settings);
     }
 
     updateItem(jsn) {
@@ -109,7 +112,7 @@ class AssetManager {
 
         data.open = true;
         data.symbol = response.symbol;
-        data.price = response.regularMarketPrice;
+        data.price = response.regularMarketPrice + 0.0;
         data.volume = this.abbreviateNumber(response.regularMarketVolume);
         data.foreground = this.settings.foreground;
         data.background = this.settings.background;
@@ -121,7 +124,7 @@ class AssetManager {
         data.high = range[1];
 
         // Factor after market pricing
-        if (response.marketState != "REGULAR") {
+        if (response.marketState != "REGULAR" && response.postMarketPrice) {
             data.open = false;
             data.price = response.postMarketPrice;
             data.low = data.price < data.low ? data.price : data.low;
@@ -129,14 +132,14 @@ class AssetManager {
         }
 
         // Check upper limit
-        if (String(this.settings.upperlimit).length > 0 && data.price > this.settings.upperlimit) {
+        if (String(this.settings.upperlimit).length > 0 && data.price >= this.settings.upperlimit) {
             data.foreground = this.settings.upperlimitforeground;
             data.background = this.settings.upperlimitbackground;
             this.action = this.settings.upperlimitaction;
         }
 
         // Check lower limit
-        if (String(this.settings.lowerlimit).length > 0 && data.price < this.settings.lowerlimit) {
+        if (String(this.settings.lowerlimit).length > 0 && data.price <= this.settings.lowerlimit) {
             data.foreground = this.settings.lowerlimitforeground;
             data.background = this.settings.lowerlimitbackground;
             this.action = this.settings.lowerlimitaction;
@@ -167,6 +170,10 @@ class AssetManager {
         // Apply decimal option
         if (typeof this.settings.decimals != "undefined") {
             displayPrice = data.price.toFixed(this.settings.decimals);
+        }
+        
+        if(data.price > 100000){
+            displayPrice = this.abbreviateNumber(data.price, 4);
         }
 
         // Render Price
@@ -200,7 +207,6 @@ class AssetManager {
     }
 
     updateDisplay(data) {
-        //var ctx = this.canvas.getContext("2d");
         this.drawingCtx.fillStyle = data.background;
         this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
@@ -238,7 +244,7 @@ class AssetManager {
         return this.calculateFont(text, weight, test, max, desiredWidth);
     }
 
-    abbreviateNumber(value) {
+    abbreviateNumber(value, precision=3) {
         let newValue = value;
         const suffixes = ["", "K", "M", "B", "T"];
         let suffixNum = 0;
@@ -248,7 +254,7 @@ class AssetManager {
             suffixNum++;
         }
 
-        newValue = newValue.toPrecision(3);
+        newValue = newValue.toPrecision(precision);
         newValue += suffixes[suffixNum];
         return newValue;
     }
