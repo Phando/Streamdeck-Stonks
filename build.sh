@@ -3,6 +3,9 @@ echo "Quit - Stream Deck"
 osascript -e 'quit app "Stream Deck"'
 Sleep 1
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd $SCRIPT_DIR
+
 for i in $(ls -d Sources/*/)
 do 
     PLUGIN=${i%/}

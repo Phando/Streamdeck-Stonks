@@ -59,7 +59,7 @@ class AssetManager {
         this.fetchData()
         this.dataTimer = setInterval(this.fetchData.bind(this), this.interval)
     }
-
+ 
     fetchData() {
         const fetchPromise = fetch(AssetManager.dataUrl + this.settings.symbol);
         fetchPromise
@@ -124,9 +124,9 @@ class AssetManager {
         data.high = range[1];
 
         // Factor after market pricing
-        if (response.marketState != "REGULAR" && response.postMarketPrice) {
+        if (response.marketState != "REGULAR") {
             data.open = false;
-            data.price = response.postMarketPrice;
+            data.price = response.postMarketPrice || data.price;
             data.low = data.price < data.low ? data.price : data.low;
             data.high = data.price > data.high ? data.price : data.high;
         }
@@ -135,17 +135,17 @@ class AssetManager {
         if (String(this.settings.upperlimit).length > 0 && data.price >= this.settings.upperlimit) {
             data.foreground = this.settings.upperlimitforeground;
             data.background = this.settings.upperlimitbackground;
-            this.action = this.settings.upperlimitaction;
+            this.action = this.settings.upperlimitaction || this.settings.action;
         }
 
         // Check lower limit
         if (String(this.settings.lowerlimit).length > 0 && data.price <= this.settings.lowerlimit) {
             data.foreground = this.settings.lowerlimitforeground;
             data.background = this.settings.lowerlimitbackground;
-            this.action = this.settings.lowerlimitaction;
+            this.action = this.settings.lowerlimitaction || this.settings.action;
         }
 
-        this.updateDisplay(data);
+        this.updateDisplay(data); 
     }
 
     drawSymbol(data){

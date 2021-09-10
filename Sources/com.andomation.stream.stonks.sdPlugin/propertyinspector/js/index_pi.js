@@ -262,7 +262,7 @@ function prepareDOMElements(baseElement) {
             const elementsToClick = [
                 'BUTTON',
                 'OL',
-                'UL',
+                'UL', 
                 'TABLE',
                 'METER',
                 'PROGRESS',

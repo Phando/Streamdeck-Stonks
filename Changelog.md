@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.3 (8/26/2021) -----
+
+#### Enhancements:
+
+#### Bug Fixes:
+- Upper and Lower limit actions fall back to the default action if not set. 
+[issue #3](https://github.com/Phando/Streamdeck-Stonks/issues/3)
+- Stocks with no post market value showing wrong market state
+[issue #4](https://github.com/Phando/Streamdeck-Stonks/issues/4)
+
 ## v1.0.2 (8/26/2021) -----
 
 #### Enhancements:

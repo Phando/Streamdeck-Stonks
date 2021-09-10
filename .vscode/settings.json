@@ -2,7 +2,7 @@
     "saveAndRun": {
         "commands": [
           {
-            "match": ".*",
+            "match": "/Sources/",
             "cmd": "${workspaceRoot}/build.sh",
             "useShortcut": false,
             "silent": false
