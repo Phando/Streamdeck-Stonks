@@ -53,7 +53,7 @@ If the plugin runs into any issues or can not find a symbol, you will see a 'Not
 
 You can set how often the plugin fetches new data. The value is in seconds and needs to be between 3 and 300. The default value is 60 for once a minute. The API is limited to 2,000 requests per hour or 48,000 per day. Each instance of the plugin adds to that number. Be sure to choose an interval that will not exceed these limits.
 
-To determine the maximum speed for your buttons use this formula
+To determine the maximum speed for your interval use this formula
 
 **60 / (33.34 / #buttons)**
 
