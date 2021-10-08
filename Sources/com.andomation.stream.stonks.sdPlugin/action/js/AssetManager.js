@@ -18,16 +18,29 @@ class AssetManager {
         
         // Settings Initialization
         this.settings = Utils.getProp(this.jsonObj, "payload.settings", {});
+        this.settings.interval = this.settings.interval || 60; 
         this.settings.symbol = this.settings.symbol || "GME";
         this.settings.decimals  = this.settings.decimals || 2;
         this.settings.foreground = this.settings.foreground || "#D8D8D8";
         this.settings.background = this.settings.background || "#1D1E1F";
-        
+        this.settings.action = "http://andomation.com"
+        this.settings.upperlimitaction = "http://andomation.com"
+        this.settings.lowerlimitaction = "http://andomation.com"
+
         // Fix for - https://github.com/Phando/Streamdeck-Stonks/issues/2
         this.settings.upperlimitforeground = this.settings.upperlimitforeground || "#1D1E1F";
         this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#00FF00";
         this.settings.lowerlimitforeground = this.settings.lowerlimitforeground || "#1D1E1F";
         this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#FF0000"; 
+
+        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#FF0000"; 
+        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#FF0000"; 
+        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#FF0000"; 
+        
+        // Feature for - https://github.com/Phando/Streamdeck-Stonks/issues/5
+        this.settings.action1mode = this.settings.action1mode || "refresh"; 
+        this.settings.action2mode = this.settings.action2mode || "refresh"; 
+        this.settings.action3mode = this.settings.action3mode || "refresh"; 
 
         $SD.api.setSettings(this.deckCtx, this.settings);
     }
@@ -44,8 +57,14 @@ class AssetManager {
     }
 
     keyPressed(jsn){
-        console.log("OpenURL", this.action)
-        $SD.api.openUrl(this.deckCtx, this.action)
+        if (this.actionMode == "url") {
+            console.log("OpenURL", this.action)
+            $SD.api.openUrl(this.deckCtx, this.action)
+        }
+        else {
+            console.log("Manual Refresh")
+            this.startStream()
+        }
     }
 
     stopStream(){
@@ -57,6 +76,7 @@ class AssetManager {
         console.log("Start Stream")
         clearInterval(this.dataTimer)
         this.fetchData()
+        this.interval = this.settings.interval * 1000
         this.dataTimer = setInterval(this.fetchData.bind(this), this.interval)
     }
  
@@ -117,6 +137,7 @@ class AssetManager {
         data.foreground = this.settings.foreground;
         data.background = this.settings.background;
         this.action = this.settings.action;
+        this.actionMode = this.settings.action1mode;
 
         // Parse Range
         var range = response.regularMarketDayRange.split(" - ");
@@ -136,6 +157,7 @@ class AssetManager {
             data.foreground = this.settings.upperlimitforeground;
             data.background = this.settings.upperlimitbackground;
             this.action = this.settings.upperlimitaction || this.settings.action;
+            this.actionMode = this.settings.upperlimitaction ? this.settings.action2mode : this.settings.action1mode;
         }
 
         // Check lower limit
@@ -143,6 +165,7 @@ class AssetManager {
             data.foreground = this.settings.lowerlimitforeground;
             data.background = this.settings.lowerlimitbackground;
             this.action = this.settings.lowerlimitaction || this.settings.action;
+            this.actionMode = this.settings.lowerlimitaction ? this.settings.action3mode : this.settings.action1mode;
         }
 
         this.updateDisplay(data); 

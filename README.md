@@ -21,8 +21,9 @@ If you find bugs or want to see new features please log at ticket in the [github
 
 - Stock Market Lookups
 - Crypto Lookups
+- Adjustible Polling Interval
 - Limit features (high and low)
-- Dynamic button press web actions
+- Dynamic button press actions
 - Cross-platform (macOS, Windows)
 - Localization support
 
@@ -30,7 +31,7 @@ You can see a [changelog](Changelog.md) as well.
 
 ## Quickstart: Start watching your assets
 
-A short guide to help you getting started quickly.
+This short guide will help you get started.
 
 ![Labels](images/Layout.png)
 
@@ -48,6 +49,26 @@ If the plugin runs into any issues or can not find a symbol, you will see a 'Not
 
 ![Error](images/Error.png)
 
+### Polling Interval:
+
+You can set how often the plugin fetches new data. The value is in seconds and needs to be between 3 and 300. The default value is 60 for once a minute. The API is limited to 2,000 requests per hour or 48,000 per day. Each instance of the plugin adds to that number. Be sure to choose an interval that will not exceed these limits.
+
+To determine the maximum speed for your buttons use this formula
+
+**60 / (33.34 / #buttons)**
+
+If you have 5 buttons assigned to Stonks, the maximum interval you should choose would be 9.
+
+48,000 (per day) / 24 (hours) / 60 (minutes) ~= 33.34
+
+60(seconds) / (33.34 / 5) ~= 9
+
 ### Price Limits:
 
 The plugin will change colors if a high or low limit are set. Aditionally, the url where the button links to can be changed if a limit is triggered.
+
+### Button Mode:
+
+You can choose what happens when a button is pressed. It will either refresh the stock value or it can open to a url. Depending on your limits settings, the button can have a different action for normal state, upper limit state and lower limit state.
+
+Imagine a use case where refresh is the normal state, the upper state would open your brokers webpage and a low state would open your webmail.
