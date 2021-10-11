@@ -3,7 +3,7 @@
 ## v1.0.3 (10/03/2021) -----
 
 #### Enhancements:
-- Added Adjustible Polling Interval
+- Added Adjustable Polling Interval
 - Dynamic button, choose between Refresh or Open URL
 [issue #5](https://github.com/Phando/Streamdeck-Stonks/issues/5)
 
