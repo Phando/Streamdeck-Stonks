@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.3 (10/03/2021) -----
+## v1.0.4 (10/03/2021) -----
 
 #### Enhancements:
 - Added Adjustable Polling Interval
