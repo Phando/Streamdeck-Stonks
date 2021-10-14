@@ -1,21 +1,45 @@
 {
   "Actions": [
     {
-      "Icon": "action/images/actionimage", 
+      "Icon": "images/actions/action", 
       "Name": "Stonks", 
       "States": [
         {
-          "Image": "action/images/action"
+          "Image": "images/actions/action"
         }
       ], 
-      "Tooltip": "Add a symbol to see prices.", 
-      "UUID": "com.andomation.stream.stonks.action"
+      "Tooltip": "Keep track of ticker and crypto prices.", 
+      "UUID": "com.andomation.stream.stonks.core"
+    },
+    {
+      "Icon": "images/actions/simpleAction", 
+      "Name": "Stonks - Simple",
+      "States": [
+        {
+          "Image": "images/actions/simpleAction"
+        }
+      ],
+      "Tooltip": "Keep track of ticker and crypto prices.",
+      "UUID": "com.andomation.stream.stonks.simple"
+    },
+    {
+      "Icon": "images/actions/simpleAction", 
+      "Name": "Stonks - Complex",
+      "States": [
+        {
+          "Image": "images/actions/complexAction"
+        }
+      ],
+      "Tooltip": "Keep track of ticker and crypto prices.",
+      "UUID": "com.andomation.stream.stonks.complex"
     }
   ], 
   "SDKVersion": 2,
+  "Category": "Andomation",
+  "CategoryIcon": "images/plugin/category",
   "Author": "Andomation", 
-  "CodePath": "index.html", 
-  "PropertyInspectorPath": "propertyinspector/index.html", 
+  "CodePath": "plugin/index.html",
+  "PropertyInspectorPath": "pi/index.html",
   "Description": "Stock and Ctypto Ticker", 
   "Name": "Stonks", 
   "Icon": "action/images/action", 
