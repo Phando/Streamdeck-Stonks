@@ -1,30 +1,24 @@
-let contexts = {};
-//let globalSettings = {};
+let dataprovider = new Dataprovider();
 
-let actions = [
-  new CoreAction(),
-  new SimpleAction(),
-  new ComplexAction()
-];
+/** 
+ * All actions in your plugin need to be added to the 'actions' array.
+ * This is true even if your plugin has a single action.
+ */
 
-function Context(uuid, action, coordinates){
-  this.id = uuid;
-  this.type = action;
-  this.coordinates = coordinates;
-}
+actions.push(new SimpleAction())
+actions.push(new ComplexAction())
+actions.push(new CoreAction())
 
 /**
- * There's only one StreamDeck object.
- * It carries connection parameters and handles communication
- * to/from the software's PluginManager.
+ * There's only one StreamDeck object. It carries connection parameters 
+ * and handles communication to/from the software's PluginManager.
  */
 
 $SD = StreamDeck.getInstance();
 
-/**
- * Initialize the globalSettings here
- */
- $SD.on('didReceiveGlobalSettings', (jsn) => {
+$SD.on('didReceiveGlobalSettings', (jsn) => {
+  
+  // Initialize the globalSettings here if needed
   if(Object.keys(globalSettings).length == 0) {
     console.log("Init GlobalSettings")
     globalSettings.interval = 60
@@ -50,5 +44,3 @@ $SD.on('connected', (jsn) => {
     $SD.on(item.type + '.propertyInspectorDidDisappear', (jsonObj) => console.log("propertyInspectorDidDisappear"));
   });
 });
-
-

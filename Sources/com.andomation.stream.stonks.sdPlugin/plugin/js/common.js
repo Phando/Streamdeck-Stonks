@@ -8,7 +8,17 @@
   no-var: 0,
   vars-on-top: 0
 */
-var globalSettings = {}
+
+let actions = []
+let contexts = {}
+let globalSettings = {}
+
+function Context(jsn){
+    this.action = jsn.action
+    this.context = jsn.context
+    this.coordinates = jsn.payload.coordinates
+    this.settings = jsn.payload.settings
+}
 
 // don't change this to let or const, because we rely on var's hoisting
 // eslint-disable-next-line no-use-before-define, no-var

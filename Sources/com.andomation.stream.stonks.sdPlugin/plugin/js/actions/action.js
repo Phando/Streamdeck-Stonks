@@ -8,13 +8,11 @@ class Action {
     this.canvas.width = 144
     this.canvas.height = 144
     this.drawingCtx = this.canvas.getContext("2d");
-    // this.deckCtx = jsn.context
-    // this.updateSettings(jsn)
   }
 
   updateSettings(jsn){
     console.log("Settings", this.settings)
-    this.setTitle = this.settings.title;
+    //this.setTitle = this.settings.title;
     $SD.api.setSettings($SD.uuid, this.settings);
   }
   
@@ -33,8 +31,8 @@ class Action {
     // $SD.api.getSettings(jsn.context);
     //this.deckCtx = jsn.context
     this.onDidReceiveSettings(jsn)
-    contexts[jsn.context] = new Context(jsn.context, jsn.action, jsn.payload.coordinates)
-    console.log("Will Appear", jsn, contexts)
+    contexts[jsn.context] = new Context(jsn)
+    console.log("Will Appear", jsn)
   }
 
   onKeyUp(jsn) {
@@ -45,12 +43,13 @@ class Action {
       console.log("We just got", jsn)
       const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
       if (sdpi_collection.value && sdpi_collection.value !== undefined) {
-          this.doSomeThing({ [sdpi_collection.key] : sdpi_collection.value }, 'onSendToPlugin', 'fuchsia');            
+        console.log("onSendToPlugin do something!")  
+        //this.doSomeThing({ [sdpi_collection.key] : sdpi_collection.value }, 'onSendToPlugin', 'fuchsia');            
       }
   }
 
   saveSettings(jsn, sdpi_collection) {
-      console.log('saveSettings:', jsn);
+      console.log('Action saveSettings:', jsn);
       if (sdpi_collection.hasOwnProperty('key') && sdpi_collection.key != '') {
           if (sdpi_collection.value && sdpi_collection.value !== undefined) {
               if( globalSettings.hasOwnProperty(sdpi_collection.key) ){

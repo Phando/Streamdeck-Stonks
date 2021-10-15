@@ -1,12 +1,10 @@
-let actions = [
-  // new CoreActionPi(),
-  new SimpleActionPI(),
-  // new ComplexActionPi()
-];
-
 var onchangeevt = "onchange"; // 'oninput';
 let sdpiWrapper = document.querySelector(".sdpi-wrapper");
 let settings;
+
+actions.push(new SimpleActionPI())
+//actions.push(new ComplexActionPi())
+//actions.push(new CoreActionPi())
 
 $SD = StreamDeck.getInstance();
 
@@ -23,10 +21,14 @@ $SD.on("connected", (jsn) => {
   console.log("connected", jsn);
   settings = Utils.getProp(jsn, "actionInfo.payload.settings", false);
   
-  const actionType = Utils.getProp(jsn, "actionInfo.action", "");
+  let actionType = Utils.getProp(jsn, "actionInfo.action", "");
+  
   actions.forEach((action) => {
+    if(!action.type.endsWith('PI')){ return; }
+    
     $SD.on('didReceiveGlobalSettings', (jsonObj) => action.onReceiveGlobalSettings(jsonObj));
-    if (action.type == actionType) {
+    
+    if (action.type.includes(actionType)) {
       action.init(jsn);
     }
   });
@@ -34,8 +36,10 @@ $SD.on("connected", (jsn) => {
 
 //-----------------------------------------------------------------//
 
-// $SD.on('didReceiveGlobalSettings', (jsn) => {
-// });
+$SD.on('didReceiveGlobalSettings', (jsn) => {
+});
+
+//-----------------------------------------------------------------//
 
 /**
  * The 'sendToPropertyInspector' event can be used to send messages directly from your plugin
@@ -67,35 +71,6 @@ $SD.on("sendToPropertyInspector", (jsn) => {
     
   }
 });
-
-const updateUI = (pl) => {
-  Object.keys(pl).map((e) => {
-    if (e && e != "") {
-      const foundElement = document.querySelector(`#${e}`);
-      console.log(`searching for: #${e}`, "found:", foundElement);
-      
-      if(!foundElement || foundElement.type == "file"){ 
-        return;
-      }
-      
-      if(foundElement.type == "checkbox" || foundElement.type ==  "radio"){
-        foundElement.checked = foundElement.value == pl[e]
-      }
-      else {
-        foundElement.value = pl[e];
-        const maxl = foundElement.getAttribute("maxlength") || 50;
-        const labels = document.querySelectorAll(`[for='${foundElement.id}']`);
-        if (labels.length) {
-          for (let x of labels) {
-            x.textContent = maxl
-              ? `${foundElement.value.length}/${maxl}`
-              : `${foundElement.value.length}`;
-          }
-        }
-      }
-    }
-  });
-};
 
 /**
  * Something in the PI changed:
@@ -146,13 +121,12 @@ $SD.on("piDataChanged", (returnValue) => {
       postMessage(window.xtWindow);
     }
   } else {
-    console.log("Change", returnValue, globalSettings, globalSettings.hasOwnProperty(returnValue.key))
-    saveSettings(returnValue);
+    saveValue(returnValue);
     sendValueToPlugin(returnValue, "sdpi_collection");
   }
 });
 
-function saveSettings(sdpi_collection) {
+function saveValue(sdpi_collection) {
   if (typeof sdpi_collection !== "object") return;
 
   if (sdpi_collection.hasOwnProperty("key") && sdpi_collection.key != "") {
@@ -160,15 +134,24 @@ function saveSettings(sdpi_collection) {
       console.log(sdpi_collection.key, " => ", sdpi_collection.value);
       if( globalSettings.hasOwnProperty(sdpi_collection.key) ){
         globalSettings[sdpi_collection.key] = sdpi_collection.value;
-        console.log('setGlobalSettings....', globalSettings);
-        $SD.api.setGlobalSettings($SD.uuid, globalSettings);
+        saveSettings(globalSettings)
       }
       else {
         settings[sdpi_collection.key] = sdpi_collection.value;
-        console.log("setSettings....", settings);
-        $SD.api.setSettings($SD.uuid, settings);
+        saveSettings(settings)
       }
     }
+  }
+}
+
+function saveSettings(data){
+  if( data == globalSettings) {
+    console.log('setGlobalSettings....', globalSettings);
+    $SD.api.setGlobalSettings($SD.uuid, data);
+  }
+  else {
+    console.log("setSettings....", settings);
+    $SD.api.setSettings($SD.uuid, data);
   }
 }
 
@@ -201,7 +184,179 @@ function sendValueToPlugin(value, prop) {
   }
 }
 
-/** CREATE INTERACTIVE HTML-DOM
+
+
+function handleSdpiItemChange(e, idx) {
+  /** Following items are containers, so we won't handle clicks on them */
+
+  if (["OL", "UL", "TABLE"].includes(e.tagName)) {
+    return;
+  }
+
+  if (e.tagName === "SPAN") {
+    const inp = e.parentNode.querySelector("input");
+    var tmpValue;
+
+    // if there's no attribute set for the span, try to see, if there's a value in the textContent
+    // and use it as value
+    if (!e.hasAttribute("value")) {
+      tmpValue = Number(e.textContent);
+      if (typeof tmpValue === "number" && tmpValue !== null) {
+        e.setAttribute("value", 0 + tmpValue); // this is ugly, but setting a value of 0 on a span doesn't do anything
+        e.value = tmpValue;
+      }
+    } else {
+      tmpValue = Number(e.getAttribute("value"));
+    }
+
+    if (inp && tmpValue !== undefined) {
+      inp.value = tmpValue;
+    } else return;
+  }
+
+  const selectedElements = [];
+  const isList = ["LI", "OL", "UL", "DL", "TD"].includes(e.tagName);
+  const sdpiItem = e.closest(".sdpi-item");
+  const sdpiItemGroup = e.closest(".sdpi-item-group");
+  let sdpiItemChildren = isList
+    ? sdpiItem.querySelectorAll(e.tagName === "LI" ? "li" : "td")
+    : sdpiItem.querySelectorAll(".sdpi-item-child > input");
+
+  if (isList) {
+    const siv = e.closest(".sdpi-item-value");
+    if (!siv.classList.contains("multi-select")) {
+      for (let x of sdpiItemChildren) x.classList.remove("selected");
+    }
+    if (!siv.classList.contains("no-select")) {
+      e.classList.toggle("selected");
+    }
+  }
+
+  if(e.type == "radio"){
+    // TODO: Assuming settings not globalSettings
+    sdpiItemChildren.forEach((item) => { 
+      delete settings[item.id];
+    });
+    saveSettings(settings);
+  }
+
+  if(e.type == "checkbox") {
+    // TODO: Assuming settings not globalSettings
+    if(!e.checked){
+      delete settings[e.id];
+      saveSettings(settings);
+      $SD.api.getSettings($SD.uuid, settings)
+      return
+    }
+    
+    e.setAttribute("_value", e.value);
+  }
+
+  if (sdpiItemGroup && !sdpiItemChildren.length) {
+    for (let x of ["input", "meter", "progress"]) {
+      sdpiItemChildren = sdpiItemGroup.querySelectorAll(x);
+      if (sdpiItemChildren.length) break;
+    }
+  }
+
+  if (e.selectedIndex !== undefined) {
+    if (e.tagName === 'SELECT') {
+        sdpiItemChildren.forEach((ec, i) => {
+            selectedElements.push({ [ec.id]: ec.value });
+        });
+    }
+    idx = e.selectedIndex;
+  } else {
+      sdpiItemChildren.forEach((ec, i) => {
+          if (ec.classList.contains('selected')) {
+              selectedElements.push(ec.textContent);
+          }
+          if (ec === e) {
+              idx = i;
+              selectedElements.push(ec.value);
+          }
+      });
+  }
+
+  const returnValue = {
+    key: e.id && e.id.charAt(0) !== "_" ? e.id : sdpiItem.id,
+    value: isList
+      ? e.textContent : e.hasAttribute("_value")
+      ? e.getAttribute("_value") : e.hasAttribute("value")
+      ? e.getAttribute("value") : e.value,
+    group: sdpiItemGroup ? sdpiItemGroup.id : false,
+    index: idx,
+    selection: selectedElements,
+    checked: e.checked
+  };
+
+  $SD.emit("piDataChanged", returnValue);
+}
+
+//------------------------------ DOM Helpers -----------------------------------//
+
+const updateUI = (pl) => {
+  Object.keys(pl).map((e) => {
+    if (e && e != "") {
+      const foundElement = document.querySelector(`#${e}`);
+      console.log(`searching for: #${e}`, "found:", foundElement);
+      
+      if(!foundElement || foundElement.type == "file"){ 
+        return;
+      }
+      
+      if(foundElement.type == "checkbox" || foundElement.type ==  "radio"){
+        foundElement.checked = foundElement.value == pl[e]
+      }
+      else {
+        foundElement.value = pl[e];
+        const maxl = foundElement.getAttribute("maxlength") || 50;
+        const labels = document.querySelectorAll(`[for='${foundElement.id}']`);
+        if (labels.length) {
+          for (let x of labels) {
+            x.textContent = maxl
+              ? `${foundElement.value.length}/${maxl}`
+              : `${foundElement.value.length}`;
+          }
+        }
+      }
+    }
+  });
+};
+
+/**
+ * This is a quick and simple way to localize elements and labels in the Property
+ * Inspector's UI without touching their values.
+ * It uses a quick 'lox()' function, which reads the strings from a global
+ * variable 'localizedStrings' (in 'common.js')
+ */
+
+ function localizeUI() {
+  const el = document.querySelector(".sdpi-wrapper") || document;
+  let t;
+  Array.from(el.querySelectorAll("sdpi-item-label")).forEach((e) => {
+    t = e.textContent.lox();
+    if (e !== t) {
+      e.innerHTML = e.innerHTML.replace(e.textContent, t);
+    }
+  });
+  Array.from(el.querySelectorAll("*:not(script)")).forEach((e) => {
+    if (
+      e.childNodes &&
+      e.childNodes.length > 0 &&
+      e.childNodes[0].nodeValue &&
+      typeof e.childNodes[0].nodeValue === "string"
+    ) {
+      t = e.childNodes[0].nodeValue.lox();
+      if (e.childNodes[0].nodeValue !== t) {
+        e.childNodes[0].nodeValue = t;
+      }
+    }
+  });
+}
+
+/** 
+ * CREATE INTERACTIVE HTML-DOM
  * The 'prepareDOMElements' helper is called, to install events on all kinds of
  * elements (as seen e.g. in PISamples)
  * Elements can get clicked or act on their 'change' or 'input' event. (see at the top
@@ -213,7 +368,7 @@ function sendValueToPlugin(value, prop) {
  * your plugin.
  */
 
-function prepareDOMElements(baseElement) {
+ function prepareDOMElements(baseElement) {
   baseElement = baseElement || document;
   Array.from(baseElement.querySelectorAll(".sdpi-item-value")).forEach(
     (el, i) => {
@@ -300,137 +455,7 @@ function prepareDOMElements(baseElement) {
   });
 }
 
-function handleSdpiItemChange(e, idx) {
-  /** Following items are containers, so we won't handle clicks on them */
-
-  if (["OL", "UL", "TABLE"].includes(e.tagName)) {
-    return;
-  }
-
-  if (e.tagName === "SPAN") {
-    const inp = e.parentNode.querySelector("input");
-    var tmpValue;
-
-    // if there's no attribute set for the span, try to see, if there's a value in the textContent
-    // and use it as value
-    if (!e.hasAttribute("value")) {
-      tmpValue = Number(e.textContent);
-      if (typeof tmpValue === "number" && tmpValue !== null) {
-        e.setAttribute("value", 0 + tmpValue); // this is ugly, but setting a value of 0 on a span doesn't do anything
-        e.value = tmpValue;
-      }
-    } else {
-      tmpValue = Number(e.getAttribute("value"));
-    }
-
-    if (inp && tmpValue !== undefined) {
-      inp.value = tmpValue;
-    } else return;
-  }
-
-  const selectedElements = [];
-  const isList = ["LI", "OL", "UL", "DL", "TD"].includes(e.tagName);
-  const sdpiItem = e.closest(".sdpi-item");
-  const sdpiItemGroup = e.closest(".sdpi-item-group");
-  let sdpiItemChildren = isList
-    ? sdpiItem.querySelectorAll(e.tagName === "LI" ? "li" : "td")
-    : sdpiItem.querySelectorAll(".sdpi-item-child > input");
-
-  if (isList) {
-    const siv = e.closest(".sdpi-item-value");
-    if (!siv.classList.contains("multi-select")) {
-      for (let x of sdpiItemChildren) x.classList.remove("selected");
-    }
-    if (!siv.classList.contains("no-select")) {
-      e.classList.toggle("selected");
-    }
-  }
-
-  if(e.type == "radio"){
-    sdpiItemChildren.forEach((item) => { 
-      delete settings[item.id];
-    });
-    
-    $SD.api.setSettings($SD.uuid, settings);
-  }
-
-  if(e.type == "checkbox") {
-    e.setAttribute("_value", e.checked ? e.value : "unchecked");
-  }
-
-  if (sdpiItemGroup && !sdpiItemChildren.length) {
-    for (let x of ["input", "meter", "progress"]) {
-      sdpiItemChildren = sdpiItemGroup.querySelectorAll(x);
-      if (sdpiItemChildren.length) break;
-    }
-  }
-
-  if (e.selectedIndex !== undefined) {
-    if (e.tagName === 'SELECT') {
-        sdpiItemChildren.forEach((ec, i) => {
-            selectedElements.push({ [ec.id]: ec.value });
-        });
-    }
-    idx = e.selectedIndex;
-  } else {
-      sdpiItemChildren.forEach((ec, i) => {
-          if (ec.classList.contains('selected')) {
-              selectedElements.push(ec.textContent);
-          }
-          if (ec === e) {
-              idx = i;
-              selectedElements.push(ec.value);
-          }
-      });
-  }
-
-  const returnValue = {
-    key: e.id && e.id.charAt(0) !== "_" ? e.id : sdpiItem.id,
-    value: isList
-      ? e.textContent : e.hasAttribute("_value")
-      ? e.getAttribute("_value") : e.hasAttribute("value")
-      ? e.getAttribute("value") : e.value,
-    group: sdpiItemGroup ? sdpiItemGroup.id : false,
-    index: idx,
-    selection: selectedElements,
-    checked: e.checked
-  };
-
-  $SD.emit("piDataChanged", returnValue);
-}
-
-/**
- * This is a quick and simple way to localize elements and labels in the Property
- * Inspector's UI without touching their values.
- * It uses a quick 'lox()' function, which reads the strings from a global
- * variable 'localizedStrings' (in 'common.js')
- */
-
-function localizeUI() {
-  const el = document.querySelector(".sdpi-wrapper") || document;
-  let t;
-  Array.from(el.querySelectorAll("sdpi-item-label")).forEach((e) => {
-    t = e.textContent.lox();
-    if (e !== t) {
-      e.innerHTML = e.innerHTML.replace(e.textContent, t);
-    }
-  });
-  Array.from(el.querySelectorAll("*:not(script)")).forEach((e) => {
-    if (
-      e.childNodes &&
-      e.childNodes.length > 0 &&
-      e.childNodes[0].nodeValue &&
-      typeof e.childNodes[0].nodeValue === "string"
-    ) {
-      t = e.childNodes[0].nodeValue.lox();
-      if (e.childNodes[0].nodeValue !== t) {
-        e.childNodes[0].nodeValue = t;
-      }
-    }
-  });
-}
-
-//------------------------------ DOM Helpers -----------------------------------//
+//-----------------------------------------------------------------//
 
 document.addEventListener("DOMContentLoaded", function () {
   document.body.classList.add(
@@ -450,11 +475,15 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+//-----------------------------------------------------------------//
+
 window.addEventListener("beforeunload", function (e) {
   e.preventDefault();
   sendValueToPlugin("propertyInspectorWillDisappear", "property_inspector");
   // Don't set a returnValue to the event, otherwise Chromium with throw an error.  // e.returnValue = '';
 });
+
+//-----------------------------------------------------------------//
 
 function gotCallbackFromWindow(parameter) {
   console.log(parameter);

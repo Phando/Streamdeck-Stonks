@@ -39,7 +39,7 @@
   "CategoryIcon": "images/plugin/category",
   "Author": "Andomation", 
   "CodePath": "plugin/index.html",
-  "PropertyInspectorPath": "pi/index.html",
+  "PropertyInspectorPath": "pi/index_pi.html",
   "Description": "Stock and Ctypto Ticker", 
   "Name": "Stonks", 
   "Icon": "action/images/action", 

@@ -2,7 +2,7 @@ class SimpleActionPI extends ActionPI {
 
     constructor(){
         super()
-        this.type = this.type + ".simple";
+        this.type = this.type + ".simplePI";
     }
 
     init(jsn) {
