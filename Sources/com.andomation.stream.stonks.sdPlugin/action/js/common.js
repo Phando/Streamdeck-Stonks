@@ -781,6 +781,8 @@ const StreamDeck = (function () {
                 $SD.messageType = inMessageType;
                 $SD.connection = websocket;
 
+                $SD.api.getGlobalSettings($SD.uuid);
+                
                 instance.emit('connected', {
                     connection: websocket,
                     port: inPort,

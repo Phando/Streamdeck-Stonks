@@ -81,6 +81,21 @@ Utils.percentToRange = function (percent, min, max) {
     return (max - min) * percent + min;
 };
 
+Utils.abbreviateNumber = function(value, precision=3) {
+    const suffixes = ["", "K", "M", "B", "T"];
+    let newValue = value;
+    let suffixNum = 0;
+    
+    while (newValue >= 1000) {
+        newValue /= 1000;
+        suffixNum++;
+    }
+
+    newValue = newValue.toPrecision(precision);
+    newValue += suffixes[suffixNum];
+    return newValue;
+};
+
 Utils.setDebugOutput = debug => {
     return debug === true ? console.log.bind(window.console) : function() {};
 };

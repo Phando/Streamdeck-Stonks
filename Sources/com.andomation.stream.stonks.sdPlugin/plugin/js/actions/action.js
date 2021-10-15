@@ -1,23 +1,3 @@
-// class Action {
-//   getContext = () => {
-//     return this.context;
-//   };
-
-//   setContext = (context) => {
-//     this.context = context;
-//   };
-
-//   getSettings = () => {
-//     return this.settings;
-//   };
-
-//   setSettings = (settings) => {
-//     this.settings = settings;
-//   };
-// }
-
-// ACTIONS
- 
 class Action {
   type = "com.andomation.stream.stonks";
   symbol = "";
@@ -35,22 +15,26 @@ class Action {
   updateSettings(jsn){
     console.log("Settings", this.settings)
     this.setTitle = this.settings.title;
-    $SD.api.setSettings(this.deckCtx, this.settings);
+    $SD.api.setSettings($SD.uuid, this.settings);
+  }
+  
+  onDidReceiveSettings(jsn) {
+    // Populate or initialize settings
+    this.settings = Utils.getProp(jsn, 'payload.settings', {});
+    this.updateSettings(jsn)
   }
 
-  onDidReceiveSettings(jsn) {
-      // Populate or initialize settings
-      this.settings = Utils.getProp(jsn, 'payload.settings', {});
-      this.updateSettings(jsn)
+  onDidReceiveGlobalSettings(jsn) {
+    // Populate or initialize settings
   }
 
   onWillAppear(jsn) {
-      // You can cache your settings in 'onWillAppear'
-      // $SD.api.getSettings(jsn.context);
-      this.deckCtx = jsn.context
-      this.onDidReceiveSettings(jsn)
-      // Populate or initialize settings
-      //this.settings = Utils.getProp(jsn, 'payload.settings', {});
+    // You can cache your settings in 'onWillAppear'
+    // $SD.api.getSettings(jsn.context);
+    //this.deckCtx = jsn.context
+    this.onDidReceiveSettings(jsn)
+    contexts[jsn.context] = new Context(jsn.context, jsn.action, jsn.payload.coordinates)
+    console.log("Will Appear", jsn, contexts)
   }
 
   onKeyUp(jsn) {
@@ -58,6 +42,7 @@ class Action {
   }
 
   onSendToPlugin(jsn) {
+      console.log("We just got", jsn)
       const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
       if (sdpi_collection.value && sdpi_collection.value !== undefined) {
           this.doSomeThing({ [sdpi_collection.key] : sdpi_collection.value }, 'onSendToPlugin', 'fuchsia');            
@@ -68,9 +53,16 @@ class Action {
       console.log('saveSettings:', jsn);
       if (sdpi_collection.hasOwnProperty('key') && sdpi_collection.key != '') {
           if (sdpi_collection.value && sdpi_collection.value !== undefined) {
-              this.settings[sdpi_collection.key] = sdpi_collection.value;
-              console.log('setSettings....', this.settings);
-              $SD.api.setSettings(jsn.context, this.settings);
+              if( globalSettings.hasOwnProperty(sdpi_collection.key) ){
+                globalSettings[sdpi_collection.key] = sdpi_collection.value;
+                $SD.api.setGlobalSettings(jsn.context, globalSettings);
+                console.log('setGlobalSettings....', globalSettings);
+              }
+              else {
+                this.settings[sdpi_collection.key] = sdpi_collection.value;
+                $SD.api.setSettings(jsn.context, this.settings);
+                console.log('setSettings....', this.settings);
+              }
           }
       }
   }

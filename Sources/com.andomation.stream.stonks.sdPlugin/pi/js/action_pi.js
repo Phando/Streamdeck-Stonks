@@ -5,22 +5,14 @@ class ActionPI {
 	}
 
 	init(jsn) {
-		console.log("SD", $SD)
+		console.log("SD", $SD, globalSettings)
 		this.uuid = $SD.uuid
 		this.context = $SD.actionInfo.context
 		this.settings = $SD.actionInfo.payload.settings
 	}
 
-	initFields(){
-		Object.keys(this.settings).forEach((key) => {
-			element = document.getElementById("dynamicContent");
-			if( element != "undefined" ){
-				element = document.getElementById("dynamicContent");
-			}
-			// if (actions[key].type == action) {
-			// 	actions[key].init(inUUID, settings);
-			// }
-		});
+	onReceiveGlobalSettings(jsonObj){
+		updateUI(globalSettings);
 	}
 
 	injectContent(url, callback) {
@@ -39,6 +31,12 @@ class ActionPI {
 			if (xmlhttp.readyState == 4 && status == 200) {
 				element.outerHTML = xmlhttp.responseText;
 				if(callback){ callback(); }
+				
+				// Set up a flag in the dom so DOMContentLoaded knows what to do.
+				const node = document.getElementById('contentLoaded') || document.createElement('div');
+				node.setAttribute('id', 'contentLoaded');
+				document.body.appendChild(node);
+        		document.dispatchEvent(new Event('DOMContentLoaded'));
 			}
 		};
 
@@ -49,19 +47,5 @@ class ActionPI {
 			/* todo catch error */
 		}
 	}
-
-	initField(fieldName) {
-		const field = document.getElementById(fieldName + "_data");
-		field.value = this.settings[fieldName];
-		field.onchange = (evt) => {
-			if ( evt.target.value == "") {
-				field.value = this.settings[fieldName];
-			}
-
-			this.settings[fieldName] = field.value;
-			
-			//websocketUtils.setSettings(this.type, this.inUUID, this.settings);
-			//console.log("Utils", websocketUtils, this.settings)
-		};
-	}
+	
 }

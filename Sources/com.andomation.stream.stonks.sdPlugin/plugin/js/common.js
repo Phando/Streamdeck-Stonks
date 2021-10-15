@@ -8,6 +8,7 @@
   no-var: 0,
   vars-on-top: 0
 */
+var globalSettings = {}
 
 // don't change this to let or const, because we rely on var's hoisting
 // eslint-disable-next-line no-use-before-define, no-var
@@ -32,12 +33,10 @@ WebSocket.prototype.sendJSON = function (jsn, log) {
     if (log) {
         console.log('SendJSON', this, jsn);
     }
-    // if (this.readyState) {
+    
     this.send(JSON.stringify(jsn));
-    // }
 };
 
-/* eslint no-extend-native: ["error", { "exceptions": ["String"] }] */
 String.prototype.lox = function () {
     var a = String(this);
     try {
@@ -162,16 +161,10 @@ const StreamDeck = (function () {
 
             const lang = Utils.getProp(inApplicationInfo,'application.language', false);
             if (lang) {
-                // loadLocalization(lang, inMessageType === 'registerPropertyInspector' ? '../' : './', function() {
-                //     events.emit('localizationLoaded', {language:lang});
-                // });
+                loadLocalization(lang, '../', function() { 
+                    events.emit('localizationLoaded', {language:lang});
+                });
             }
-
-            /** restrict the API to what's possible
-             * within Plugin or Property Inspector
-             * <unused for now>
-             */
-            // $SD.api = SDApi[inMessageType];
 
             if (websocket) {
                 websocket.close();
@@ -192,6 +185,7 @@ const StreamDeck = (function () {
                 $SD.applicationInfo = inApplicationInfo;
                 $SD.messageType = inMessageType;
                 $SD.connection = websocket;
+                $SD.api.getGlobalSettings();
 
                 instance.emit('connected', {
                     connection: websocket,
@@ -212,16 +206,19 @@ const StreamDeck = (function () {
                 var reason = WEBSOCKETERROR(evt);
                 console.warn('[STREAMDECK]***** WEBOCKET CLOSED **** reason:', reason);
             };
-
+            
             websocket.onmessage = function (evt) {
-                var jsonObj = Utils.parseJson(evt.data),
-                    m;
+                var jsonObj = Utils.parseJson(evt.data);
+                var m = inMessageType;
 
-                // console.log('[STREAMDECK] websocket.onmessage ... ', jsonObj.event, jsonObj);
+                console.log('[STREAMDECK] websocket.onmessage ... ', jsonObj.event, jsonObj);
 
                 if (!jsonObj.hasOwnProperty('action')) {
                     m = jsonObj.event;
-                    // console.log('%c%s', 'color: white; background: red; font-size: 12px;', '[common.js]onmessage:', m);
+                    if( m == 'didReceiveGlobalSettings') {
+                        globalSettings = jsonObj.payload.settings
+                    }
+                    //console.log('%c%s', 'color: white; background: red; font-size: 12px;', '[common.js]onmessage:', m);
                 } else {
                     switch (inMessageType) {
                     case 'registerPlugin':
@@ -260,6 +257,7 @@ const StreamDeck = (function () {
         getInstance: function () {
             if (!instance) {
                 instance = init();
+                instance.api = SDApi;
             }
             return instance;
         }

@@ -1,45 +1,16 @@
-
-
 let actions = [
   // new CoreActionPi(),
   new SimpleActionPI(),
   // new ComplexActionPi()
 ];
 
-/**
- * This example contains a working Property Inspector, which already communicates
- * with the corresponding plugin throug settings and/or direct messages.
- * If you want to use other control-types, we recommend copy/paste these from the
- * PISamples demo-library, which already contains quite some example DOM elements
- */
-
-/**
- * First we declare a global variable, which change all elements behaviour
- * globally. It installs the 'onchange' or 'oninput' event on the HTML controls and fiels.
- *
- * Change this, if you want interactive elements act on any modification (oninput),
- * or while their value changes 'onchange'.
- */
-
 var onchangeevt = "onchange"; // 'oninput';
-
-/**
- * cache the static SDPI-WRAPPER, which contains all your HTML elements.
- * Please make sure, you put all HTML-elemenets into this wrapper, so they
- * are drawn properly using the integrated CSS.
- */
-
 let sdpiWrapper = document.querySelector(".sdpi-wrapper");
-
-/**
- * Since the Property Inspector is instantiated every time you select a key
- * in Stream Deck software, we can savely cache our settings in a global variable.
- */
-
 let settings;
 
 $SD = StreamDeck.getInstance();
-$SD.api = SDApi;
+
+//------------------------------ Streamdeck Event Handlers -----------------------------------//
 
 /**
  * The 'connected' event is the first event sent to Property Inspector, after it's instance
@@ -49,49 +20,22 @@ $SD.api = SDApi;
  */
 
 $SD.on("connected", (jsn) => {
-  /**
-   * The passed 'applicationInfo' object contains various information about your
-   * computer, Stream Deck version and OS-settings (e.g. colors as set in your
-   * OSes display preferences.)
-   * We use this to inject some dynamic CSS values (saved in 'common_pi.js'), to allow
-   * drawing proper highlight-colors or progressbars.
-   */
   console.log("connected", jsn);
+  settings = Utils.getProp(jsn, "actionInfo.payload.settings", false);
+  
   const actionType = Utils.getProp(jsn, "actionInfo.action", "");
   actions.forEach((action) => {
+    $SD.on('didReceiveGlobalSettings', (jsonObj) => action.onReceiveGlobalSettings(jsonObj));
     if (action.type == actionType) {
       action.init(jsn);
     }
   });
-
-  //addDynamicStyles($SD.applicationInfo.colors, 'connectSocket');
-
-  /**
-   * Current settings are passed in the JSON node
-   * {actionInfo: {
-   *      payload: {
-   *          settings: {
-   *                  yoursetting: yourvalue,
-   *                  otherthings: othervalues
-   * ...
-   * To conveniently read those settings, we have a little utility to read
-   * arbitrary values from a JSON object, eg:
-   *
-   * const foundObject = Utils.getProp(JSON-OBJECT, 'path.to.target', defaultValueIfNotFound)
-   */
-
-  // Object.keys(actions).forEach((key) => {
-  //   if (actions[key].type == action) {
-  //     actions[key].init(inUUID, settings);
-  //   }
-  // });
-  
-  //settings = $SD.actionInfo.payload.settings
-  settings = Utils.getProp(jsn, "actionInfo.payload.settings", false);
-  if (settings) {
-    updateUI(settings);
-  }
 });
+
+//-----------------------------------------------------------------//
+
+// $SD.on('didReceiveGlobalSettings', (jsn) => {
+// });
 
 /**
  * The 'sendToPropertyInspector' event can be used to send messages directly from your plugin
@@ -100,6 +44,7 @@ $SD.on("connected", (jsn) => {
 
 $SD.on("sendToPropertyInspector", (jsn) => {
   const pl = jsn.payload;
+  console.log("Props", jsn)
   /**
    *  This is an example, how you could show an error to the user
    */
@@ -119,14 +64,12 @@ $SD.on("sendToPropertyInspector", (jsn) => {
      * e.g. update some elements in the Property Inspector's UI.
      *
      */
+    
   }
 });
 
 const updateUI = (pl) => {
-  console.log("Load Settings", pl)
-  
   Object.keys(pl).map((e) => {
-    console.log("Load Elm", pl[e])
     if (e && e != "") {
       const foundElement = document.querySelector(`#${e}`);
       console.log(`searching for: #${e}`, "found:", foundElement);
@@ -158,11 +101,6 @@ const updateUI = (pl) => {
  * Something in the PI changed:
  * either you clicked a button, dragged a slider or entered some text
  *
- * The 'piDataChanged' event is sent, if data-changes are detected.
- * The changed data are collected in a JSON structure
- *
- * It looks like this:
- *
  *  {
  *      checked: false
  *      group: false
@@ -174,22 +112,16 @@ const updateUI = (pl) => {
  *
  * If you set an 'id' to an input-element, this will get the 'key' of this object.
  * The input's value will get the value.
- * There are other fields (e.g.
+ * There are other fields
  *      - 'checked' if you clicked a checkbox
  *      - 'index', if you clicked an element within a group of other elements
  *      - 'selection', if the element allows multiple-selections
- * )
- *
- * Please note:
- * the template creates this object for the most common HTML input-controls.
- * This is a convenient way to start interacting with your plugin quickly.
- *
  */
 
 $SD.on("piDataChanged", (returnValue) => {
   console.log(
     "%c%s",
-    "color: white; background: blue}; font-size: 15px;",
+    "color: white; background: black}; font-size: 13px;",
     "piDataChanged"
   );
   console.log(returnValue);
@@ -214,30 +146,11 @@ $SD.on("piDataChanged", (returnValue) => {
       postMessage(window.xtWindow);
     }
   } else {
-    /* SAVE THE VALUE TO SETTINGS */
+    console.log("Change", returnValue, globalSettings, globalSettings.hasOwnProperty(returnValue.key))
     saveSettings(returnValue);
-
-    /* SEND THE VALUES TO PLUGIN */
     sendValueToPlugin(returnValue, "sdpi_collection");
   }
 });
-
-/**
- * Below are a bunch of helpers to make your DOM interactive
- * The will cover changes of the most common elements in your DOM
- * and send their value to the plugin on a change.
- * To accomplish this, the 'handleSdpiItemChange' method tries to find the
- * nearest element 'id' and the corresponding value of the element(along with
- * some other information you might need) . It then puts everything in a
- * 'sdpi_collection', where the 'id' will get the 'key' and the 'value' will get the 'value'.
- *
- * In the plugin you just need to listen for 'sdpi_collection' in the sent JSON.payload
- * and save the values you need in your settings (or StreamDeck-settings for persistence).
- *
- * In this template those key/value pairs are saved automatically persistently to StreamDeck.
- * Open the console in the remote debugger to inspect what's getting saved.
- *
- */
 
 function saveSettings(sdpi_collection) {
   if (typeof sdpi_collection !== "object") return;
@@ -245,9 +158,16 @@ function saveSettings(sdpi_collection) {
   if (sdpi_collection.hasOwnProperty("key") && sdpi_collection.key != "") {
     if (sdpi_collection.value && sdpi_collection.value !== undefined) {
       console.log(sdpi_collection.key, " => ", sdpi_collection.value);
-      settings[sdpi_collection.key] = sdpi_collection.value;
-      console.log("setSettings....", settings);
-      $SD.api.setSettings($SD.uuid, settings);
+      if( globalSettings.hasOwnProperty(sdpi_collection.key) ){
+        globalSettings[sdpi_collection.key] = sdpi_collection.value;
+        console.log('setGlobalSettings....', globalSettings);
+        $SD.api.setGlobalSettings($SD.uuid, globalSettings);
+      }
+      else {
+        settings[sdpi_collection.key] = sdpi_collection.value;
+        console.log("setSettings....", settings);
+        $SD.api.setSettings($SD.uuid, settings);
+      }
     }
   }
 }
@@ -387,11 +307,6 @@ function handleSdpiItemChange(e, idx) {
     return;
   }
 
-  /** SPANS are used inside a control as 'labels'
-   * If a SPAN element calls this function, it has a class of 'clickable' set and is thereby handled as
-   * clickable label.
-   */
-
   if (e.tagName === "SPAN") {
     const inp = e.parentNode.querySelector("input");
     var tmpValue;
@@ -473,7 +388,8 @@ function handleSdpiItemChange(e, idx) {
     key: e.id && e.id.charAt(0) !== "_" ? e.id : sdpiItem.id,
     value: isList
       ? e.textContent : e.hasAttribute("_value")
-      ? e.getAttribute("_value") : e.getAttribute("value"),
+      ? e.getAttribute("_value") : e.hasAttribute("value")
+      ? e.getAttribute("value") : e.value,
     group: sdpiItemGroup ? sdpiItemGroup.id : false,
     index: idx,
     selection: selectedElements,
@@ -490,7 +406,6 @@ function handleSdpiItemChange(e, idx) {
  * variable 'localizedStrings' (in 'common.js')
  */
 
-// eslint-disable-next-line no-unused-vars
 function localizeUI() {
   const el = document.querySelector(".sdpi-wrapper") || document;
   let t;
@@ -515,23 +430,26 @@ function localizeUI() {
   });
 }
 
-/**
- *
- * Some more (de-) initialization helpers
- *
- */
+//------------------------------ DOM Helpers -----------------------------------//
 
 document.addEventListener("DOMContentLoaded", function () {
   document.body.classList.add(
     navigator.userAgent.includes("Mac") ? "mac" : "win"
   );
-  prepareDOMElements();
+  
+  if(document.getElementById('contentLoaded') != null){
+    updateUI(settings);
+    prepareDOMElements();
+  }
+  else {
+    console.log("Skipping prepareDOMElements, contentLoaded (html element) not found")
+  }
+
   $SD.on("localizationLoaded", (language) => {
     localizeUI();
   });
 });
 
-/** the beforeunload event is fired, right before the PI will remove all nodes */
 window.addEventListener("beforeunload", function (e) {
   e.preventDefault();
   sendValueToPlugin("propertyInspectorWillDisappear", "property_inspector");
