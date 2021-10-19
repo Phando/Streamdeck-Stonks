@@ -5,8 +5,6 @@ class ActionPI {
 	}
 
 	init(jsn) {
-		console.log("SD", $SD, globalSettings)
-		this.uuid = $SD.uuid
 		this.context = $SD.actionInfo.context
 		this.settings = $SD.actionInfo.payload.settings
 	}

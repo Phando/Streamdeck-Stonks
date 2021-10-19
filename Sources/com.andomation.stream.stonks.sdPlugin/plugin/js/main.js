@@ -24,6 +24,8 @@ $SD.on('didReceiveGlobalSettings', (jsn) => {
     globalSettings.interval = 60
     $SD.api.setGlobalSettings($SD.uuid, globalSettings)
   }
+
+  dataprovider.startPolling()
 });
 
 /**

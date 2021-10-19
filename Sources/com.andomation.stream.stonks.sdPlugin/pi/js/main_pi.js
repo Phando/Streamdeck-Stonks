@@ -36,8 +36,8 @@ $SD.on("connected", (jsn) => {
 
 //-----------------------------------------------------------------//
 
-$SD.on('didReceiveGlobalSettings', (jsn) => {
-});
+// $SD.on('didReceiveGlobalSettings', (jsn) => {
+// });
 
 //-----------------------------------------------------------------//
 
@@ -68,7 +68,6 @@ $SD.on("sendToPropertyInspector", (jsn) => {
      * e.g. update some elements in the Property Inspector's UI.
      *
      */
-    
   }
 });
 
@@ -101,59 +100,10 @@ $SD.on("piDataChanged", (returnValue) => {
   );
   console.log(returnValue);
 
-  if (returnValue.key === "clickme") {
-    postMessage = (w) => {
-      w.postMessage(
-        Object.assign({}, $SD.applicationInfo.application, {
-          action: $SD.actionInfo.action,
-        }),
-        "*"
-      );
-    };
-
-    if (!window.xtWindow || window.xtWindow.closed) {
-      window.xtWindow = window.open(
-        "../externalWindow.html",
-        "External Window"
-      );
-      setTimeout(() => postMessage(window.xtWindow), 200);
-    } else {
-      postMessage(window.xtWindow);
-    }
-  } else {
-    saveValue(returnValue);
-    sendValueToPlugin(returnValue, "sdpi_collection");
-  }
+  // NOTE: If opening a window do it here
+  saveValue(returnValue);
+  sendValueToPlugin(returnValue, "sdpi_collection");
 });
-
-function saveValue(sdpi_collection) {
-  if (typeof sdpi_collection !== "object") return;
-
-  if (sdpi_collection.hasOwnProperty("key") && sdpi_collection.key != "") {
-    if (sdpi_collection.value && sdpi_collection.value !== undefined) {
-      console.log(sdpi_collection.key, " => ", sdpi_collection.value);
-      if( globalSettings.hasOwnProperty(sdpi_collection.key) ){
-        globalSettings[sdpi_collection.key] = sdpi_collection.value;
-        saveSettings(globalSettings)
-      }
-      else {
-        settings[sdpi_collection.key] = sdpi_collection.value;
-        saveSettings(settings)
-      }
-    }
-  }
-}
-
-function saveSettings(data){
-  if( data == globalSettings) {
-    console.log('setGlobalSettings....', globalSettings);
-    $SD.api.setGlobalSettings($SD.uuid, data);
-  }
-  else {
-    console.log("setSettings....", settings);
-    $SD.api.setSettings($SD.uuid, data);
-  }
-}
 
 /**
  * 'sendValueToPlugin' is a wrapper to send some values to the plugin
@@ -245,10 +195,10 @@ function handleSdpiItemChange(e, idx) {
     if(!e.checked){
       delete settings[e.id];
       saveSettings(settings);
-      $SD.api.getSettings($SD.uuid, settings)
+      //$SD.api.getSettings($SD.uuid, settings)
       return
     }
-    
+
     e.setAttribute("_value", e.value);
   }
 

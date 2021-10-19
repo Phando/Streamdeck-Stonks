@@ -30,18 +30,20 @@ class Dataprovider {
   symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields=history,symbol,regularMarketDayRange,regularMarketVolume,regularMarketPrice,marketState,preMarketPrice,postMarketPrice&symbols=";
     
   charts = {};
-  symbols = {"AMC":{}, "GME":{} };
-  interval = 60;
+  symbols = {};
   refreshTimer = null;
   
   constructor(){
-    this.startPolling()
+  }
+
+  dataForSymbol(symbol){
+    return this.symbols[symbol]
   }
 
   startPolling() {
     console.log('Polling - Start');
     this.fetchData();
-    this.refreshTimer = setInterval(this.fetchData.bind(this), this.interval * 1000);
+    this.refreshTimer = setInterval(this.fetchData.bind(this), globalSettings.interval * 1000);
   }
 
   // Public function to stop polling
@@ -52,15 +54,22 @@ class Dataprovider {
   }
 
   fetchData(){
-    console.log('Fetch Data')
-    
-    if(Object.keys(this.symbols).length > 0){
-      this.requestData(this.symbolURL + Object.keys(this.symbols).join(), this.handleSymbolResponse.bind(this))
-    }
+    console.log('Fetch Data', contexts)
+    var url = this.symbolURL
 
-    if(Object.keys(this.charts).length > 0){
-      this.fetchCharts()
+    Object.values(contexts).forEach(item => {
+      if( item.settings.hasOwnProperty('symbol') == true){
+        url += "," + item.settings.symbol
+      }
+    })
+    
+    if(url.length != this.symbolURL.length) {
+      this.requestData(url, this.handleSymbolResponse.bind(this))
     }
+    
+    // if(Object.keys(this.charts).length > 0){
+    //   this.fetchCharts()
+    // }
   }
 
   
@@ -91,8 +100,6 @@ class Dataprovider {
   }
 
   handleSymbolResponse(response){
-    //console.log("SymbolResponse", response)
-    
     response.quoteResponse.result.forEach(function(item){
       this.symbols[item.symbol] = item
     }.bind(this))
@@ -128,36 +135,6 @@ class Dataprovider {
       });
   }
 
-  fetchSymbols(){
-    console.log('Fetch Symbols', Object.keys(this.symbols).join() )
-    this.requestData('https://query1.finance.yahoo.com/v7/finance/chart/GME?range=1d&interval=1m&interval=1d&indicators=quote&includeTimestamps=true', this.handleChartResponse)
-    return
-    let url = this.symbolURL + Object.keys(this.symbols).join()
-    console.log(url)
-    const fetchPromise = fetch(url);
-    fetchPromise
-      .then( response => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error({error:{message:"Request Error"}});
-        }
-      })
-      .then( json => {
-        var payload = json.quoteResponse.result;
-        if (payload.length > 0) return payload;
-        else {
-          throw new Error({error:{messsage:"Symbol not found"}});
-        }
-      })
-      .then( response => this.handleSymbolResponse(response))
-      .catch( error => {
-        console.log(error)
-        this.handleError(error)
-      });
-  }
-
-  
   //fetchData(url, )
   // handleError(response) {
   //   console.log('Error', response)

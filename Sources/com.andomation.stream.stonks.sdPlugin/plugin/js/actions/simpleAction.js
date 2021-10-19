@@ -9,4 +9,9 @@ class SimpleAction extends Action {
     super.onWillAppear(jsn);
   }
 
+  onSendToPlugin(jsn) {
+    //if(this.settings.symbol)
+    //saveSettings()
+  }
+
 }

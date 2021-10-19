@@ -1,27 +1,15 @@
-/* global $SD, $localizedStrings */
-/* exported, $localizedStrings */
-/* eslint no-undef: "error",
-  curly: 0,
-  no-caller: 0,
-  wrap-iife: 0,
-  one-var: 0,
-  no-var: 0,
-  vars-on-top: 0
-*/
-
 let actions = []
 let contexts = {}
 let globalSettings = {}
 
 function Context(jsn){
-    this.action = jsn.action
-    this.context = jsn.context
-    this.coordinates = jsn.payload.coordinates
-    this.settings = jsn.payload.settings
+    console.log("Context", jsn)
+    this.action =       Utils.getProp(jsn, 'action', '')
+    this.context =      Utils.getProp(jsn, 'context', '')
+    this.coordinates =  Utils.getProp(jsn, 'payload.coordinates', {})
+    this.settings =     Utils.getProp(jsn, 'payload.settings', {})
 }
 
-// don't change this to let or const, because we rely on var's hoisting
-// eslint-disable-next-line no-use-before-define, no-var
 var $localizedStrings = $localizedStrings || {},
     REMOTESETTINGS = REMOTESETTINGS || {},
     DestinationEnum = Object.freeze({
@@ -29,7 +17,7 @@ var $localizedStrings = $localizedStrings || {},
         HARDWARE_ONLY: 1,
         SOFTWARE_ONLY: 2
     }),
-    // eslint-disable-next-line no-unused-vars
+    
     isQT = navigator.appVersion.includes('QtWebEngine'),
     debug = debug || false,
     debugLog = function () {},
@@ -63,7 +51,6 @@ String.prototype.sprintf = function (inArr) {
     });
 };
 
-// eslint-disable-next-line no-unused-vars
 const sprintf = (s, ...args) => {
     let i = 0;
     return s.replace(/%s/g, function () {
@@ -92,7 +79,6 @@ const loadLocalization = (lang, pathPrefix, cb) => {
  */
 
 
-// eslint-disable-next-line no-unused-vars
 function connectElgatoStreamDeckSocket (
     inPort,
     inUUID,
@@ -122,12 +108,85 @@ function connectSocket (
     );
 }
 
+function initializeControlCenterClient () {
+    const settings = Object.assign(REMOTESETTINGS || {}, { debug: false });
+    var $CC = new ControlCenterClient(settings);
+    window['$CC'] = $CC;
+    return $CC;
+}
+
+function saveValue(sdpi_collection) {
+    //console.log("saveValue1", $SD.uuid, $SD.actionInfo.context)
+    if (   typeof sdpi_collection !== "object"
+        || !sdpi_collection.hasOwnProperty("key") 
+        || sdpi_collection.key == ""
+        || !sdpi_collection.value 
+        || sdpi_collection.value == undefined) { return }
+    
+        //console.log("saveValue2", $SD.uuid, $SD.actionInfo.context)
+    console.log("Setting:", sdpi_collection.key, " => ", sdpi_collection.value);
+    if( globalSettings.hasOwnProperty(sdpi_collection.key) ){
+        globalSettings[sdpi_collection.key] = sdpi_collection.value;
+        saveSettings(globalSettings)
+    }
+    else {
+        settings[sdpi_collection.key] = sdpi_collection.value;
+        saveSettings(settings)
+    }
+}
+
+function saveSettings(data){
+    if( data == globalSettings) {
+        console.log('setGlobalSettings....', globalSettings);
+        $SD.api.setGlobalSettings($SD.uuid, data);
+    }
+    else {
+        console.log("setSettings....", settings);
+        $SD.api.setSettings($SD.uuid, data);
+    }
+}
+
+/** ELGEvents
+ * Publish/Subscribe pattern to quickly signal events to
+ * the plugin, property inspector and data.
+ */
+
+ const ELGEvents = {
+    eventEmitter: function (name, fn) {
+        const eventList = new Map();
+
+        const on = (name, fn) => {
+            if (!eventList.has(name)) eventList.set(name, ELGEvents.pubSub());
+            return eventList.get(name).sub(fn);
+        };
+
+        const has = name => eventList.has(name);
+        const emit = (name, data) => eventList.has(name) && eventList.get(name).pub(data);
+
+        return Object.freeze({ on, has, emit, eventList });
+    },
+
+    pubSub: function pubSub () {
+        const subscribers = new Set();
+
+        const sub = fn => {
+            subscribers.add(fn);
+            return () => {
+                subscribers.delete(fn);
+            };
+        };
+
+        const pub = data => subscribers.forEach(fn => fn(data));
+        return Object.freeze({ pub, sub });
+    }
+};
+
 /**
  * StreamDeck object containing all required code to establish
  * communication with SD-Software and the Property Inspector
  */
 
-const StreamDeck = (function () {
+ const StreamDeck = (function () {
     // Hello it's me
     var instance;
     /*
@@ -232,14 +291,18 @@ const StreamDeck = (function () {
                 } else {
                     switch (inMessageType) {
                     case 'registerPlugin':
-                        m = jsonObj['action'] + '.' + jsonObj['event'];
+                        m = jsonObj.action + '.' + jsonObj.event;
                         break;
                     case 'registerPropertyInspector':
                         m = 'sendToPropertyInspector';
                         break;
                     default:
-                        console.log('%c%s', 'color: white; background: red; font-size: 12px;', '[STREAMDECK] websocket.onmessage +++++++++  PROBLEM ++++++++');
+                        console.log('%c%s', 'color: white; background: red; font-size: 12px;', '[STREAMDECK] websocket.onmessage +++++++++  INFO ++++++++');
                         console.warn('UNREGISTERED MESSAGETYPE:', inMessageType);
+                    }
+                    
+                    if(jsonObj.hasOwnProperty('payload') && jsonObj.payload.hasOwnProperty('settings')){
+                        contexts[jsonObj.context] = new Context(jsonObj)
                     }
                 }
 
@@ -274,51 +337,6 @@ const StreamDeck = (function () {
     };
 })();
 
-// eslint-disable-next-line no-unused-vars
-function initializeControlCenterClient () {
-    const settings = Object.assign(REMOTESETTINGS || {}, { debug: false });
-    var $CC = new ControlCenterClient(settings);
-    window['$CC'] = $CC;
-    return $CC;
-}
-
-/** ELGEvents
- * Publish/Subscribe pattern to quickly signal events to
- * the plugin, property inspector and data.
- */
-
-const ELGEvents = {
-    eventEmitter: function (name, fn) {
-        const eventList = new Map();
-
-        const on = (name, fn) => {
-            if (!eventList.has(name)) eventList.set(name, ELGEvents.pubSub());
-
-            return eventList.get(name).sub(fn);
-        };
-
-        const has = name => eventList.has(name);
-
-        const emit = (name, data) => eventList.has(name) && eventList.get(name).pub(data);
-
-        return Object.freeze({ on, has, emit, eventList });
-    },
-
-    pubSub: function pubSub () {
-        const subscribers = new Set();
-
-        const sub = fn => {
-            subscribers.add(fn);
-            return () => {
-                subscribers.delete(fn);
-            };
-        };
-
-        const pub = data => subscribers.forEach(fn => fn(data));
-        return Object.freeze({ pub, sub });
-    }
-};
-
 /** SDApi
  * This ist the main API to communicate between plugin, property inspector and
  * application host.
@@ -348,7 +366,7 @@ const ELGEvents = {
  * keyUp
  */
 
-const SDApi = {
+ const SDApi = {
     send: function (context, fn, payload, debug) {
         /** Combine the passed JSON with the name of the event and it's context
          * If the payload contains 'event' or 'context' keys, it will overwrite existing 'event' or 'context'.
@@ -469,7 +487,7 @@ const SDApi = {
 
     common: {
 
-        getSettings: function (context, payload) {
+        getSettings: function (context) {
             const uuid = context ? context : $SD.uuid;
             SDApi.send(uuid, 'getSettings', {});
         },
@@ -566,7 +584,7 @@ const SDApi = {
  * Utility to log the JSON structure of an incoming object
  */
 
-const SDDebug = {
+ const SDDebug = {
     logger: function (name, fn) {
         const logEvent = jsn => {
             console.log('____SDDebug.logger.logEvent');
@@ -585,7 +603,6 @@ const SDDebug = {
         return { logEvent, logSomething };
     }
 };
-
 
 function WEBSOCKETERROR (evt) {
     // Websocket is closed

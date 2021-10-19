@@ -1,81 +1,75 @@
 class Action {
-  type = "com.andomation.stream.stonks";
-  symbol = "";
-  settings = null;
+    uuid = 0
+    type = "com.andomation.stream.stonks";
+    symbol = "";
 
-  constructor() {
+    constructor() {
     this.canvas = document.createElement("canvas")
     this.canvas.width = 144
     this.canvas.height = 144
     this.drawingCtx = this.canvas.getContext("2d");
-  }
+    }
 
-  updateSettings(jsn){
-    console.log("Settings", this.settings)
-    //this.setTitle = this.settings.title;
-    $SD.api.setSettings($SD.uuid, this.settings);
-  }
-  
-  onDidReceiveSettings(jsn) {
+    get settings(){
+        return contexts[this.uuid]
+    }
+
+    updateSettings(jsn){
+        this.uuid = jsn.context
+        console.log("Action Settings", this.settings)
+        $SD.api.setTitle(this.context, this.settings.symbol)
+        //this.setTitle = this.settings.title;
+        //$SD.api.setSettings($SD.uuid, this.settings);
+    }
+
+    onDidReceiveSettings(jsn) {
+        this.updateSettings(jsn)
+        // Populate or initialize settings
+        //this.settings = Utils.getProp(jsn, 'payload.settings', {});
+        //console.log("GET SETTINGS", jsn)
+        
+    }
+
+    onDidReceiveGlobalSettings(jsn) {
     // Populate or initialize settings
-    this.settings = Utils.getProp(jsn, 'payload.settings', {});
-    this.updateSettings(jsn)
-  }
+    }
 
-  onDidReceiveGlobalSettings(jsn) {
-    // Populate or initialize settings
-  }
+    onWillAppear(jsn) {
+        console.log("Will Appear", jsn)
+        this.onDidReceiveSettings(jsn)
+    }
 
-  onWillAppear(jsn) {
-    // You can cache your settings in 'onWillAppear'
-    // $SD.api.getSettings(jsn.context);
-    //this.deckCtx = jsn.context
-    this.onDidReceiveSettings(jsn)
-    contexts[jsn.context] = new Context(jsn)
-    console.log("Will Appear", jsn)
-  }
+    onKeyUp(jsn) {
+    }
 
-  onKeyUp(jsn) {
-      this.doSomeThing(jsn, 'onKeyUp', 'green');
-  }
-
-  onSendToPlugin(jsn) {
-      console.log("We just got", jsn)
-      const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
-      if (sdpi_collection.value && sdpi_collection.value !== undefined) {
+    onSendToPlugin(jsn) {
+        console.log("We just got", jsn)
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        if (sdpi_collection.value && sdpi_collection.value !== undefined) {
         console.log("onSendToPlugin do something!")  
-        //this.doSomeThing({ [sdpi_collection.key] : sdpi_collection.value }, 'onSendToPlugin', 'fuchsia');            
-      }
-  }
+        }
+    }
 
-  saveSettings(jsn, sdpi_collection) {
-      console.log('Action saveSettings:', jsn);
-      if (sdpi_collection.hasOwnProperty('key') && sdpi_collection.key != '') {
-          if (sdpi_collection.value && sdpi_collection.value !== undefined) {
-              if( globalSettings.hasOwnProperty(sdpi_collection.key) ){
-                globalSettings[sdpi_collection.key] = sdpi_collection.value;
-                $SD.api.setGlobalSettings(jsn.context, globalSettings);
-                console.log('setGlobalSettings....', globalSettings);
-              }
-              else {
-                this.settings[sdpi_collection.key] = sdpi_collection.value;
-                $SD.api.setSettings(jsn.context, this.settings);
-                console.log('setSettings....', this.settings);
-              }
-          }
-      }
-  }
+    // handleError(title, message) {
+    //   console.log('Error', response)
 
-  setTitle(jsn) {
-      if (this.settings && this.settings.hasOwnProperty('mynameinput')) {
-          console.log("watch the key on your StreamDeck - it got a new title...", this.settings.mynameinput);
-          $SD.api.setTitle(jsn.context, this.settings.mynameinput);
-      }
-  }
+    //   this.drawingCtx.fillStyle = '#1d1e1f'
+    //   this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-  doSomeThing(inJsonData, caller, tagColor) {
-      console.log('%c%s', `color: white; background: ${tagColor || 'grey'}; font-size: 15px;`, `[app.js]doSomeThing from: ${caller}`);
-      // console.log(inJsonData);
-  }
+    //   this.drawingCtx.fillStyle =  '#FF0000'
+    //   this.drawingCtx.font = 600 + " " + 28 + "px Arial";
+    //   this.drawingCtx.textAlign = "right"
+    //   this.drawingCtx.textBaseline = "top"
+    //   this.drawingCtx.fillText(title, 138, 6);
+
+    //   // Render Price
+    //   this.drawingCtx.fillStyle = '#d8d8d8'
+    //   this.setFontFor(message, 400, this.canvas.width - 20)
+    //   this.drawingCtx.textAlign = "right"
+    //   this.drawingCtx.textBaseline = "bottom"
+    //   this.drawingCtx.fillText(message, 140, 70);
+
+    //   //$SD.api.setImage(this.deckCtx, this.canvas.toDataURL());
+    // }
 
 }
