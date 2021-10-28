@@ -1,17 +1,6 @@
 {
   "Actions": [
     {
-      "Icon": "images/actions/action", 
-      "Name": "Stonks", 
-      "States": [
-        {
-          "Image": "images/actions/action"
-        }
-      ], 
-      "Tooltip": "Keep track of ticker and crypto prices.", 
-      "UUID": "com.andomation.stream.stonks.core"
-    },
-    {
       "Icon": "images/actions/simpleAction", 
       "Name": "Stonks - Simple",
       "States": [
@@ -23,7 +12,7 @@
       "UUID": "com.andomation.stream.stonks.simple"
     },
     {
-      "Icon": "images/actions/simpleAction", 
+      "Icon": "images/actions/complexAction", 
       "Name": "Stonks - Complex",
       "States": [
         {
@@ -42,9 +31,9 @@
   "PropertyInspectorPath": "pi/index_pi.html",
   "Description": "Stock and Ctypto Ticker", 
   "Name": "Stonks", 
-  "Icon": "action/images/action", 
+  "Icon": "images/actions/action", 
   "URL": "https://github.com/Phando/Streamdeck-Stonks", 
-  "Version": "1.0.4",
+  "Version": "1.0.5",
   "OS": [
     {
         "Platform": "mac", 

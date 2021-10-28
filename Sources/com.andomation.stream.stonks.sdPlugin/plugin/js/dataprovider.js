@@ -1,10 +1,10 @@
 
-const updatePlayPauseActions = (player) => {
-  contexts.playPauseAction.forEach((context) => {
-    player.playbackState &&
-      websocketUtils.setState(context, PlaybackState[player.playbackState]);
-  });
-};
+// const updatePlayPauseActions = (player) => {
+//   contexts.playPauseAction.forEach((context) => {
+//     player.playbackState &&
+//       websocketUtils.setState(context, PlaybackState[player.playbackState]);
+//   });
+// };
 
 // const updateCurrentPlaying = (player) => {
 //   contexts.nowPlayingAction.forEach((context) => {
@@ -30,20 +30,19 @@ class Dataprovider {
   symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields=history,symbol,regularMarketDayRange,regularMarketVolume,regularMarketPrice,marketState,preMarketPrice,postMarketPrice&symbols=";
     
   charts = {};
-  symbols = {};
   refreshTimer = null;
   
   constructor(){
   }
 
-  dataForSymbol(symbol){
-    return this.symbols[symbol]
+  dataForChart(symbol){
+    return this.charts[symbol]
   }
 
   startPolling() {
     console.log('Polling - Start');
-    this.fetchData();
-    this.refreshTimer = setInterval(this.fetchData.bind(this), globalSettings.interval * 1000);
+    this.fetchSymbolData();
+    this.refreshTimer = setInterval(this.fetchSymbolData.bind(this), globalSettings.interval * 1000);
   }
 
   // Public function to stop polling
@@ -53,27 +52,46 @@ class Dataprovider {
     this.refreshTimer = null;
   }
 
-  fetchData(){
-    console.log('Fetch Data', contexts)
+  fetchSymbolData(){
     var url = this.symbolURL
 
     Object.values(contexts).forEach(item => {
-      if( item.settings.hasOwnProperty('symbol') == true){
-        url += "," + item.settings.symbol
-      }
+      let symbol = Utils.getProp(item, "settings.symbol", false);
+      
+      if(!symbol) return
+      url += "," + item.settings.symbol
     })
     
+    // Double check that we have symbols added to the URL
     if(url.length != this.symbolURL.length) {
-      this.requestData(url, this.handleSymbolResponse.bind(this))
+      this.requestData(url, this.handleSymbolResponse.bind(this), this.handleSymbolError.bind(this))
     }
-    
-    // if(Object.keys(this.charts).length > 0){
-    //   this.fetchCharts()
-    // }
   }
 
-  
-  fetchCharts(){
+  handleSymbolError(error){
+    // Dispatch the error
+    Object.values(contexts).forEach(item => {
+      item.payload = error
+      $SD.emit(item.action + '.didReceiveSymbolError', item)
+    })
+  }
+
+  handleSymbolResponse(response){
+    var symbols = {}
+    
+    response.quoteResponse.result.forEach(function(item){
+      symbols[item.symbol] = item;
+    })
+    
+    Object.values(contexts).forEach(item => {
+      let symbol = Utils.getProp(item, "settings.symbol", false);
+      
+      if(!symbol) return
+      $SD.emit(item.action + '.didReceiveSymbolData', {context:item.context, payload:symbols[symbol]})
+    })
+  }
+
+  fetchChartData(){
     console.log('Fetch Charts')
     ranges = ["1d","5d","1mo","3mo","6mo","1y","2y","5y","10y","ytd","max"]
     
@@ -99,19 +117,15 @@ class Dataprovider {
     // https://query1.finance.yahoo.com/v7/finance/chart/GME?range=1d&interval=5m&indicators=quote&includeTimestamps=true
   }
 
-  handleSymbolResponse(response){
-    response.quoteResponse.result.forEach(function(item){
-      this.symbols[item.symbol] = item
-    }.bind(this))
-    
-    console.log(this.symbols)
+  handleChartResponse(response){
+    console.log('handleChartData', response)
   }
 
   handleChartResponse(response){
     console.log('handleChartData', response)
   }
 
-  requestData(url, callback) {
+  requestData(url, callback, errorCallback) {
     const fetchPromise = fetch(url);
     fetchPromise
       .then( response => {
@@ -122,7 +136,7 @@ class Dataprovider {
         }
       })
       .then( json => {
-        console.log("RequestData (response)", json)
+        console.log("requestData (response)", json)
         if (Object.keys(json).length > 0) return json;
         else {
           throw new Error({error:{messsage:"Data not found"}});
@@ -131,75 +145,7 @@ class Dataprovider {
       .then( response => callback(response))
       .catch( error => {
         console.log(error)
-        this.handleError(error)
+        errorCallback(error)
       });
   }
-
-  //fetchData(url, )
-  // handleError(response) {
-  //   console.log('Error', response)
-    
-  //   this.drawingCtx.fillStyle = '#1d1e1f'
-  //   this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-  //   this.drawingCtx.fillStyle =  '#FF0000'
-  //   this.drawingCtx.font = 600 + " " + 28 + "px Arial";
-  //   this.drawingCtx.textAlign = "right"
-  //   this.drawingCtx.textBaseline = "top"
-  //   this.drawingCtx.fillText(this.settings.symbol, 138, 6);
-    
-  //   // Render Price
-  //   this.drawingCtx.fillStyle = '#d8d8d8'
-  //   this.setFontFor('Not Found', 400, this.canvas.width - 20)
-  //   this.drawingCtx.textAlign = "right"
-  //   this.drawingCtx.textBaseline = "bottom"
-  //   this.drawingCtx.fillText('Not Found', 140, 70);
-    
-  //   //$SD.api.setImage(this.deckCtx, this.canvas.toDataURL());
-  // }
-  
-  // handleResponse(response) {
-  //   console.log("Response", response)
-  //   var data = {}
-
-  //   data.open = true;
-  //   data.symbol = response.symbol;
-  //   data.price = response.regularMarketPrice + 0.0;
-  //   data.volume = this.abbreviateNumber(response.regularMarketVolume);
-  //   data.foreground = this.settings.foreground;
-  //   data.background = this.settings.background;
-  //   this.action = this.settings.action;
-  //   this.actionMode = this.settings.action1mode;
-
-  //   // Parse Range
-  //   var range = response.regularMarketDayRange.split(" - ");
-  //   data.low = range[0];
-  //   data.high = range[1];
-
-  //   // Factor after market pricing
-  //   if (response.marketState != "REGULAR") {
-  //       data.open = false;
-  //       data.price = response.postMarketPrice || data.price;
-  //       data.low = data.price < data.low ? data.price : data.low;
-  //       data.high = data.price > data.high ? data.price : data.high;
-  //   }
-
-  //   // Check upper limit
-  //   if (String(this.settings.upperlimit).length > 0 && data.price >= this.settings.upperlimit) {
-  //       data.foreground = this.settings.upperlimitforeground;
-  //       data.background = this.settings.upperlimitbackground;
-  //       this.action = this.settings.upperlimitaction || this.settings.action;
-  //       this.actionMode = this.settings.upperlimitaction ? this.settings.action2mode : this.settings.action1mode;
-  //   }
-
-  //   // Check lower limit
-  //   if (String(this.settings.lowerlimit).length > 0 && data.price <= this.settings.lowerlimit) {
-  //       data.foreground = this.settings.lowerlimitforeground;
-  //       data.background = this.settings.lowerlimitbackground;
-  //       this.action = this.settings.lowerlimitaction || this.settings.action;
-  //       this.actionMode = this.settings.lowerlimitaction ? this.settings.action3mode : this.settings.action1mode;
-  //   }
-
-  //   this.updateDisplay(data); 
-  // }
 }

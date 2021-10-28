@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.5 (10/28/2021) -----
+
+#### Enhancements:
+- Total Rewrite
+- Batched quote requests - less traffic and faster polling
+- Support for multiple actions
+
+#### Bug Fixes:
+
+
 ## v1.0.4 (10/03/2021) -----
 
 #### Enhancements:

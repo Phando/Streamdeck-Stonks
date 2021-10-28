@@ -3,7 +3,7 @@ let sdpiWrapper = document.querySelector(".sdpi-wrapper");
 let settings;
 
 actions.push(new SimpleActionPI())
-//actions.push(new ComplexActionPi())
+//actions.push(new ComplexActionPI())
 //actions.push(new CoreActionPi())
 
 $SD = StreamDeck.getInstance();

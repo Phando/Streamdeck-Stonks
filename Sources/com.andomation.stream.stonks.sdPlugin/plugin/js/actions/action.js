@@ -1,37 +1,40 @@
 class Action {
     uuid = 0
     type = "com.andomation.stream.stonks";
-    symbol = "";
 
     constructor() {
-    this.canvas = document.createElement("canvas")
-    this.canvas.width = 144
-    this.canvas.height = 144
-    this.drawingCtx = this.canvas.getContext("2d");
+    }
+
+    get context(){    
+        return contexts[this.uuid]
     }
 
     get settings(){
-        return contexts[this.uuid]
+        return this.context.settings
+    }
+
+    set settings(data){
+        this.context.settings = data
     }
 
     updateSettings(jsn){
         this.uuid = jsn.context
-        console.log("Action Settings", this.settings)
-        $SD.api.setTitle(this.context, this.settings.symbol)
-        //this.setTitle = this.settings.title;
-        //$SD.api.setSettings($SD.uuid, this.settings);
+        console.log("Action - updateSettings", jsn, this.settings)
+        this.settings = Utils.getProp(jsn, 'payload.settings', {})
+    }
+
+    onConnected(jsn) {
+        $SD.on(this.type + '.willAppear', (jsonObj) => this.onWillAppear(jsonObj));
+        $SD.on(this.type + '.didReceiveSettings', (jsonObj) => this.onDidReceiveSettings(jsonObj));
+        $SD.on(this.type + '.keyUp', (jsonObj) => this.onKeyUp(jsonObj));
+        $SD.on(this.type + '.sendToPlugin', (jsonObj) => this.onSendToPlugin(jsonObj));
+        $SD.on(this.type + '.propertyInspectorDidAppear', (jsonObj) => console.log("propertyInspectorDidAppear"));
+        $SD.on(this.type + '.propertyInspectorDidDisappear', (jsonObj) => console.log("propertyInspectorDidDisappear"));
     }
 
     onDidReceiveSettings(jsn) {
         this.updateSettings(jsn)
-        // Populate or initialize settings
-        //this.settings = Utils.getProp(jsn, 'payload.settings', {});
-        //console.log("GET SETTINGS", jsn)
-        
-    }
-
-    onDidReceiveGlobalSettings(jsn) {
-    // Populate or initialize settings
+        console.log("Action - onDidReceiveSettings", jsn, this.settings)
     }
 
     onWillAppear(jsn) {
@@ -43,33 +46,40 @@ class Action {
     }
 
     onSendToPlugin(jsn) {
-        console.log("We just got", jsn)
+        console.log("Action - onSendToPlugin: ", jsn)
         const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        
         if (sdpi_collection.value && sdpi_collection.value !== undefined) {
-        console.log("onSendToPlugin do something!")  
+            this.settings[sdpi_collection.key] = sdpi_collection.value;
+            $SD.api.setSettings(this.uuid, this.settings); 
         }
     }
 
-    // handleError(title, message) {
-    //   console.log('Error', response)
+    updateDisplay(data){
+        this.canvas = document.createElement("canvas")
+        this.canvas.width = 144
+        this.canvas.height = 144
+        this.drawingCtx = this.canvas.getContext("2d");
+    }
 
-    //   this.drawingCtx.fillStyle = '#1d1e1f'
-    //   this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    //   this.drawingCtx.fillStyle =  '#FF0000'
-    //   this.drawingCtx.font = 600 + " " + 28 + "px Arial";
-    //   this.drawingCtx.textAlign = "right"
-    //   this.drawingCtx.textBaseline = "top"
-    //   this.drawingCtx.fillText(title, 138, 6);
-
-    //   // Render Price
-    //   this.drawingCtx.fillStyle = '#d8d8d8'
-    //   this.setFontFor(message, 400, this.canvas.width - 20)
-    //   this.drawingCtx.textAlign = "right"
-    //   this.drawingCtx.textBaseline = "bottom"
-    //   this.drawingCtx.fillText(message, 140, 70);
-
-    //   //$SD.api.setImage(this.deckCtx, this.canvas.toDataURL());
-    // }
+    setFontFor = function(text, weight, maxWidth) {
+        return this.calculateFont(text, weight, 4, 40, maxWidth);
+    };
+    
+    calculateFont = function(text, weight, min, max, desiredWidth) {
+        if (max - min < 1) {
+            this.drawingCtx.font = weight + " " + min + "px Arial";
+            return
+        }
+    
+        var test = min + (max - min) / 2; //Find half interval
+        this.drawingCtx.font = weight + " " + test + "px Arial";
+        
+        if( this.drawingCtx.measureText(text).width > desiredWidth) {
+            return this.calculateFont(text, weight, min, test, desiredWidth);
+        }   
+        
+        return this.calculateFont(text, weight, test, max, desiredWidth);
+    };
 
 }

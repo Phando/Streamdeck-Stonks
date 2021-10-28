@@ -3,7 +3,6 @@ let contexts = {}
 let globalSettings = {}
 
 function Context(jsn){
-    console.log("Context", jsn)
     this.action =       Utils.getProp(jsn, 'action', '')
     this.context =      Utils.getProp(jsn, 'context', '')
     this.coordinates =  Utils.getProp(jsn, 'payload.coordinates', {})
@@ -302,7 +301,11 @@ function saveSettings(data){
                     }
                     
                     if(jsonObj.hasOwnProperty('payload') && jsonObj.payload.hasOwnProperty('settings')){
+                        if(typeof contexts[jsonObj.context] != 'undefined'){
+                            delete contexts[jsonObj.context]
+                        }
                         contexts[jsonObj.context] = new Context(jsonObj)
+                        console.log("Context Update", m, contexts[jsonObj.context])
                     }
                 }
 
