@@ -20,7 +20,7 @@ class SimpleActionPI extends ActionPI {
     onContentLoaded = () => {
         console.log("Callback")
         
-        // this.initField("symbol");//, "CRM");
+        // this.initField("symbol");//, "CRM"); 
         // this.initField("decimals");//, 2);
         // this.initField("interval");//, 60);
     };
