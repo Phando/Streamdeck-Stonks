@@ -69,16 +69,16 @@ class SimpleAction extends Action {
         var symbol = jsn.payload
         this.uuid = jsn.context
 
-        data.open = true;
-        data.price = symbol.regularMarketPrice + 0.0;
-        data.volume = Utils.abbreviateNumber(symbol.regularMarketVolume);
-        data.foreground = this.settings.foreground;
-        data.background = this.settings.background;
-        this.action = this.settings.action;
-        this.actionMode = this.settings.action1mode;
+        data.open = true
+        data.price = symbol.regularMarketPrice + 0.0
+        data.volume = Utils.abbreviateNumber(symbol.regularMarketVolume)
+        data.foreground = this.settings.foreground
+        data.background = this.settings.background
+        this.action = this.settings.action
+        this.actionMode = this.settings.action1mode
         
         // Symbol remove currency conversion for Crypto
-        data.symbol = symbol.symbol.split('-')[0];
+        data.symbol = symbol.symbol.split('-')[0]
 
         // Range
         data.low = symbol.regularMarketDayLow
@@ -87,29 +87,30 @@ class SimpleAction extends Action {
 
         // Factor after market pricing
         if (symbol.marketState != "REGULAR") {
-            data.open = false;
-            data.price = symbol.postMarketPrice || data.price;
-            data.low = data.price < data.low ? data.price : data.low;
-            data.high = data.price > data.high ? data.price : data.high;
+            data.open = false
+            data.price = symbol.postMarketPrice || data.price
+            //data.change = symbol.postMarketChangePercent
+            data.low = data.price < data.low ? data.price : data.low
+            data.high = data.price > data.high ? data.price : data.high
         }
 
         // Check upper limit
         if (String(this.settings.upperlimit).length > 0 && data.price >= this.settings.upperlimit) {
-            data.foreground = this.settings.upperlimitforeground;
-            data.background = this.settings.upperlimitbackground;
-            this.action = this.settings.upperlimitaction || this.settings.action;
-            this.actionMode = this.settings.upperlimitaction ? this.settings.action2mode : this.settings.action1mode;
+            data.foreground = this.settings.upperlimitforeground
+            data.background = this.settings.upperlimitbackground
+            this.action = this.settings.upperlimitaction || this.settings.action
+            this.actionMode = this.settings.upperlimitaction ? this.settings.action2mode : this.settings.action1mode
         }
 
         // Check lower limit
         if (String(this.settings.lowerlimit).length > 0 && data.price <= this.settings.lowerlimit) {
-            data.foreground = this.settings.lowerlimitforeground;
-            data.background = this.settings.lowerlimitbackground;
-            this.action = this.settings.lowerlimitaction || this.settings.action;
-            this.actionMode = this.settings.lowerlimitaction ? this.settings.action3mode : this.settings.action1mode;
+            data.foreground = this.settings.lowerlimitforeground
+            data.background = this.settings.lowerlimitbackground
+            this.action = this.settings.lowerlimitaction || this.settings.action
+            this.actionMode = this.settings.lowerlimitaction ? this.settings.action3mode : this.settings.action1mode
         }
 
-        this.updateDisplay(data); 
+        this.updateDisplay(data) 
     }
 
     onDidReceiveSymbolError(jsn) {
@@ -167,7 +168,7 @@ class SimpleAction extends Action {
         this.drawingCtx.font = 400 + " " + 25 + "px Arial";
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "bottom"
-        this.drawingCtx.fillText(data.volume, 142, 124);
+        this.drawingCtx.fillText(data.volume, 142, 110);
     }
 
     drawRange(data){
@@ -186,11 +187,11 @@ class SimpleAction extends Action {
         // this.drawingCtx.fillRect(xPos, 144-height-4, thumb, height+4);
         this.drawingCtx.fillStyle = data.change < 0 ? '#FF0000' : '#00FF00';
         data.change *= data.change < 0 ? -1 : 1
-        data.change = data.change.toFixed(2);
+        data.change = data.change.toFixed(2) + "%";
         this.drawingCtx.font = 400 + " " + 25 + "px Arial";
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.textBaseline = "bottom"
-        this.drawingCtx.fillText(data.change, 2, 124);
+        this.drawingCtx.fillText(data.change, 2, 138);
     }
 
     drawMarketState(data){

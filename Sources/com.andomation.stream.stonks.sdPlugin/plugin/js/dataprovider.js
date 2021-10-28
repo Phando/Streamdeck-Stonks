@@ -29,18 +29,16 @@
 // const fields = ['symbol', 'marketState', 'regularMarketPrice', 'regularMarketChange', 'regularMarketChangePercent', 'preMarketPrice', 'preMarketChange', 'preMarketChangePercent', 'postMarketPrice', 'postMarketChange', 'postMarketChangePercent'];
 // const finalQueryScript = 'https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields=symbol,marketState,regularMarketPrice,regularMarketChange,regularMarketChangePercent,preMarketPrice,preMarketChange,preMarketChangePercent,postMarketPrice,postMarketChange,postMarketChangePercent&symbols=';
 // const nasdaq = require('../DataSets/NASDAQ.json');
+//regularMarketDayRange,
+//https://query1.finance.yahoo.com/v7/finance/quote?formatted=true&crumb=PUgrfiU145z&lang=en-US&region=US&symbols=CNNX%2CICON%2CCBK%2CM%2CSUNE&fields=longName%2CshortName%2CregularMarketPrice%2CregularMarketChange%2CregularMarketChangePercent%2CregularMarketVolume%2Cuuid&corsDomain=beta.finance.yahoo.com
+//https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields=
+//symbol,regularMarketDayRange,regularMarketVolume,marketState,regularMarketPrice,regularMarketChange,preMarketPrice,preMarketChange,postMarketPrice,postMarketChange&symbols=";
 
 class Dataprovider {
-  symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields=regularMarketChangePercent,symbol,regularMarketDayRange,regularMarketVolume,regularMarketPrice,marketState,preMarketPrice,postMarketPrice&symbols=";
-    
-  charts = {};
+  symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields=symbol,marketState,regularMarketPrice,regularMarketVolume,regularMarketChangePercent,preMarketPrice,postMarketPrice,postMarketChangePercent&symbols=";
   refreshTimer = null;
   
   constructor(){
-  }
-
-  dataForChart(symbol){
-    return this.charts[symbol]
   }
 
   startPolling() {
