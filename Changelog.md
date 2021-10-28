@@ -4,8 +4,9 @@
 
 #### Enhancements:
 - Total Rewrite
+- Support for multiple actions 
 - Batched quote requests - less traffic and faster polling
-- Support for multiple actions
+- 
 
 #### Bug Fixes:
 

@@ -17,12 +17,6 @@ class Action {
         this.context.settings = data
     }
 
-    updateSettings(jsn){
-        this.uuid = jsn.context
-        console.log("Action - updateSettings", jsn, this.settings)
-        this.settings = Utils.getProp(jsn, 'payload.settings', {})
-    }
-
     onConnected(jsn) {
         $SD.on(this.type + '.willAppear', (jsonObj) => this.onWillAppear(jsonObj));
         $SD.on(this.type + '.didReceiveSettings', (jsonObj) => this.onDidReceiveSettings(jsonObj));
@@ -33,33 +27,34 @@ class Action {
     }
 
     onDidReceiveSettings(jsn) {
-        this.updateSettings(jsn)
+        this.uuid = jsn.context
+        this.settings = Utils.getProp(jsn, 'payload.settings', {})
         console.log("Action - onDidReceiveSettings", jsn, this.settings)
     }
 
     onWillAppear(jsn) {
-        console.log("Will Appear", jsn)
-        this.onDidReceiveSettings(jsn)
+        this.uuid = jsn.context    
+
+        this.canvas = document.createElement("canvas")
+        this.canvas.width = 144
+        this.canvas.height = 144
+        this.drawingCtx = this.canvas.getContext("2d");
     }
 
     onKeyUp(jsn) {
+        this.uuid = jsn.context
     }
 
     onSendToPlugin(jsn) {
         console.log("Action - onSendToPlugin: ", jsn)
+
+        this.uuid = jsn.context
         const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
         
         if (sdpi_collection.value && sdpi_collection.value !== undefined) {
             this.settings[sdpi_collection.key] = sdpi_collection.value;
             $SD.api.setSettings(this.uuid, this.settings); 
         }
-    }
-
-    updateDisplay(data){
-        this.canvas = document.createElement("canvas")
-        this.canvas.width = 144
-        this.canvas.height = 144
-        this.drawingCtx = this.canvas.getContext("2d");
     }
 
     setFontFor = function(text, weight, maxWidth) {
