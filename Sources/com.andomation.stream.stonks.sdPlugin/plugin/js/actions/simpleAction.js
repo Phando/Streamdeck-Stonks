@@ -67,7 +67,6 @@ class SimpleAction extends Action {
 
         super.onKeyUp(jsn)
         this.context.pressCount = this.context.pressCount + 1
-        console.log("Press", this.context.pressCount)
 
         switch (this.context.pressCount) {
             case 1:
@@ -283,22 +282,22 @@ class SimpleAction extends Action {
         if(chart.range == '1d') {
             this.drawingCtx.fillStyle = '#D8D8D8';
             range = (chart.chartPreviousClose - chart.min) / (chart.max - chart.min)
-            this.drawingCtx.fillRect(0, 144 - (15 + 40 * range), 144, 2); //
+            this.drawingCtx.fillRect(0, 144 - (15 + 40 * range), 144, 2);
         }
-
-        //console.log("CHART", this.chart.indicators.quote[0].close)
-        // Math.min(...array1);
-        // Math.max(...array1);
+        
+        var chartRange = chart.range.toUpperCase()
+        chartRange = chartRange.substring(0, 2)
+    
+        this.drawingCtx.fillStyle = '#D8D8D8';
+        this.drawingCtx.font = 600 + " " + 20 + "px Arial";
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.textBaseline = "top" 
+        this.drawingCtx.fillText(chartRange, 3, 10);
     }
 
     updateDisplay() {
         this.drawingCtx.fillStyle = this.data.background;
         this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Handle Empty/Inital Case
-        if (typeof this.data == "undefined") {
-            console.log("UpdateDisplay Empty Case")
-        }
 
         this.drawMarketState()
         this.drawSymbol()
