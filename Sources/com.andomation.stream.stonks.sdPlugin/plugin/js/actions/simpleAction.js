@@ -120,6 +120,23 @@ class SimpleAction extends Action {
         this.uuid = jsn.context
         var symbol = jsn.payload
 
+        if(typeof symbol == 'undefined'){
+            var data = {context : jsn.context, error:{}}
+            data.error.message = this.settings.symbol
+            data.error.message1 = 'Not Found'
+            this.renderError(data)
+            return
+        }
+
+        if(symbol.quoteType == "MUTUALFUND"){
+            var data = {context : jsn.context, error:{}}
+            data.error.message = 'Mutual Funds'
+            data.error.message1 = 'Not Supported'
+            data.error.message2 = 'Yet'
+            this.renderError(data)
+            return
+        }
+
         payload.open   = true
         payload.price  = symbol.regularMarketPrice + 0.0
         payload.volume = Utils.abbreviateNumber(symbol.regularMarketVolume)
@@ -132,15 +149,26 @@ class SimpleAction extends Action {
         payload.symbol = symbol.symbol.split('-')[0]
 
         // Range
-        payload.low = symbol.regularMarketDayLow
-        payload.high = symbol.regularMarketDayHigh
-        payload.change = symbol.regularMarketChangePercent
+        payload.state   = ''
+        payload.low     = symbol.regularMarketDayLow
+        payload.high    = symbol.regularMarketDayHigh
+        payload.change  = symbol.regularMarketChangePercent
 
         // Factor after market pricing
         if (symbol.marketState != "REGULAR") {
             payload.open = false
-            payload.price = symbol.postMarketPrice || data.price
-            //payload.change = symbol.postMarketChangePercent
+
+            if(symbol.marketState == "POST"){
+                payload.state = "AH"
+                payload.price = symbol.postMarketPrice || payload.price
+                payload.change = symbol.postMarketChangePercent || payload.change
+            }
+            else {
+                payload.state = "PRE"
+                payload.price = symbol.preMarketPrice || payload.price
+                payload.change = symbol.preMarketChangePercent || payload.change
+            }
+            
             payload.low = payload.price < payload.low ? payload.price : payload.low
             payload.high = payload.price > payload.high ? payload.price : payload.high
         }
@@ -167,7 +195,7 @@ class SimpleAction extends Action {
 
     onDidReceiveSymbolError(jsn) {
         console.log('Action - Error', jsn)
-        this.updateDisplay(jsn);
+        this.uuid = jsn.context
         this.drawingCtx.fillStyle = '#1d1e1f'
         this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -175,14 +203,14 @@ class SimpleAction extends Action {
         this.drawingCtx.font = 600 + " " + 28 + "px Arial";
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(title, 138, 6);
+        this.drawingCtx.fillText("HELLO", 138, 6);
 
-        // Render Price
+        // Render Message
         this.drawingCtx.fillStyle = '#d8d8d8'
-        this.setFontFor(message, 400, this.canvas.width - 20)
+        this.setFontFor(jsn.error.message, 400, this.canvas.width - 20)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "bottom"
-        this.drawingCtx.fillText(message, 140, 70);
+        this.drawingCtx.fillText(jsn.error.message, 140, 70);
 
         $SD.api.setImage(this.uuid, this.canvas.toDataURL());
     }
@@ -190,10 +218,10 @@ class SimpleAction extends Action {
     drawSymbol(){
         let data = this.data
         this.drawingCtx.fillStyle =  data.foreground;
-        this.drawingCtx.font = 500 + " " + 24 + "px Arial";
+        this.drawingCtx.font = 600 + " " + 24 + "px Arial";
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(data.symbol, 118, 6, 118);
+        this.drawingCtx.fillText(data.symbol, 138, 6);
     }
 
     drawPrice(){
@@ -220,28 +248,25 @@ class SimpleAction extends Action {
     drawVolume(){
         let data = this.data
         this.drawingCtx.fillStyle = data.foreground;
-        this.drawingCtx.font = 400 + " " + 25 + "px Arial";
+        this.drawingCtx.font = 500 + " " + 25 + "px Arial";
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "bottom"
         this.drawingCtx.fillText(data.volume, 142, 110);
     }
 
+    drawMarketState(){
+        let data = this.data
+        this.drawingCtx.fillStyle = '#D8D8D8';
+        this.drawingCtx.font = 500 + " " + 18 + "px Arial";
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.textBaseline = "top" 
+        this.drawingCtx.fillText(data.state, 5, 88);
+    }
+
     drawRange(){
         let data = this.data
         var change = data.change
-        // var thumb = 5;
-        // var height = 14;
-        // var xPos = (data.price - data.low) / (data.high - data.low)
-        // xPos = thumb/2 + (xPos * (144-(thumb/2)))
-
-        // this.drawingCtx.fillStyle = '#50A050';
-        // this.drawingCtx.fillRect(0, 144-height, xPos, height);
-
-        // this.drawingCtx.fillStyle = '#A05050';
-        // this.drawingCtx.fillRect(xPos, 144-height, 144, height);
-
-        // this.drawingCtx.fillStyle = '#FFFFFF';
-        // this.drawingCtx.fillRect(xPos, 144-height-4, thumb, height+4);
+        
         this.drawingCtx.fillStyle = change < 0 ? '#FF0000' : '#00FF00';
         change *= change < 0 ? -1 : 1
         change = change.toFixed(2) + "%";
@@ -249,13 +274,6 @@ class SimpleAction extends Action {
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.textBaseline = "bottom"
         this.drawingCtx.fillText(change, 2, 138);
-    }
-
-    drawMarketState(){
-        let data = this.data
-        const image = new Image(60, 45); // Using optional size for image
-        var img = document.getElementById(data.open ? 'openImg' : 'closedImg');
-        this.drawingCtx.drawImage(img, 122, 6, 20, 21);
     }
 
     drawChart(){
@@ -266,8 +284,6 @@ class SimpleAction extends Action {
         let isUp = chart.data[0] < chart.data[chart.data.length-1]
         let fillColor = isUp ? '#008800' : '#880000';
         let tipColor = isUp ? '#00FF00' : '#FF0000';
-        
-        console.log(isUp, chart.data[0], chart.data[chart.data.length-1])
 
         for(let i = 0; i < this.chartWidth && index < chart.data.length; i++){
             range = (chart.data[Math.round(index)] - chart.min) / (chart.max - chart.min)
@@ -299,17 +315,42 @@ class SimpleAction extends Action {
         this.drawingCtx.fillStyle = this.data.background;
         this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.drawMarketState()
         this.drawSymbol()
         this.drawPrice()
         
         if(this.context.pressCount == 0){
+            this.drawMarketState()
             this.drawVolume()
             this.drawRange()
         }
         else {
             this.drawChart()
         }
+
+        $SD.api.setImage(this.uuid, this.canvas.toDataURL());
+    }
+
+    renderError(jsn) {
+        console.log('Action - renderError', jsn)
+        this.drawingCtx.fillStyle = '#1d1e1f'
+        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.drawingCtx.fillStyle =  '#FF0000'
+        this.drawingCtx.font = 600 + " " + 26 + "px Arial";
+        this.drawingCtx.textAlign = "center"
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillText("Error", this.canvas.width/2, 6);
+
+        // Render Message
+        this.drawingCtx.fillStyle = '#d8d8d8'
+        this.drawingCtx.font = 600 + " " + 19 + "px Arial";
+        this.drawingCtx.fillText(jsn.error.message, this.canvas.width/2, 40);
+
+        if(jsn.error.hasOwnProperty('message1'))
+            this.drawingCtx.fillText(jsn.error.message1, this.canvas.width/2, 70);
+
+        if(jsn.error.hasOwnProperty('message2'))
+            this.drawingCtx.fillText(jsn.error.message2, this.canvas.width/2, 100);
 
         $SD.api.setImage(this.uuid, this.canvas.toDataURL());
     }

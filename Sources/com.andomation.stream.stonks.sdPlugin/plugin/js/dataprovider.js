@@ -49,7 +49,6 @@ class Dataprovider {
     })
     
     // Double check that we have symbols added to the URL
-    console.log("Chart", url)
     if(url.length != urlLength) {
       this.requestData(url, 
         (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
@@ -70,6 +69,7 @@ class Dataprovider {
     
     result.forEach(function(item){
       if(item.symbol == "") return
+      item.symbol = item.symbol.toUpperCase()
       data[item.symbol] = item;
     })
     
@@ -77,6 +77,7 @@ class Dataprovider {
       let symbol = Utils.getProp(item, "settings.symbol", false);
       
       if(!symbol) return
+      symbol = symbol.toUpperCase()
       $SD.emit(item.action + '.' + event, {context:item.context, payload:data[symbol]})
     })
   }

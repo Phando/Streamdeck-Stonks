@@ -90,7 +90,7 @@ Utils.abbreviateNumber = function(value, precision=3) {
         newValue /= 1000;
         suffixNum++;
     }
-
+    
     newValue = newValue.toPrecision(precision);
     newValue += suffixes[suffixNum];
     return newValue;

@@ -7,3 +7,16 @@ class ComplexAction extends Action {
   }
 
 }
+
+// Manifest Entry
+// {
+//   "Icon": "images/actions/complexAction", 
+//   "Name": "Stonks - Complex",
+//   "States": [
+//     {
+//       "Image": "images/actions/complexAction"
+//     }
+//   ],
+//   "Tooltip": "Keep track of ticker and crypto prices.",
+//   "UUID": "com.andomation.stream.stonks.complex"
+// }
