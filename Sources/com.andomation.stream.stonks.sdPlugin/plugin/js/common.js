@@ -301,11 +301,12 @@ function saveSettings(data){
                     }
                     
                     if(jsonObj.hasOwnProperty('payload') && jsonObj.payload.hasOwnProperty('settings')){
-                        if(typeof contexts[jsonObj.context] != 'undefined'){
-                            delete contexts[jsonObj.context]
+                        if(typeof contexts[jsonObj.context] == 'undefined'){
+                            contexts[jsonObj.context] = new Context(jsonObj)
+                        } else {
+                            contexts[jsonObj.context].settings = jsonObj.payload.settings
                         }
-                        contexts[jsonObj.context] = new Context(jsonObj)
-                        console.log("Context Update", m, contexts[jsonObj.context])
+                        //console.log("Context Update", m, contexts[jsonObj.context])
                     }
                 }
 

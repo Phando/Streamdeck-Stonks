@@ -34,6 +34,7 @@ class Action {
 
     onWillAppear(jsn) {
         this.uuid = jsn.context    
+        this.onDidReceiveSettings(jsn)
 
         this.canvas = document.createElement("canvas")
         this.canvas.width = 144
