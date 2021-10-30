@@ -54,9 +54,13 @@ class Action {
         
         if (sdpi_collection.value && sdpi_collection.value !== undefined) {
             this.settings[sdpi_collection.key] = sdpi_collection.value;
+            
+            if(sdpi_collection.key == "symbol")
+                this.settings[sdpi_collection.key] = this.settings[sdpi_collection.key].toUpperCase()
+            
             $SD.api.setSettings(this.uuid, this.settings); 
         }
-    }
+    } 
 
     setFontFor = function(text, weight, maxWidth) {
         return this.calculateFont(text, weight, 4, 40, maxWidth);

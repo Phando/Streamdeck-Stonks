@@ -115,14 +115,14 @@ function initializeControlCenterClient () {
 }
 
 function saveValue(sdpi_collection) {
-    //console.log("saveValue1", $SD.uuid, $SD.actionInfo.context)
+    console.log("saveValue:", sdpi_collection)
+    
     if (   typeof sdpi_collection !== "object"
         || !sdpi_collection.hasOwnProperty("key") 
         || sdpi_collection.key == ""
         || !sdpi_collection.value 
         || sdpi_collection.value == undefined) { return }
     
-        //console.log("saveValue2", $SD.uuid, $SD.actionInfo.context)
     console.log("Setting:", sdpi_collection.key, " => ", sdpi_collection.value);
     if( globalSettings.hasOwnProperty(sdpi_collection.key) ){
         globalSettings[sdpi_collection.key] = sdpi_collection.value;
@@ -135,12 +135,13 @@ function saveValue(sdpi_collection) {
 }
 
 function saveSettings(data){
+    console.log(data)
     if( data == globalSettings) {
         console.log('setGlobalSettings....', globalSettings);
         $SD.api.setGlobalSettings($SD.uuid, data);
     }
     else {
-        console.log("setSettings....", settings);
+        console.log("setSettings....", data);
         $SD.api.setSettings($SD.uuid, data);
     }
 }

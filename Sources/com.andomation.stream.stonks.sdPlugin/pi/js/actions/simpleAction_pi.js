@@ -15,6 +15,7 @@ class SimpleActionPI extends ActionPI {
         //saveSettings(this.uuid, this.settings);
         saveSettings(this.settings);
         this.injectContent("content/simpleAction.html", this.onContentLoaded);
+        dataprovider.fetchSymbolData()
     }
 
     onContentLoaded = () => {

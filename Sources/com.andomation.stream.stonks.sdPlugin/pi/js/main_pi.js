@@ -1,6 +1,6 @@
+var settings = {}
 var onchangeevt = "onchange"; // 'oninput';
 let sdpiWrapper = document.querySelector(".sdpi-wrapper");
-let settings;
 
 actions.push(new SimpleActionPI())
 //actions.push(new ComplexActionPI())
@@ -18,7 +18,7 @@ $SD = StreamDeck.getInstance();
  */
 
 $SD.on("connected", (jsn) => {
-  console.log("connected", jsn);
+  console.log("PI Connected", jsn);
   settings = Utils.getProp(jsn, "actionInfo.payload.settings", false);
   
   let actionType = Utils.getProp(jsn, "actionInfo.action", "");
@@ -98,7 +98,7 @@ $SD.on("piDataChanged", (returnValue) => {
     "color: white; background: black}; font-size: 13px;",
     "piDataChanged"
   );
-  console.log(returnValue);
+  console.log("Return Value", returnValue);
 
   // NOTE: If opening a window do it here
   saveValue(returnValue);
@@ -142,6 +142,8 @@ function handleSdpiItemChange(e, idx) {
   if (["OL", "UL", "TABLE"].includes(e.tagName)) {
     return;
   }
+  
+  console.log("handleSdpiItemChange", e, idx)
 
   if (e.tagName === "SPAN") {
     const inp = e.parentNode.querySelector("input");

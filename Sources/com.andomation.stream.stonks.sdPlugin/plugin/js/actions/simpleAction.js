@@ -37,6 +37,7 @@ class SimpleAction extends Action {
         
         this.context.chartRange = this.context.chartRange || ''
         this.context.pressCount = this.context.pressCount || 0
+        
         this.settings.interval = this.settings.interval || 60
         this.settings.symbol = this.settings.symbol || "GME"
         this.settings.decimals  = this.settings.decimals || 2
@@ -46,13 +47,12 @@ class SimpleAction extends Action {
         this.settings.upperlimitaction = this.settings.upperlimitaction || "http://andomation.com"
         this.settings.lowerlimitaction = this.settings.lowerlimitaction || "http://andomation.com"
 
+        this.settings.upperlimit = this.settings.upperlimit || ''
         this.settings.upperlimitforeground = this.settings.upperlimitforeground || "#1D1E1F"
-        this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#00FF00"
+        this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#005500"
+        
+        this.settings.lowerlimit = this.settings.lowerlimit || ''
         this.settings.lowerlimitforeground = this.settings.lowerlimitforeground || "#1D1E1F"
-        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#FF0000"
-
-        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#FF0000"
-        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#FF0000"
         this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#FF0000"
 
         this.settings.action1mode = this.settings.action1mode || "refresh"
@@ -256,8 +256,8 @@ class SimpleAction extends Action {
 
     drawMarketState(){
         let data = this.data
-        this.drawingCtx.fillStyle = '#D8D8D8';
-        this.drawingCtx.font = 500 + " " + 18 + "px Arial";
+        this.drawingCtx.fillStyle = data.foreground
+        this.drawingCtx.font = 500 + " " + 18 + "px Arial"
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.textBaseline = "top" 
         this.drawingCtx.fillText(data.state, 5, 88);
@@ -282,8 +282,8 @@ class SimpleAction extends Action {
         var index = 0
         let chart = this.chart
         let isUp = chart.data[0] < chart.data[chart.data.length-1]
-        let fillColor = isUp ? '#008800' : '#880000';
-        let tipColor = isUp ? '#00FF00' : '#FF0000';
+        let fillColor = isUp ? '#008800' : '#880000'
+        let tipColor = isUp ? '#00FF00' : '#FF0000'
 
         for(let i = 0; i < this.chartWidth && index < chart.data.length; i++){
             range = (chart.data[Math.round(index)] - chart.min) / (chart.max - chart.min)
@@ -296,7 +296,7 @@ class SimpleAction extends Action {
         }
 
         if(chart.range == '1d') {
-            this.drawingCtx.fillStyle = '#D8D8D8';
+            this.drawingCtx.fillStyle = this.data.foreground
             range = (chart.chartPreviousClose - chart.min) / (chart.max - chart.min)
             this.drawingCtx.fillRect(0, 144 - (15 + 40 * range), 144, 2);
         }
@@ -304,8 +304,8 @@ class SimpleAction extends Action {
         var chartRange = chart.range.toUpperCase()
         chartRange = chartRange.substring(0, 2)
     
-        this.drawingCtx.fillStyle = '#D8D8D8';
-        this.drawingCtx.font = 600 + " " + 20 + "px Arial";
+        this.drawingCtx.fillStyle = this.data.foreground
+        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.textBaseline = "top" 
         this.drawingCtx.fillText(chartRange, 3, 10);
