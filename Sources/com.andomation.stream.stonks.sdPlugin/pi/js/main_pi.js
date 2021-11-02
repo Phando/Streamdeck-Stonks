@@ -119,7 +119,7 @@ $SD.on("piDataChanged", (returnValue) => {
 
 function sendValueToPlugin(value, prop) {
   console.log("sendValueToPlugin", value, prop);
-  if ($SD.connection && $SD.connection.readyState === 1) {
+  if ($SD.connection && $SD.connection.readyState == 1) {
     const json = {
       action: $SD.actionInfo["action"],
       event: "sendToPlugin",
@@ -129,7 +129,8 @@ function sendValueToPlugin(value, prop) {
         targetContext: $SD.actionInfo["context"],
       },
     };
-
+    
+    console.log("sendValueToPlugin 2", json);
     $SD.connection.send(JSON.stringify(json));
   }
 }
@@ -143,8 +144,6 @@ function handleSdpiItemChange(e, idx) {
     return;
   }
   
-  console.log("handleSdpiItemChange", e, idx)
-
   if (e.tagName === "SPAN") {
     const inp = e.parentNode.querySelector("input");
     var tmpValue;

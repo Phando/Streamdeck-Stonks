@@ -1,8 +1,13 @@
 let actions = []
-let contexts = {}
 let globalSettings = {}
+let contextList = {}
+
+const STATE_DEFAULT = 'default'
 
 function Context(jsn){
+    this.downtimer  =   null
+    this.clickCount =   0
+    this.stateName  =   STATE_DEFAULT
     this.action =       Utils.getProp(jsn, 'action', '')
     this.context =      Utils.getProp(jsn, 'context', '')
     this.coordinates =  Utils.getProp(jsn, 'payload.coordinates', {})
@@ -142,7 +147,7 @@ function saveSettings(data){
     }
     else {
         console.log("setSettings....", data);
-        $SD.api.setSettings($SD.uuid, data);
+        $SD.api.setSettings($SD.actionInfo["context"], data);
     }
 }
 
@@ -277,8 +282,8 @@ function saveSettings(data){
             };
             
             websocket.onmessage = function (evt) {
-                var jsonObj = Utils.parseJson(evt.data);
-                var m = inMessageType;
+                var jsonObj = Utils.parseJson(evt.data)
+                var m = inMessageType
 
                 console.log('[STREAMDECK] websocket.onmessage ... ', jsonObj.event, jsonObj);
 
@@ -302,15 +307,30 @@ function saveSettings(data){
                     }
                     
                     if(jsonObj.hasOwnProperty('payload') && jsonObj.payload.hasOwnProperty('settings')){
-                        if(typeof contexts[jsonObj.context] == 'undefined'){
-                            contexts[jsonObj.context] = new Context(jsonObj)
+                        if(typeof contextList[jsonObj.context] == 'undefined'){
+                            contextList[jsonObj.context] = new Context(jsonObj)
                         } else {
-                            contexts[jsonObj.context].settings = jsonObj.payload.settings
+                            contextList[jsonObj.context].settings = jsonObj.payload.settings
                         }
-                        //console.log("Context Update", m, contexts[jsonObj.context])
                     }
                 }
 
+                switch(jsonObj.event){
+                    case "keyDown": 
+                        var context = contextList[jsonObj.context]
+                        context.downtimer = setInterval( function(context) {
+                            clearInterval(context.downtimer)
+                            events.emit(jsonObj.action + '.longPress', context)
+                        }, 500, context);
+                        break
+                    case "keyUp" :
+                    var context = contextList[jsonObj.context]
+                    clearInterval(context.downtimer)
+                    console.log("UP")
+                    break
+                }
+
+                //jsonObj.scope = contextList[jsonObj.context]
                 if (m && m !== '')
                     events.emit(m, jsonObj);
             };
@@ -378,6 +398,7 @@ function saveSettings(data){
          * This function is non-mutating and thereby creates a new object containing
          * all keys of the original JSON objects.
          */
+        
         const pl = Object.assign({}, { event: fn, context: context }, payload);
 
         /** Check, if we have a connection, and if, send the JSON payload */

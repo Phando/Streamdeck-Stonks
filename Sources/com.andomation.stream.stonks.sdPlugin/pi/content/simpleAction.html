@@ -10,22 +10,42 @@
         <input id="decimals" class="sdpi-item-value" type="number" placeholder="2" />
 </div>
 
-<div class="sdpi-item">
-    <div class="sdpi-item-label">Interval</div>
-    <input id="interval" class="sdpi-item-value" type="number" laceholder="5-3000" min="5" max="3000" />     
+<div class="sdpi-heading">Limits</div>
+
+<div type="radio" class="sdpi-item" id="limit_enabled">
+    <div class="sdpi-item-label">Enabled</div>
+    <div class="sdpi-item-value ">
+        <div class="sdpi-item-child">
+            <input id="limitsEnabled1" type="radio" value="true" name="limitsEnabled">
+            <label for="limitsEnabled1" class="sdpi-item-label"><span></span>True</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="limitsEnabled2" type="radio" value="false" name="limitsEnabled">
+            <label for="limitsEnabled2" class="sdpi-item-label"><span></span>False</label>
+        </div>
+    </div>
+</div>
+
+<div type="radio" class="sdpi-item" id="limit_type">
+    <div class="sdpi-item-label">Type</div>
+    <div class="sdpi-item-value ">
+        <div class="sdpi-item-child">
+            <input id="limitType1" type="radio" value="percent" name="limitType">
+            <label for="limitType1" class="sdpi-item-label"><span></span>Percent</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="limitType2" type="radio" value="numeric" name="limitType">
+            <label for="limitType2" class="sdpi-item-label"><span></span>Numeric</label>
+        </div>
+    </div>
 </div>
 
 <div class="sdpi-item">
-    <div class="sdpi-item-label">Interval Notes</div>
-    <p>This varaible shared across all instances of Stonks. Please choose a value between 5 and 3000 seconds</p>.
+    <div class="sdpi-item-label">Increment</div>
+    <input id="limitIncrement" class="sdpi-item-value" type="number"/>     
 </div>
 
 <div class="sdpi-heading">Upper Limit</div>
-
-<div class="sdpi-item">
-    <div class="sdpi-item-label">Limit</div>
-    <input id="upperlimit" class="sdpi-item-value" type="number"/>
-</div>
 
 <div type="color" class="sdpi-item" >
     <div class="sdpi-item-label">Foreground</div>
@@ -38,11 +58,6 @@
 </div>
 
 <div class="sdpi-heading">Lower Limit</div>
-
-<div class="sdpi-item">
-    <div class="sdpi-item-label">Limit</div>
-    <input id="lowerlimit" class="sdpi-item-value" type="number"/>
-</div>
 
 <div type="color" class="sdpi-item">
     <div class="sdpi-item-label">Foreground</div>

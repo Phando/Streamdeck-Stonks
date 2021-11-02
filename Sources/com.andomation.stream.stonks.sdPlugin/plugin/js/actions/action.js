@@ -1,12 +1,12 @@
 class Action {
     uuid = 0
-    type = "com.andomation.stream.stonks";
+    type = "com.andomation.stream.stonks"
 
     constructor() {
     }
 
     get context(){    
-        return contexts[this.uuid]
+        return contextList[this.uuid]
     }
 
     get settings(){
@@ -17,13 +17,25 @@ class Action {
         this.context.settings = data
     }
 
+    set state(stateName){
+        this.context.clickCount = 0
+        this.context.stateName = stateName
+        this.updateDisplay()
+    }
+
+    get state(){
+        return this.context.stateName
+    }
+
     onConnected(jsn) {
-        $SD.on(this.type + '.willAppear', (jsonObj) => this.onWillAppear(jsonObj));
-        $SD.on(this.type + '.didReceiveSettings', (jsonObj) => this.onDidReceiveSettings(jsonObj));
-        $SD.on(this.type + '.keyUp', (jsonObj) => this.onKeyUp(jsonObj));
-        $SD.on(this.type + '.sendToPlugin', (jsonObj) => this.onSendToPlugin(jsonObj));
-        $SD.on(this.type + '.propertyInspectorDidAppear', (jsonObj) => console.log("propertyInspectorDidAppear"));
-        $SD.on(this.type + '.propertyInspectorDidDisappear', (jsonObj) => console.log("propertyInspectorDidDisappear"));
+        $SD.on(this.type + '.willAppear', (jsonObj) => this.onWillAppear(jsonObj))
+        $SD.on(this.type + '.didReceiveSettings', (jsonObj) => this.onDidReceiveSettings(jsonObj))
+        $SD.on(this.type + '.keyDown', (jsonObj) => this.onKeyDown(jsonObj))
+        $SD.on(this.type + '.keyUp', (jsonObj) => this.onKeyUp(jsonObj))
+        $SD.on(this.type + '.longPress', (jsonObj) => this.onLongPress(jsonObj))
+        $SD.on(this.type + '.sendToPlugin', (jsonObj) => this.onSendToPlugin(jsonObj))
+        $SD.on(this.type + '.propertyInspectorDidAppear', (jsonObj) => console.log("propertyInspectorDidAppear"))
+        $SD.on(this.type + '.propertyInspectorDidDisappear', (jsonObj) => console.log("propertyInspectorDidDisappear"))
     }
 
     onDidReceiveSettings(jsn) {
@@ -42,13 +54,23 @@ class Action {
         this.drawingCtx = this.canvas.getContext("2d");
     }
 
+    onKeyDown(jsn) {
+        this.uuid = jsn.context
+        lastPressed = this.uuid 
+    }
+
     onKeyUp(jsn) {
+        this.uuid = jsn.context
+        this.context.clickCount += 1
+    }
+    
+    onLongPress(jsn) {
         this.uuid = jsn.context
     }
 
-    onSendToPlugin(jsn) {
-        console.log("Action - onSendToPlugin: ", jsn)
+    updateDisplay(){};
 
+    onSendToPlugin(jsn) {
         this.uuid = jsn.context
         const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
         

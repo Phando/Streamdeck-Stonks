@@ -1,5 +1,5 @@
 let dataprovider = new Dataprovider();
-
+var lastPressed = '';
 /** 
  * All actions in your plugin need to be added to the 'actions' array.
  * This is true even if your plugin has a single action.
@@ -7,6 +7,8 @@ let dataprovider = new Dataprovider();
 
 actions.push(new SimpleAction())
 actions.push(new ComplexAction())
+actions.push(new DecrementAction())
+actions.push(new IncrementAction())
 
 /**
  * There's only one StreamDeck object. It carries connection parameters 
@@ -33,20 +35,8 @@ $SD.on('didReceiveGlobalSettings', (jsn) => {
  * You can use it to subscribe to events you want to use in your plugin.
  */
 
-$SD.on('connected', (jsn) => {
+$SD.on('connected', (jsn) => { 
   actions.forEach(function(item){
     item.onConnected(jsn);
-    // $SD.on(item.type + '.willAppear', (jsonObj) => item.onWillAppear(jsonObj));
-    // $SD.on(item.type + '.didReceiveSettings', (jsonObj) => item.onDidReceiveSettings(jsonObj));
-    // $SD.on(item.type + '.keyUp', (jsonObj) => item.onKeyUp(jsonObj));
-    // $SD.on(item.type + '.sendToPlugin', (jsonObj) => item.onSendToPlugin(jsonObj));
-    // $SD.on(item.type + '.propertyInspectorDidAppear', (jsonObj) => console.log("propertyInspectorDidAppear"));
-    // $SD.on(item.type + '.propertyInspectorDidDisappear', (jsonObj) => console.log("propertyInspectorDidDisappear"));
-    
-    // // Data Provider Handlers
-    // $SD.on(item.type + '.didReceiveChartData', (jsonObj) => item.onDidReceiveChartData(jsonObj));
-    // $SD.on(item.type + '.didReceiveChartError', (jsonObj) => item.onDidReceiveChartError(jsonObj));
-    // $SD.on(item.type + '.didReceiveSymbolData', (jsonObj) => item.onDidReceiveSymbolData(jsonObj));
-    // $SD.on(item.type + '.didReceiveSymbolError', (jsonObj) => item.onDidReceiveSymbolError(jsonObj));
   }); 
 });

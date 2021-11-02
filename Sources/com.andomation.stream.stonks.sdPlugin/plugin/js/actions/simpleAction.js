@@ -1,3 +1,9 @@
+const STATE_CHARTS = 'charts'
+const STATE_LIMITS = 'limits'
+
+const LIMIT_TYPE_NUMERIC = 'numeric'
+const LIMIT_TYPE_PERCENT = 'percent'
+
 class SimpleAction extends Action {
     chartWidth = 138
 
@@ -24,6 +30,11 @@ class SimpleAction extends Action {
 
     onConnected(jsn) {
         super.onConnected(jsn)
+
+        // Limit Handlers
+        $SD.on(this.type + '.onDecrement', (jsonObj) => this.onAdjustLimit(jsonObj, false));
+        $SD.on(this.type + '.onIncrement', (jsonObj) => this.onAdjustLimit(jsonObj, true));
+        
         // Data Provider Handlers
         $SD.on(this.type + '.didReceiveChartData', (jsonObj) => this.onDidReceiveChartData(jsonObj));
         $SD.on(this.type + '.didReceiveChartError', (jsonObj) => this.onDidReceiveChartError(jsonObj));
@@ -36,61 +47,149 @@ class SimpleAction extends Action {
         console.log("SimpleAction - Update Settings", jsn, this.settings);
         
         this.context.chartRange = this.context.chartRange || ''
-        this.context.pressCount = this.context.pressCount || 0
         
-        this.settings.interval = this.settings.interval || 60
         this.settings.symbol = this.settings.symbol || "GME"
         this.settings.decimals  = this.settings.decimals || 2
         this.settings.foreground = this.settings.foreground || "#D8D8D8"
         this.settings.background = this.settings.background || "#1D1E1F"
-        this.settings.action = this.settings.action || "http://andomation.com"
-        this.settings.upperlimitaction = this.settings.upperlimitaction || "http://andomation.com"
-        this.settings.lowerlimitaction = this.settings.lowerlimitaction || "http://andomation.com"
 
-        this.settings.upperlimit = this.settings.upperlimit || ''
-        this.settings.upperlimitforeground = this.settings.upperlimitforeground || "#1D1E1F"
-        this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#005500"
+        this.settings.limitType = this.settings.limitType || LIMIT_TYPE_PERCENT
+        this.settings.limitIncrement = this.settings.limitIncrement = 1
+        this.settings.limitsEnabled = this.settings.limitsEnabled || false
         
-        this.settings.lowerlimit = this.settings.lowerlimit || ''
+        this.settings.upperlimit = this.settings.upperlimit || Number.MIN_VALUE
+        this.settings.upperlimitforeground = this.settings.upperlimitforeground || "#1D1E1F"
+        this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#00AA00"
+        
+        this.settings.lowerlimit = this.settings.lowerlimit || Number.MIN_VALUE
         this.settings.lowerlimitforeground = this.settings.lowerlimitforeground || "#1D1E1F"
-        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#FF0000"
+        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#AA0000"
 
-        this.settings.action1mode = this.settings.action1mode || "refresh"
-        this.settings.action2mode = this.settings.action2mode || "refresh"
-        this.settings.action3mode = this.settings.action3mode || "refresh"
-
-        $SD.api.setSettings(this.uuid, this.settings);
-    }
+        // $SD.api.setSettings(this.uuid, {}) // Clear the settings
+        $SD.api.setSettings(this.uuid, this.settings) 
+    } 
 
     onKeyUp(jsn){
         //ranges = ["1d","5d","1mo","3mo","6mo","1y","2y","5y","10y","ytd","max"]
-
+        //valid intervals: [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
         super.onKeyUp(jsn)
-        this.context.pressCount = this.context.pressCount + 1
 
-        switch (this.context.pressCount) {
-            case 1:
+        switch(this.state){    
+            case STATE_CHARTS : 
+                this.onChartClick(jsn)
+                break
+            case STATE_LIMITS :        
+                if(this.context.clickCount == 2){
+                    this.state = STATE_DEFAULT
+                    return
+                }
+                this.updateDisplay() 
+                break
+            default:
+                this.context.clickCount = 0
+                this.context.stateName = STATE_CHARTS
+                this.onChartClick(jsn)    
+                //this.state = STATE_CHARTS
+
+        }
+    }
+
+    onLongPress(jsn){
+        super.onLongPress(jsn)
+        this.onAdjustLimit(jsn,true)
+
+        // Decrementing clickCount to anticipate the keyUp
+        this.context.clickCount -= 1
+    }
+
+    onChartClick(jsn){
+        console.log("Chart Click", this.context.clickCount, jsn)
+        switch (this.context.clickCount) {
+            case 0:
                 this.context.chartRange = '1d'
                 dataprovider.fetchChartData('1d','1m')
                 break
-            case 2:
+            case 1:
                 this.context.chartRange = '5d'
                 dataprovider.fetchChartData('5d','15m')
                 break
-            case 3:
+            case 2:
                 this.context.chartRange = '1mo'
                 dataprovider.fetchChartData('1mo','1h')
                 break
             default:
-                this.context.chartRange = ''
-                this.context.pressCount = 0
-                this.updateDisplay() 
-            break
+                this.state = STATE_DEFAULT
+                return
         }
+    }
+
+    onAdjustLimit(jsn, increment){
+        this.uuid = jsn.context
+        clearInterval(this.context.adjustTimer)
+        
+        this.context.adjustTimer = setInterval( function(uuid) {
+            this.uuid = uuid
+            clearInterval(this.context.adjustTimer)
+            this.state = STATE_DEFAULT
+        }.bind(this), 5000, this.uuid);
+
+        if(this.state != STATE_LIMITS){
+            this.settings.limitEnabled = true
+            
+            if(this.settings.lowerlimit == Number.MIN_VALUE){
+                this.settings.lowerlimit = this.settings.limitType == LIMIT_TYPE_PERCENT ? 0 : this.data.price
+            }
+            
+            if(this.settings.upperlimit == Number.MIN_VALUE){
+                this.settings.upperlimit = this.settings.limitType == LIMIT_TYPE_PERCENT ? 0 : this.data.price
+            }
+
+            $SD.api.setSettings(this.uuid, this.settings);
+            this.state = STATE_LIMITS
+            return
+        }
+
+        let value = increment ? this.settings.limitIncrement : -this.settings.limitIncrement
+        
+        if( this.context.clickCount == 0){    
+            this.settings.lowerlimit = this.settings.lowerlimit + value
+        }
+        else {
+            this.settings.upperlimit = this.settings.upperlimit + value
+        }
+        
+        $SD.api.setSettings(this.uuid, this.settings)
+        this.updateDisplay()
+    }
+
+    updatePIValue(keyName, collection){
+        for (const [key, value] of Object.entries(this.settings)) {
+            if(keyName != key && keyName.includes(key)){
+                delete this.settings[key]
+                return
+            }
+        }
+
+        this.settings[keyName] = collection.value
+        this.settings[collection.key] = collection.value
+        $SD.api.setSettings(this.uuid, this.settings); 
     }
 
     onSendToPlugin(jsn) {
         super.onSendToPlugin(jsn)
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+
+        // TODO : Automate this better, the root is radios and checkboxes
+        if(sdpi_collection.hasOwnProperty('key') && sdpi_collection.hasOwnProperty('value')){
+            if(sdpi_collection.key.includes('limitType')){
+                this.updatePIValue('limitType', sdpi_collection)
+            }
+
+            if(sdpi_collection.key.includes('limitsEnabled')){
+                this.updatePIValue('limitsEnabled', sdpi_collection)
+            }
+        }
+
         dataprovider.fetchSymbolData()
     }
 
@@ -108,6 +207,16 @@ class SimpleAction extends Action {
         payload.min = Math.min(...payload.data)
         payload.max = Math.max(...payload.data)
         payload.interval = (payload.data.length-1) / this.chartWidth
+
+        // if(this.context.clickCount == 1){
+        //     var tmp = []
+        //     for(var i = payload.data.length - 1; i >= 0; i--){
+        //         tmp.push(payload.data[i]);
+        //     }
+        //     payload.range = "1m"
+        //     payload.data = tmp.reverse();
+        //     payload.interva = 1
+        // }
 
         this.chart = payload
         this.updateDisplay()
@@ -137,13 +246,14 @@ class SimpleAction extends Action {
             return
         }
 
-        payload.open   = true
-        payload.price  = symbol.regularMarketPrice + 0.0
-        payload.volume = Utils.abbreviateNumber(symbol.regularMarketVolume)
-        payload.action     = this.settings.action
-        payload.actionMode = this.settings.action1mode
-        payload.foreground = this.settings.foreground
-        payload.background = this.settings.background
+        payload.price       = symbol.regularMarketPrice
+        payload.open        = symbol.regularMarketOpen
+        payload.prevClose   = symbol.regularMarketPreviousClose
+        payload.volume      = Utils.abbreviateNumber(symbol.regularMarketVolume)
+        payload.action      = this.settings.action
+        payload.actionMode  = this.settings.action1mode
+        payload.foreground  = this.settings.foreground
+        payload.background  = this.settings.background
         
         // Symbol remove currency conversion for Crypto
         payload.symbol = symbol.symbol.split('-')[0]
@@ -156,37 +266,44 @@ class SimpleAction extends Action {
 
         // Factor after market pricing
         if (symbol.marketState != "REGULAR") {
-            payload.open = false
 
-            if(symbol.marketState == "POST"){
-                payload.state = "AH"
+            if(symbol.marketState.includes("POST")){
+                payload.state = symbol.marketState == "POSTPOST" ? "CLD" : "AH"
                 payload.price = symbol.postMarketPrice || payload.price
-                payload.change = symbol.postMarketChangePercent || payload.change
+                payload.change = symbol.postMarketChangePercent || ''
             }
             else {
-                payload.state = "PRE"
+                payload.state = symbol.marketState == "PREPRE" ? "CLD" : "PRE"
                 payload.price = symbol.preMarketPrice || payload.price
-                payload.change = symbol.preMarketChangePercent || payload.change
+                payload.change = symbol.preMarketChangePercent || ''
             }
             
             payload.low = payload.price < payload.low ? payload.price : payload.low
             payload.high = payload.price > payload.high ? payload.price : payload.high
         }
 
-        // Check upper limit
-        if (String(this.settings.upperlimit).length > 0 && payload.price >= this.settings.upperlimit) {
-            payload.action = this.settings.upperlimitaction || this.settings.action
-            payload.actionMode = this.settings.upperlimitaction ? this.settings.action2mode : this.settings.action1mode
-            payload.foreground = this.settings.upperlimitforeground
-            payload.background = this.settings.upperlimitbackground
-        }
-
-        // Check lower limit
-        if (String(this.settings.lowerlimit).length > 0 && payload.price <= this.settings.lowerlimit) {
-            payload.action = this.settings.lowerlimitaction || this.settings.action
-            payload.actionMode = this.settings.lowerlimitaction ? this.settings.action3mode : this.settings.action1mode
-            payload.foreground = this.settings.lowerlimitforeground
-            payload.background = this.settings.lowerlimitbackground
+        // Implement the limits
+        var limit = 0
+        if (this.settings.limitsEnabled) {
+            if(this.settings.limitType == LIMIT_TYPE_PERCENT){
+                limit = payload.change >= this.settings.upperlimit ? 1 : 0
+                limit = payload.change <= this.settings.upperlimit ? -1 : limit
+            } 
+            else {
+                limit = payload.price >= this.settings.upperlimit ? 1 : 0
+                limit = payload.price <= this.settings.upperlimit ? -1 : limit
+            }
+            
+            if( limit == 1){
+                // Upper Limit
+                payload.foreground = this.settings.upperlimitforeground
+                payload.background = this.settings.upperlimitbackground
+            }
+            if( limit == 1){
+                // Lower Limit
+                payload.foreground = this.settings.lowerlimitforeground
+                payload.background = this.settings.lowerlimitbackground
+            }
         }
 
         this.data = payload
@@ -221,28 +338,27 @@ class SimpleAction extends Action {
         this.drawingCtx.font = 600 + " " + 24 + "px Arial";
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(data.symbol, 138, 6);
+        this.drawingCtx.fillText(data.symbol, 136, 8);
     }
 
-    drawPrice(){
-        let data = this.data
-        var displayPrice = data.price;
+    drawPrice(color, value){
+        var displayPrice = value;
         
         // Apply decimal option
         if (typeof this.settings.decimals != "undefined") {
-            displayPrice = data.price.toFixed(this.settings.decimals);
+            displayPrice = value.toFixed(this.settings.decimals);
         }
         
-        if(data.price > 100000){
-            displayPrice = this.abbreviateNumber(data.price, 4);
+        if(value > 100000){
+            displayPrice = this.abbreviateNumber(value, 4);
         }
 
         // Render Price
-        this.drawingCtx.fillStyle = data.foreground;
+        this.drawingCtx.fillStyle = color;
         this.setFontFor(displayPrice, 600, this.canvas.width - 20)
         this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "bottom"
-        this.drawingCtx.fillText(displayPrice, 142, 80);
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillText(displayPrice, 142, 36);
     }
 
     drawVolume(){
@@ -265,8 +381,9 @@ class SimpleAction extends Action {
 
     drawRange(){
         let data = this.data
+        if(data.change == '') return
+
         var change = data.change
-        
         this.drawingCtx.fillStyle = change < 0 ? '#FF0000' : '#00FF00';
         change *= change < 0 ? -1 : 1
         change = change.toFixed(2) + "%";
@@ -311,20 +428,59 @@ class SimpleAction extends Action {
         this.drawingCtx.fillText(chartRange, 3, 10);
     }
 
-    updateDisplay() {
-        this.drawingCtx.fillStyle = this.data.background;
-        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
+    updateDefaultView(){
         this.drawSymbol()
-        this.drawPrice()
+        this.drawPrice(this.data.foreground, this.data.price)
         
-        if(this.context.pressCount == 0){
+        if(this.state == STATE_DEFAULT){
             this.drawMarketState()
             this.drawVolume()
             this.drawRange()
         }
+    }
+
+    updateLimitsView(){
+        let isLow = this.context.clickCount == 0
+        this.drawingCtx.fillStyle = "#1D1E1F";
+        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+
+        var label = isLow ? "Low" : "High"
+        var value = isLow ? this.settings.lowerlimit : this.settings.upperlimit
+        
+        this.drawingCtx.fillStyle =  "#D8D8D8";
+        this.drawingCtx.font = 600 + " " + 24 + "px Arial";
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillText(label + ' Limit', 136, 8);
+
+        if(this.settings.limitType == LIMIT_TYPE_NUMERIC){
+            this.drawPrice("#D8D8D8", value)
+        }
         else {
-            this.drawChart()
+            value += '%'
+            this.setFontFor(value, 600, this.canvas.width - 20)
+            this.drawingCtx.fillText(value, 140, 38);
+        }
+    }
+
+    updateChartView(){
+        this.updateDefaultView()
+        this.drawChart()
+    }
+
+    updateDisplay() {
+        this.drawingCtx.fillStyle = this.data.background;
+        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        switch(this.state){    
+            case STATE_CHARTS : 
+                this.updateChartView()
+                break
+            case STATE_LIMITS :
+                this.updateLimitsView()
+                break
+            default:
+                this.updateDefaultView()
         }
 
         $SD.api.setImage(this.uuid, this.canvas.toDataURL());

@@ -1,7 +1,22 @@
 class Dataprovider {
   symbolTimer = null;
   chartURL  = "https://query1.finance.yahoo.com/v7/finance/spark?" //indicators=close&includeTimestamps=false&includePrePost=false
-  symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields=symbol,marketState,regularMarketPrice,regularMarketVolume,regularMarketChangePercent,preMarketPrice,preMarketVolume,preMarketChangePercent,postMarketPrice,postMarketVolume,postMarketChangePercent&symbols="
+  symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields="
+  symbolFields = [
+    'symbol',
+    'marketState',
+    'preMarketPrice',
+    'preMarketVolume',
+    'preMarketChangePercent',
+    'regularMarketPrice',
+    'regularMarketVolume',
+    'regularMarketChangePercent',
+    'regularMarketPreviousClose',
+    'regularMarketOpen',
+    'postMarketPrice',
+    'postMarketVolume',
+    'postMarketChangePercent'
+  ]
 
   constructor(){
   }
@@ -21,14 +36,17 @@ class Dataprovider {
 
   fetchSymbolData(){
     var url = this.symbolURL
+    url += this.symbolFields.join()
+    url += "&symbols="
 
-    Object.values(contexts).forEach(item => {
+    Object.values(contextList).forEach(item => {
       let symbol = Utils.getProp(item, "settings.symbol", false);
       
       if(!symbol) return
       url += item.settings.symbol + ","
     })
     
+    console.log("Data PRovider", url)
     // Double check that we have symbols added to the URL
     if(url.length != this.symbolURL.length) {
       this.requestData(url, 
@@ -41,7 +59,7 @@ class Dataprovider {
     var url = this.chartURL + "range="+ range +"&interval="+ interval +"&symbols="
     let urlLength = url.length
 
-    Object.values(contexts).forEach(item => {
+    Object.values(contextList).forEach(item => {
       let symbol = Utils.getProp(item, "settings.symbol", false);
       
       if(!symbol) return
@@ -57,7 +75,7 @@ class Dataprovider {
   }
 
   handleError(response, event){
-    Object.values(contexts).forEach(item => {
+    Object.values(contextList).forEach(item => {
       item.payload = error
       $SD.emit(item.action + '.' + event, item)
     })
@@ -73,7 +91,7 @@ class Dataprovider {
       data[item.symbol] = item;
     })
     
-    Object.values(contexts).forEach(item => {
+    Object.values(contextList).forEach(item => {
       let symbol = Utils.getProp(item, "settings.symbol", false);
       
       if(!symbol) return
