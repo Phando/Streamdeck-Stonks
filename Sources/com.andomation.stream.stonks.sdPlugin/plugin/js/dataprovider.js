@@ -7,14 +7,17 @@ class Dataprovider {
     'marketState',
     'preMarketPrice',
     'preMarketVolume',
+    'preMarketChange',
     'preMarketChangePercent',
     'regularMarketPrice',
     'regularMarketVolume',
+    'regularMarketChange',
     'regularMarketChangePercent',
     'regularMarketPreviousClose',
     'regularMarketOpen',
     'postMarketPrice',
     'postMarketVolume',
+    'postMarketChange',
     'postMarketChangePercent'
   ]
 

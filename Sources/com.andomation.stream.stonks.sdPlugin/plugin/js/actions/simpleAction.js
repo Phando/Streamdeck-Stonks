@@ -1,5 +1,6 @@
-const STATE_CHARTS = 'charts'
-const STATE_LIMITS = 'limits'
+const STATE_CHARTS  = 'charts'
+const STATE_DAY     = 'day'
+const STATE_LIMITS  = 'limits'
 
 const LIMIT_TYPE_NUMERIC = 'numeric'
 const LIMIT_TYPE_PERCENT = 'percent'
@@ -28,6 +29,9 @@ class SimpleAction extends Action {
         this.type = this.type + ".simple";
     }
 
+    // Streamdeck Event Handlers
+    //-----------------------------------------------------------------------------------------
+
     onConnected(jsn) {
         super.onConnected(jsn)
 
@@ -41,6 +45,8 @@ class SimpleAction extends Action {
         $SD.on(this.type + '.didReceiveSymbolData', (jsonObj) => this.onDidReceiveSymbolData(jsonObj));
         $SD.on(this.type + '.didReceiveSymbolError', (jsonObj) => this.onDidReceiveSymbolError(jsonObj));
     }
+
+    //-----------------------------------------------------------------------------------------
 
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn);
@@ -69,6 +75,8 @@ class SimpleAction extends Action {
         $SD.api.setSettings(this.uuid, this.settings) 
     } 
 
+    //-----------------------------------------------------------------------------------------
+
     onKeyUp(jsn){
         //ranges = ["1d","5d","1mo","3mo","6mo","1y","2y","5y","10y","ytd","max"]
         //valid intervals: [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
@@ -76,6 +84,11 @@ class SimpleAction extends Action {
 
         switch(this.state){    
             case STATE_CHARTS : 
+                this.onChartClick(jsn)
+                break
+            case STATE_DAY : 
+                this.context.clickCount = 0
+                this.context.stateName = STATE_CHARTS
                 this.onChartClick(jsn)
                 break
             case STATE_LIMITS :        
@@ -86,13 +99,11 @@ class SimpleAction extends Action {
                 this.updateDisplay() 
                 break
             default:
-                this.context.clickCount = 0
-                this.context.stateName = STATE_CHARTS
-                this.onChartClick(jsn)    
-                //this.state = STATE_CHARTS
-
+                this.state = STATE_DAY
         }
     }
+
+    //-----------------------------------------------------------------------------------------
 
     onLongPress(jsn){
         super.onLongPress(jsn)
@@ -101,6 +112,45 @@ class SimpleAction extends Action {
         // Decrementing clickCount to anticipate the keyUp
         this.context.clickCount -= 1
     }
+
+    //-----------------------------------------------------------------------------------------
+
+    updatePIValue(keyName, collection){
+        for (const [key, value] of Object.entries(this.settings)) {
+            if(keyName != key && keyName.includes(key)){
+                delete this.settings[key]
+                return
+            }
+        }
+
+        this.settings[keyName] = collection.value
+        this.settings[collection.key] = collection.value
+        $SD.api.setSettings(this.uuid, this.settings); 
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onSendToPlugin(jsn) {
+        super.onSendToPlugin(jsn)
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+
+        // TODO : Automate this better, the root is radios and checkboxes
+        if(sdpi_collection.hasOwnProperty('key') && sdpi_collection.hasOwnProperty('value')){
+            if(sdpi_collection.key.includes('limitType')){
+                this.updatePIValue('limitType', sdpi_collection)
+            }
+
+            if(sdpi_collection.key.includes('limitsEnabled')){
+                this.updatePIValue('limitsEnabled', sdpi_collection)
+                this.settings.limitsEnabled = this.settings.limitsEnabled == 'true'
+            }
+        }
+
+        dataprovider.fetchSymbolData()
+    }
+
+    // Custom Event Handlers
+    //-----------------------------------------------------------------------------------------
 
     onChartClick(jsn){
         console.log("Chart Click", this.context.clickCount, jsn)
@@ -123,6 +173,8 @@ class SimpleAction extends Action {
         }
     }
 
+    //-----------------------------------------------------------------------------------------
+
     onAdjustLimit(jsn, increment){
         this.uuid = jsn.context
         clearInterval(this.context.adjustTimer)
@@ -134,7 +186,7 @@ class SimpleAction extends Action {
         }.bind(this), 5000, this.uuid);
 
         if(this.state != STATE_LIMITS){
-            this.settings.limitEnabled = true
+            this.settings.limitsEnabled = true
             
             if(this.settings.lowerlimit == Number.MIN_VALUE){
                 this.settings.lowerlimit = this.settings.limitType == LIMIT_TYPE_PERCENT ? 0 : this.data.price
@@ -162,36 +214,7 @@ class SimpleAction extends Action {
         this.updateDisplay()
     }
 
-    updatePIValue(keyName, collection){
-        for (const [key, value] of Object.entries(this.settings)) {
-            if(keyName != key && keyName.includes(key)){
-                delete this.settings[key]
-                return
-            }
-        }
-
-        this.settings[keyName] = collection.value
-        this.settings[collection.key] = collection.value
-        $SD.api.setSettings(this.uuid, this.settings); 
-    }
-
-    onSendToPlugin(jsn) {
-        super.onSendToPlugin(jsn)
-        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
-
-        // TODO : Automate this better, the root is radios and checkboxes
-        if(sdpi_collection.hasOwnProperty('key') && sdpi_collection.hasOwnProperty('value')){
-            if(sdpi_collection.key.includes('limitType')){
-                this.updatePIValue('limitType', sdpi_collection)
-            }
-
-            if(sdpi_collection.key.includes('limitsEnabled')){
-                this.updatePIValue('limitsEnabled', sdpi_collection)
-            }
-        }
-
-        dataprovider.fetchSymbolData()
-    }
+    //-----------------------------------------------------------------------------------------
 
     onDidReceiveChartData(jsn) {
         console.log("SimpleAction - onDidReceiveChartData: ", jsn)
@@ -222,10 +245,11 @@ class SimpleAction extends Action {
         this.updateDisplay()
     }
 
+    //-----------------------------------------------------------------------------------------
+
     onDidReceiveSymbolData(jsn) {
         console.log("SimpleAction - onDidReceiveSymbol: ", jsn)
         
-        var payload = {}
         this.uuid = jsn.context
         var symbol = jsn.payload
 
@@ -246,12 +270,39 @@ class SimpleAction extends Action {
             return
         }
 
+        this.data = this.prepSymbolData(symbol)
+        this.updateDisplay()
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onDidReceiveSymbolError(jsn) {
+        console.log('Action - onDidReceiveSymbolError', jsn)
+        this.renderError(jsn)
+    }
+
+    // Utils
+    //-----------------------------------------------------------------------------------------
+
+    prepPrice(value){
+        // Apply decimal option
+        value = value.toFixed(this.settings.decimals)
+        
+        if(value > 100000)
+            value = this.abbreviateNumber(value, 4)
+
+        return value
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    prepSymbolData(symbol){
+        var payload = {}
+
         payload.price       = symbol.regularMarketPrice
         payload.open        = symbol.regularMarketOpen
         payload.prevClose   = symbol.regularMarketPreviousClose
         payload.volume      = Utils.abbreviateNumber(symbol.regularMarketVolume)
-        payload.action      = this.settings.action
-        payload.actionMode  = this.settings.action1mode
         payload.foreground  = this.settings.foreground
         payload.background  = this.settings.background
         
@@ -262,20 +313,23 @@ class SimpleAction extends Action {
         payload.state   = ''
         payload.low     = symbol.regularMarketDayLow
         payload.high    = symbol.regularMarketDayHigh
-        payload.change  = symbol.regularMarketChangePercent
+        payload.change  = symbol.regularMarketChange
+        payload.percent = symbol.regularMarketChangePercent
 
         // Factor after market pricing
         if (symbol.marketState != "REGULAR") {
 
             if(symbol.marketState.includes("POST")){
-                payload.state = symbol.marketState == "POSTPOST" ? "CLD" : "AH"
+                payload.state = symbol.marketState == "POSTPOST" ? "Cl" : "AH"
                 payload.price = symbol.postMarketPrice || payload.price
-                payload.change = symbol.postMarketChangePercent || ''
+                payload.change = symbol.postMarketChange || ''
+                payload.percent = symbol.postMarketChangePercent || ''
             }
             else {
-                payload.state = symbol.marketState == "PREPRE" ? "CLD" : "PRE"
+                payload.state = symbol.marketState == "PREPRE" ? "Cl" : "Pre"
                 payload.price = symbol.preMarketPrice || payload.price
-                payload.change = symbol.preMarketChangePercent || ''
+                payload.change = symbol.preMarketChange || ''
+                payload.percent = symbol.preMarketChangePercent || ''
             }
             
             payload.low = payload.price < payload.low ? payload.price : payload.low
@@ -286,8 +340,8 @@ class SimpleAction extends Action {
         var limit = 0
         if (this.settings.limitsEnabled) {
             if(this.settings.limitType == LIMIT_TYPE_PERCENT){
-                limit = payload.change >= this.settings.upperlimit ? 1 : 0
-                limit = payload.change <= this.settings.upperlimit ? -1 : limit
+                limit = payload.percent >= this.settings.upperlimit ? 1 : 0
+                limit = payload.percent <= this.settings.upperlimit ? -1 : limit
             } 
             else {
                 limit = payload.price >= this.settings.upperlimit ? 1 : 0
@@ -306,92 +360,156 @@ class SimpleAction extends Action {
             }
         }
 
-        this.data = payload
-        this.updateDisplay()
+        return payload
     }
 
-    onDidReceiveSymbolError(jsn) {
-        console.log('Action - Error', jsn)
-        this.uuid = jsn.context
-        this.drawingCtx.fillStyle = '#1d1e1f'
-        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // Display Handlers
+    //-----------------------------------------------------------------------------------------
 
-        this.drawingCtx.fillStyle =  '#FF0000'
-        this.drawingCtx.font = 600 + " " + 28 + "px Arial";
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText("HELLO", 138, 6);
+    updateDisplay() {
+        this.drawingCtx.fillStyle = this.settings.background
+        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        this.drawingCtx.fillStyle = this.settings.foreground
 
-        // Render Message
-        this.drawingCtx.fillStyle = '#d8d8d8'
-        this.setFontFor(jsn.error.message, 400, this.canvas.width - 20)
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "bottom"
-        this.drawingCtx.fillText(jsn.error.message, 140, 70);
+        switch(this.state){    
+            case STATE_CHARTS : 
+                this.updateChartView()
+                break
+            case STATE_DAY : 
+                this.updateDayView()
+                break
+            case STATE_LIMITS :
+                this.updateLimitsView()
+                break
+            default:
+                this.updateDefaultView()
+        }
 
         $SD.api.setImage(this.uuid, this.canvas.toDataURL());
     }
 
-    drawSymbol(){
-        let data = this.data
-        this.drawingCtx.fillStyle =  data.foreground;
+    //-----------------------------------------------------------------------------------------
+
+    updateChartView(){
+        this.drawSymbol(this.settings.foreground)
+        this.drawPrice(this.settings.foreground, this.data.price)
+        this.drawChart()
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    updateDayView(){
+        console.log('updateDayView', this.context.clickCount)
+        
+        this.drawSymbol(this.settings.foreground)
+
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.font = 400 + " " + 25 + "px Arial";
+
+        this.drawChangeItemValue("Cl", this.data.prevClose, 40)
+        this.drawChangeItemValue("Hi", this.data.high, 72)
+        this.drawChangeItemValue("Lo", this.data.low, 104)
+    }
+    
+    //-----------------------------------------------------------------------------------------
+
+    updateDefaultView(){
+        this.drawingCtx.fillStyle = this.data.background;
+        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        var grd = this.drawingCtx.createLinearGradient(0, 0, 0, 50);
+        grd.addColorStop(0, this.data.background);
+        grd.addColorStop(1, this.settings.background);
+
+        // Fill with gradient
+        this.drawingCtx.fillStyle = grd;
+        this.drawingCtx.fillRect(0, 0, 144, 144);
+
+        this.drawSymbol()
+        this.drawPrice(this.data.price)
+        this.drawFooter()
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    updateLimitsView(){
+        let isLow = this.context.clickCount == 0
+        var label = isLow ? "Low" : "High"
+        var value = isLow ? this.settings.lowerlimit : this.settings.upperlimit
+        
+        this.drawingCtx.fillStyle =  this.settings.foreground;
         this.drawingCtx.font = 600 + " " + 24 + "px Arial";
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(data.symbol, 136, 8);
+        this.drawingCtx.fillText(label + ' Limit', 136, 8);
+
+        if(this.settings.limitType == LIMIT_TYPE_NUMERIC){
+            this.drawPrice("#D8D8D8", value)
+        }
+        else {
+            value += '%'
+            this.setFontFor(value, 600, this.canvas.width - 20)
+            this.drawingCtx.fillText(value, 140, 38);
+        }
     }
 
-    drawPrice(color, value){
-        var displayPrice = value;
-        
-        // Apply decimal option
-        if (typeof this.settings.decimals != "undefined") {
-            displayPrice = value.toFixed(this.settings.decimals);
-        }
-        
-        if(value > 100000){
-            displayPrice = this.abbreviateNumber(value, 4);
-        }
+    // Rendering Functions (little to no logic)
+    //-----------------------------------------------------------------------------------------
 
-        // Render Price
-        this.drawingCtx.fillStyle = color;
-        this.setFontFor(displayPrice, 600, this.canvas.width - 20)
+    drawSymbol(){
+        this.drawingCtx.fillStyle =  this.settings.foreground
+        this.drawingCtx.font = 600 + " " + 24 + "px Arial";
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(displayPrice, 142, 36);
+        this.drawingCtx.fillText(this.data.symbol, 136, 8);
     }
+    
+    //-----------------------------------------------------------------------------------------
 
-    drawVolume(){
-        let data = this.data
-        this.drawingCtx.fillStyle = data.foreground;
-        this.drawingCtx.font = 500 + " " + 25 + "px Arial";
+    drawPrice(value){
+        value = this.prepPrice(value)
+
+        // Render Price
+        this.drawingCtx.fillStyle = this.settings.foreground
+        this.setFontFor(value, 600, this.canvas.width - 20)
         this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "bottom"
-        this.drawingCtx.fillText(data.volume, 142, 110);
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillText(value, 140, 34);
     }
 
-    drawMarketState(){
+    //-----------------------------------------------------------------------------------------
+
+    drawFooter(){
         let data = this.data
-        this.drawingCtx.fillStyle = data.foreground
-        this.drawingCtx.font = 500 + " " + 18 + "px Arial"
+        let change = data.change || 0
+        let percent = data.percent || 0
+
+        // Volume
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillStyle = this.settings.foreground
+        this.drawingCtx.font = 500 + " " + 25 + "px Arial";
+        this.drawingCtx.fillText(data.volume, 138, 72);
+        
+        // Market State
         this.drawingCtx.textAlign = "left"
-        this.drawingCtx.textBaseline = "top" 
-        this.drawingCtx.fillText(data.state, 5, 88);
-    }
+        this.drawingCtx.font = 400 + " " + 20 + "px Arial"
+        this.drawingCtx.fillText(data.state, 7, 74);
+        
+        // Range Percent
+        this.drawingCtx.font = 400 + " " + 22 + "px Arial"
+        this.drawingCtx.fillStyle = percent >= 0 ? '#00FF00' : '#FF0000'
+        percent *= percent < 0 ? -1 : 1
+        percent = percent.toFixed(2) + "%";
+        this.drawingCtx.fillText(percent, 5, 94);
 
-    drawRange(){
-        let data = this.data
-        if(data.change == '') return
-
-        var change = data.change
-        this.drawingCtx.fillStyle = change < 0 ? '#FF0000' : '#00FF00';
+        this.drawingCtx.textAlign = "right"
         change *= change < 0 ? -1 : 1
-        change = change.toFixed(2) + "%";
-        this.drawingCtx.font = 400 + " " + 25 + "px Arial";
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.textBaseline = "bottom"
-        this.drawingCtx.fillText(change, 2, 138);
+        change = this.prepPrice(change)
+        this.drawingCtx.fillText(change, 132, 114);
     }
+
+    //-----------------------------------------------------------------------------------------
 
     drawChart(){
         let xPos = (this.canvas.width-this.chartWidth)/2
@@ -413,7 +531,7 @@ class SimpleAction extends Action {
         }
 
         if(chart.range == '1d') {
-            this.drawingCtx.fillStyle = this.data.foreground
+            this.drawingCtx.fillStyle = this.settings.foreground
             range = (chart.chartPreviousClose - chart.min) / (chart.max - chart.min)
             this.drawingCtx.fillRect(0, 144 - (15 + 40 * range), 144, 2);
         }
@@ -421,75 +539,66 @@ class SimpleAction extends Action {
         var chartRange = chart.range.toUpperCase()
         chartRange = chartRange.substring(0, 2)
     
-        this.drawingCtx.fillStyle = this.data.foreground
+        this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.font = 600 + " " + 20 + "px Arial"
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.textBaseline = "top" 
         this.drawingCtx.fillText(chartRange, 3, 10);
     }
 
-    updateDefaultView(){
-        this.drawSymbol()
-        this.drawPrice(this.data.foreground, this.data.price)
-        
-        if(this.state == STATE_DEFAULT){
-            this.drawMarketState()
-            this.drawVolume()
-            this.drawRange()
-        }
+    //-----------------------------------------------------------------------------------------
+
+    drawChangeItemPercent(label, value, yPos){ 
+        this.drawingCtx.fillStyle = this.settings.foreground;
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.fillText(label, 7, yPos);
+
+        // These lines retain white for the market close value
+        this.drawingCtx.fillStyle = value < this.data.prevClose ? '#FF0000' : this.drawingCtx.fillStyle;
+        this.drawingCtx.fillStyle = value > this.data.prevClose ? '#00FF00' : this.drawingCtx.fillStyle;
+        value *= value < 0 ? -1 : 1
+        value = value.toFixed(2) + "%";
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.fillText(value, 130, yPos);
+
+        this.drawingCtx.fillStyle = this.settings.foreground;
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.fillText(label, 2, yPos);
     }
 
-    updateLimitsView(){
-        let isLow = this.context.clickCount == 0
-        this.drawingCtx.fillStyle = "#1D1E1F";
-        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    //-----------------------------------------------------------------------------------------
+    
+    drawChangeItemValue(label, value, yPos){
+        this.drawingCtx.fillStyle = this.settings.foreground;
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.fillText(label, 7, yPos);
 
-        var label = isLow ? "Low" : "High"
-        var value = isLow ? this.settings.lowerlimit : this.settings.upperlimit
+        value = Number(value)
         
-        this.drawingCtx.fillStyle =  "#D8D8D8";
-        this.drawingCtx.font = 600 + " " + 24 + "px Arial";
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(label + ' Limit', 136, 8);
-
-        if(this.settings.limitType == LIMIT_TYPE_NUMERIC){
-            this.drawPrice("#D8D8D8", value)
+        if(!isNaN(value)){
+            // These lines retain white for the market close value
+            this.drawingCtx.fillStyle = value < this.data.prevClose ? '#FF0000' : this.drawingCtx.fillStyle;
+            this.drawingCtx.fillStyle = value > this.data.prevClose ? '#00FF00' : this.drawingCtx.fillStyle;
+        
+            value = this.prepPrice(value)
         }
         else {
-            value += '%'
-            this.setFontFor(value, 600, this.canvas.width - 20)
-            this.drawingCtx.fillText(value, 140, 38);
-        }
-    }
-
-    updateChartView(){
-        this.updateDefaultView()
-        this.drawChart()
-    }
-
-    updateDisplay() {
-        this.drawingCtx.fillStyle = this.data.background;
-        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        switch(this.state){    
-            case STATE_CHARTS : 
-                this.updateChartView()
-                break
-            case STATE_LIMITS :
-                this.updateLimitsView()
-                break
-            default:
-                this.updateDefaultView()
+            value = '--'
         }
 
-        $SD.api.setImage(this.uuid, this.canvas.toDataURL());
+        // Render Price
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.fillText(value, 137, yPos);
     }
+
+    // Error Handler
+    //-----------------------------------------------------------------------------------------
 
     renderError(jsn) {
         console.log('Action - renderError', jsn)
-        this.drawingCtx.fillStyle = '#1d1e1f'
-        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.uuid = jsn.context
+        this.drawingCtx.fillStyle = this.settings.background
+        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
         this.drawingCtx.fillStyle =  '#FF0000'
         this.drawingCtx.font = 600 + " " + 26 + "px Arial";
@@ -498,7 +607,7 @@ class SimpleAction extends Action {
         this.drawingCtx.fillText("Error", this.canvas.width/2, 6);
 
         // Render Message
-        this.drawingCtx.fillStyle = '#d8d8d8'
+        this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.font = 600 + " " + 19 + "px Arial";
         this.drawingCtx.fillText(jsn.error.message, this.canvas.width/2, 40);
 
