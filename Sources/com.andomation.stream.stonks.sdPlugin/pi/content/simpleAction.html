@@ -16,12 +16,12 @@
     <div class="sdpi-item-label">Enabled</div>
     <div class="sdpi-item-value ">
         <div class="sdpi-item-child">
-            <input id="limitsEnabled1" type="radio" value="true" name="limitsEnabled">
-            <label for="limitsEnabled1" class="sdpi-item-label"><span></span>True</label>
+            <input id="limitsEnabled-radio1" type="radio" value="true" name="limitsEnabled">
+            <label for="limitsEnabled-radio1" class="sdpi-item-label"><span></span>True</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="limitsEnabled2" type="radio" value="false" name="limitsEnabled">
-            <label for="limitsEnabled2" class="sdpi-item-label"><span></span>False</label>
+            <input id="limitsEnabled-radio2" type="radio" value="false" name="limitsEnabled">
+            <label for="limitsEnabled-radio2" class="sdpi-item-label"><span></span>False</label>
         </div>
     </div>
 </div>
@@ -30,12 +30,12 @@
     <div class="sdpi-item-label">Type</div>
     <div class="sdpi-item-value ">
         <div class="sdpi-item-child">
-            <input id="limitType1" type="radio" value="percent" name="limitType">
-            <label for="limitType1" class="sdpi-item-label"><span></span>Percent</label>
+            <input id="limitType-radio1" type="radio" value="percent" name="limitType">
+            <label for="limitType-radio1" class="sdpi-item-label"><span></span>Percent</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="limitType2" type="radio" value="numeric" name="limitType">
-            <label for="limitType2" class="sdpi-item-label"><span></span>Numeric</label>
+            <input id="limitType-radio2" type="radio" value="numeric" name="limitType">
+            <label for="limitType-radio2" class="sdpi-item-label"><span></span>Numeric</label>
         </div>
     </div>
 </div>
@@ -45,23 +45,25 @@
     <input id="limitIncrement" class="sdpi-item-value" type="number"/>     
 </div>
 
+
+
 <div class="sdpi-heading">Upper Limit</div>
 
-<div type="color" class="sdpi-item" >
-    <div class="sdpi-item-label">Foreground</div>
-    <input id="upperlimitforeground" type="color" class="sdpi-item-value">
+<div class="sdpi-item">
+    <div class="sdpi-item-label">Limit</div>
+    <input id="upperlimit" class="sdpi-item-value" type="number"/>     
 </div>
 
 <div type="color" class="sdpi-item" >
     <div class="sdpi-item-label">Background</div>
-    <input id="upperlimitbackground" type="color" class="sdpi-item-value">
+    <input id="upperlimitbackground" type="color" class="sdpi-item-value"> -->
 </div>
 
 <div class="sdpi-heading">Lower Limit</div>
 
-<div type="color" class="sdpi-item">
-    <div class="sdpi-item-label">Foreground</div>
-    <input id="lowerlimitforeground" type="color" class="sdpi-item-value">
+<div class="sdpi-item">
+    <div class="sdpi-item-label">Limit</div>
+    <input id="lowerimit" class="sdpi-item-value" type="number"/>     
 </div>
 
 <div type="color" class="sdpi-item">
@@ -81,37 +83,38 @@
         </div>
     </div>
 </div>
+-->
 
 <div type="checkbox" class="sdpi-item" id="multi-items">
     <div class="sdpi-item-label">Select day</div>
     <div class="sdpi-item-value min100">
         <div class="sdpi-item-child">
-            <input id="days1" type="checkbox" value="Monday">
-            <label for="days1" class="sdpi-item-label"><span></span>Monday</label>
+            <input id="days-1" type="checkbox" value="Monday" name="days">
+            <label for="days-1" class="sdpi-item-label"><span></span>Monday</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="days2" type="checkbox" value="Tuesday">
-            <label for="days2" class="sdpi-item-label"><span></span>Tuesday</label>
+            <input id="days-2" type="checkbox" value="Tuesday" name="days">
+            <label for="days-2" class="sdpi-item-label"><span></span>Tuesday</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="days3" type="checkbox" value="Wednesday">
-            <label for="days3" class="sdpi-item-label"><span></span>Wednesday</label>
+            <input id="days-3" type="checkbox" value="Wednesday" name="days">
+            <label for="days-3" class="sdpi-item-label"><span></span>Wednesday</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="days4" type="checkbox" value="Thursday">
-            <label for="days4" class="sdpi-item-label"><span></span>Thursday</label>
+            <input id="days-4" type="checkbox" value="Thursday" name="days">
+            <label for="days-4" class="sdpi-item-label"><span></span>Thursday</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="days5" type="checkbox" value="Friday">
-            <label for="days5" class="sdpi-item-label"><span></span>Friday</label>
+            <input id="days-5" type="checkbox" value="Friday" name="days">
+            <label for="days-5" class="sdpi-item-label"><span></span>Friday</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="days6" type="checkbox" value="Saturday">
-            <label for="days6" class="sdpi-item-label"><span></span>Saturday</label>
+            <input id="days-6" type="checkbox" value="Saturday" name="days">
+            <label for="days-6" class="sdpi-item-label"><span></span>Saturday</label>
         </div>
     </div>
 </div>
-
+<!--
 <div type="radio" class="sdpi-item" id="adjust_radio">
     <div class="sdpi-item-label">Adjust Radio</div>
     <div class="sdpi-item-value ">

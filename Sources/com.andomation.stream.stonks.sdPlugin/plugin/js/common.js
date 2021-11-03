@@ -128,26 +128,25 @@ function saveValue(sdpi_collection) {
         || !sdpi_collection.value 
         || sdpi_collection.value == undefined) { return }
     
-    console.log("Setting:", sdpi_collection.key, " => ", sdpi_collection.value);
     if( globalSettings.hasOwnProperty(sdpi_collection.key) ){
-        globalSettings[sdpi_collection.key] = sdpi_collection.value;
+        globalSettings[sdpi_collection.key] = sdpi_collection.value
         saveSettings(globalSettings)
     }
     else {
-        settings[sdpi_collection.key] = sdpi_collection.value;
+        var settings = $SD.actionInfo.payload.settings
+        settings[sdpi_collection.key] = sdpi_collection.value
         saveSettings(settings)
     }
 }
 
 function saveSettings(data){
-    console.log(data)
     if( data == globalSettings) {
-        console.log('setGlobalSettings....', globalSettings);
-        $SD.api.setGlobalSettings($SD.uuid, data);
+        console.log('SaveSettings Global:', globalSettings)
+        $SD.api.setGlobalSettings($SD.uuid, data)
     }
     else {
-        console.log("setSettings....", data);
-        $SD.api.setSettings($SD.actionInfo["context"], data);
+        console.log('SaveSettings Local:', data)
+        $SD.api.setSettings($SD.actionInfo["context"], data)
     }
 }
 

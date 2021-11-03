@@ -1,4 +1,4 @@
-var settings = {}
+var action = {}
 var onchangeevt = "onchange"; // 'oninput';
 let sdpiWrapper = document.querySelector(".sdpi-wrapper");
 
@@ -19,17 +19,17 @@ $SD = StreamDeck.getInstance();
 
 $SD.on("connected", (jsn) => {
   console.log("PI Connected", jsn);
-  settings = Utils.getProp(jsn, "actionInfo.payload.settings", false);
+  //$SD.on('didReceiveGlobalSettings', (jsonObj) => action.onReceiveGlobalSettings(jsonObj));
+
+  let actionType = Utils.getProp(jsn, "actionInfo.action", "")
   
-  let actionType = Utils.getProp(jsn, "actionInfo.action", "");
-  
-  actions.forEach((action) => {
-    if(!action.type.endsWith('PI')){ return; }
+  actions.forEach((item) => {
+    console.log("Action Type", item.type)
     
-    $SD.on('didReceiveGlobalSettings', (jsonObj) => action.onReceiveGlobalSettings(jsonObj));
-    
-    if (action.type.includes(actionType)) {
-      action.init(jsn);
+    if(item.type == actionType){
+      item.init(jsn)
+      action = item
+      return
     }
   });
 });
@@ -48,7 +48,8 @@ $SD.on("connected", (jsn) => {
 
 $SD.on("sendToPropertyInspector", (jsn) => {
   const pl = jsn.payload;
-  console.log("Props", jsn)
+  console.log("sendToPropertyInspector", jsn)
+  
   /**
    *  This is an example, how you could show an error to the user
    */
@@ -139,7 +140,6 @@ function sendValueToPlugin(value, prop) {
 
 function handleSdpiItemChange(e, idx) {
   /** Following items are containers, so we won't handle clicks on them */
-
   if (["OL", "UL", "TABLE"].includes(e.tagName)) {
     return;
   }
@@ -183,24 +183,32 @@ function handleSdpiItemChange(e, idx) {
     }
   }
 
-  if(e.type == "radio"){
-    // TODO: Assuming settings not globalSettings
-    sdpiItemChildren.forEach((item) => { 
-      delete settings[item.id];
-    });
-    saveSettings(settings);
-  }
+  console.log("E Type", e.type, e, $SD)
 
-  if(e.type == "checkbox") {
-    // TODO: Assuming settings not globalSettings
+  if(e.type == "radio" || e.type == "checkbox"){
+    sdpiItemChildren.forEach((item) => { 
+      if(!item.checked){
+        delete action.settings[item.id]
+      }
+    });
+
+    if(e.checked){
+      action.settings[e.id] = e.value
+      e.setAttribute("_value", e.value)
+
+      if(e.type == "radio"){
+        e.setAttribute("id", e.name)
+      }
+    }
+    
+    console.log("Pre Save", action.settings)
+    saveSettings(action.settings)
+
     if(!e.checked){
-      delete settings[e.id];
-      saveSettings(settings);
-      //$SD.api.getSettings($SD.uuid, settings)
+      console.log("Returning... Unchecked Checkbox", action)
+      $SD.emit("piDataChanged", {})
       return
     }
-
-    e.setAttribute("_value", e.value);
   }
 
   if (sdpiItemGroup && !sdpiItemChildren.length) {
@@ -247,6 +255,23 @@ function handleSdpiItemChange(e, idx) {
 //------------------------------ DOM Helpers -----------------------------------//
 
 const updateUI = (pl) => {
+
+  // Insert Radio Values if Needed
+  for (const [key, value] of Object.entries(pl)) {
+    var fieldList = document.querySelectorAll("[id^="+key+"-radio]") 
+    if( fieldList.length == 0 ) continue
+    
+    fieldList.forEach(function(item){
+        console.log("Field", item, item.id, item.value)
+        if(item.value == pl[key]){
+          pl[item.id] = pl[key]
+        } 
+        else {
+            delete pl[item.id]
+        }
+    });
+  }
+
   Object.keys(pl).map((e) => {
     if (e && e != "") {
       const foundElement = document.querySelector(`#${e}`);
@@ -413,8 +438,9 @@ document.addEventListener("DOMContentLoaded", function () {
     navigator.userAgent.includes("Mac") ? "mac" : "win"
   );
   
+  console.log("SD", $SD)
   if(document.getElementById('contentLoaded') != null){
-    updateUI(settings);
+    updateUI(action.settings);
     prepareDOMElements();
   }
   else {
@@ -437,5 +463,5 @@ window.addEventListener("beforeunload", function (e) {
 //-----------------------------------------------------------------//
 
 function gotCallbackFromWindow(parameter) {
-  console.log(parameter);
+  console.log("gotCallbackFromWindow", parameter);
 }

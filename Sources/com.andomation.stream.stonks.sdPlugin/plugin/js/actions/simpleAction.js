@@ -25,7 +25,7 @@ class SimpleAction extends Action {
     }
 
     constructor() {
-        super()
+        super() 
         this.type = this.type + ".simple";
     }
 
@@ -61,17 +61,14 @@ class SimpleAction extends Action {
 
         this.settings.limitType = this.settings.limitType || LIMIT_TYPE_PERCENT
         this.settings.limitIncrement = this.settings.limitIncrement = 1
-        this.settings.limitsEnabled = this.settings.limitsEnabled || false
+        this.settings.limitsEnabled = this.settings.limitsEnabled || 'false'
         
         this.settings.upperlimit = this.settings.upperlimit || Number.MIN_VALUE
-        this.settings.upperlimitforeground = this.settings.upperlimitforeground || "#1D1E1F"
-        this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#00AA00"
-        
         this.settings.lowerlimit = this.settings.lowerlimit || Number.MIN_VALUE
-        this.settings.lowerlimitforeground = this.settings.lowerlimitforeground || "#1D1E1F"
+        this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#00AA00"
         this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#AA0000"
 
-        // $SD.api.setSettings(this.uuid, {}) // Clear the settings
+        //$SD.api.setSettings(this.uuid, {}) // Clear the settings
         $SD.api.setSettings(this.uuid, this.settings) 
     } 
 
@@ -134,17 +131,17 @@ class SimpleAction extends Action {
         super.onSendToPlugin(jsn)
         const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
 
-        // TODO : Automate this better, the root is radios and checkboxes
-        if(sdpi_collection.hasOwnProperty('key') && sdpi_collection.hasOwnProperty('value')){
-            if(sdpi_collection.key.includes('limitType')){
-                this.updatePIValue('limitType', sdpi_collection)
-            }
+        // // TODO : Automate this better, the root is radios and checkboxes
+        // if(sdpi_collection.hasOwnProperty('key') && sdpi_collection.hasOwnProperty('value')){
+        //     if(sdpi_collection.key.includes('limitType')){
+        //         this.updatePIValue('limitType', sdpi_collection)
+        //     }
 
-            if(sdpi_collection.key.includes('limitsEnabled')){
-                this.updatePIValue('limitsEnabled', sdpi_collection)
-                this.settings.limitsEnabled = this.settings.limitsEnabled == 'true'
-            }
-        }
+        //     if(sdpi_collection.key.includes('limitsEnabled')){
+        //         this.updatePIValue('limitsEnabled', sdpi_collection)
+        //         this.settings.limitsEnabled = this.settings.limitsEnabled == 'true'
+        //     }
+        // }
 
         dataprovider.fetchSymbolData()
     }
@@ -341,21 +338,17 @@ class SimpleAction extends Action {
         if (this.settings.limitsEnabled) {
             if(this.settings.limitType == LIMIT_TYPE_PERCENT){
                 limit = payload.percent >= this.settings.upperlimit ? 1 : 0
-                limit = payload.percent <= this.settings.upperlimit ? -1 : limit
+                limit = payload.percent <= this.settings.lowerlimit ? -1 : limit
             } 
             else {
                 limit = payload.price >= this.settings.upperlimit ? 1 : 0
-                limit = payload.price <= this.settings.upperlimit ? -1 : limit
+                limit = payload.price <= this.settings.lowerlimit ? -1 : limit
             }
             
             if( limit == 1){
-                // Upper Limit
-                payload.foreground = this.settings.upperlimitforeground
                 payload.background = this.settings.upperlimitbackground
             }
-            if( limit == 1){
-                // Lower Limit
-                payload.foreground = this.settings.lowerlimitforeground
+            if( limit == -1){
                 payload.background = this.settings.lowerlimitbackground
             }
         }
@@ -392,7 +385,7 @@ class SimpleAction extends Action {
 
     updateChartView(){
         this.drawSymbol(this.settings.foreground)
-        this.drawPrice(this.settings.foreground, this.data.price)
+        this.drawPrice(this.data.price)
         this.drawChart()
     }
 
@@ -414,16 +407,11 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     updateDefaultView(){
-        this.drawingCtx.fillStyle = this.data.background;
-        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        var grd = this.drawingCtx.createLinearGradient(0, 0, 0, 50);
-        grd.addColorStop(0, this.data.background);
-        grd.addColorStop(1, this.settings.background);
-
-        // Fill with gradient
-        this.drawingCtx.fillStyle = grd;
-        this.drawingCtx.fillRect(0, 0, 144, 144);
+        var grd = this.drawingCtx.createLinearGradient(0, 0, 0, 50)
+        grd.addColorStop(0, this.data.background)
+        grd.addColorStop(1, this.settings.background)
+        this.drawingCtx.fillStyle = grd
+        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
         this.drawSymbol()
         this.drawPrice(this.data.price)
@@ -444,7 +432,7 @@ class SimpleAction extends Action {
         this.drawingCtx.fillText(label + ' Limit', 136, 8);
 
         if(this.settings.limitType == LIMIT_TYPE_NUMERIC){
-            this.drawPrice("#D8D8D8", value)
+            this.drawPrice(value)
         }
         else {
             value += '%'
@@ -504,7 +492,7 @@ class SimpleAction extends Action {
         this.drawingCtx.fillText(percent, 5, 94);
 
         this.drawingCtx.textAlign = "right"
-        change *= change < 0 ? -1 : 1
+        change *= change < 0 ? -1 : 1 
         change = this.prepPrice(change)
         this.drawingCtx.fillText(change, 132, 114);
     }
@@ -516,8 +504,8 @@ class SimpleAction extends Action {
         let range = 0
         var index = 0
         let chart = this.chart
-        let isUp = chart.data[0] < chart.data[chart.data.length-1]
-        let fillColor = isUp ? '#008800' : '#880000'
+        let isUp = chart.chartPreviousClose <= chart.regularMarketPrice
+        let fillColor = isUp ? '#007700' : '#770000'
         let tipColor = isUp ? '#00FF00' : '#FF0000'
 
         for(let i = 0; i < this.chartWidth && index < chart.data.length; i++){

@@ -17,3 +17,15 @@ class DecrementAction extends Action {
   }
 
 }
+
+// {
+//   "Icon": "images/plugin/incrementAction", 
+//   "Name": "Stonks - Increment",
+//   "States": [
+//     {
+//       "Image": "images/actions/incrementAction"
+//     }
+//   ],
+//   "Tooltip": "A button to increment your watch limits.",
+//   "UUID": "com.andomation.stream.stonks.increment"
+// }

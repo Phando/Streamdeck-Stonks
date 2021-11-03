@@ -1,7 +1,7 @@
 {
   "Actions": [
     {
-      "Icon": "images/actions/simpleAction", 
+      "Icon": "images/plugin/plugin", 
       "Name": "Stonks - Simple",
       "States": [
         {
@@ -10,28 +10,6 @@
       ],
       "Tooltip": "Keep track of ticker and crypto prices.",
       "UUID": "com.andomation.stream.stonks.simple"
-    },
-    {
-      "Icon": "images/plugin/incrementAction", 
-      "Name": "Stonks - Increment",
-      "States": [
-        {
-          "Image": "images/actions/incrementAction"
-        }
-      ],
-      "Tooltip": "A button to increment your watch limits.",
-      "UUID": "com.andomation.stream.stonks.increment"
-    },
-    {
-      "Icon": "images/plugin/decrementAction", 
-      "Name": "Stonks - Decrement",
-      "States": [
-        {
-          "Image": "images/actions/decrementAction"
-        }
-      ],
-      "Tooltip": "A button to decrement your watch limits.",
-      "UUID": "com.andomation.stream.stonks.decrement"
     }
   ], 
   "SDKVersion": 2,

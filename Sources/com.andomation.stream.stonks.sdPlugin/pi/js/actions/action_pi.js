@@ -1,16 +1,26 @@
 class ActionPI {
+	uuid = 0
+	settings = {}
 	type = "com.andomation.stream.stonks"
 	
 	constructor() {
 	}
 
 	init(jsn) {
-		this.context = $SD.actionInfo.context
-		this.settings = $SD.actionInfo.payload.settings
+		this.uuid = Utils.getProp(jsn, "actionInfo.context", false)
+		this.settings = Utils.getProp(jsn, "actionInfo.payload.settings", false)
+		$SD.on(this.type + '.didReceiveSettings', (jsonObj) => this.onDidReceiveSettings(jsonObj))
 	}
 
+	onDidReceiveSettings(jsn) {
+        this.uuid = jsn.context
+        this.settings = Utils.getProp(jsn, 'payload.settings', false)
+		//this.settings = Utils.getProp(jsn, "actionInfo.payload.settings", false)
+		console.log("ActionPI - onDidReceiveSettings", jsn, this.settings)
+    }
+
 	onReceiveGlobalSettings(jsonObj){
-		updateUI(globalSettings);
+		updateUI(globalSettings).bind(this);
 	}
 
 	injectContent(url, callback) {
@@ -28,7 +38,7 @@ class ActionPI {
 			}
 			if (xmlhttp.readyState == 4 && status == 200) {
 				element.outerHTML = xmlhttp.responseText;
-				if(callback){ callback(); }
+				if(callback){ callback() }
 				
 				// Set up a flag in the dom so DOMContentLoaded knows what to do.
 				const node = document.getElementById('contentLoaded') || document.createElement('div');
