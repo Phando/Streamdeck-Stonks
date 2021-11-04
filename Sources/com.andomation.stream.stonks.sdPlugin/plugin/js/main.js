@@ -1,5 +1,5 @@
-let dataprovider = new Dataprovider();
-var lastPressed = '';
+let dataManager = new DataManager();
+
 /** 
  * All actions in your plugin need to be added to the 'actions' array.
  * This is true even if your plugin has a single action.
@@ -25,7 +25,7 @@ $SD.on('didReceiveGlobalSettings', (jsn) => {
     $SD.api.setGlobalSettings($SD.uuid, globalSettings)
   }
 
-  dataprovider.startPolling()
+  dataManager.startPolling()
 });
 
 /**

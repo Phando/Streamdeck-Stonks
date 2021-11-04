@@ -9,12 +9,29 @@ class Action {
         return contextList[this.uuid]
     }
 
+    get clickCount(){
+        return this.context.clickCount
+    }
+
+    set clickCount(value){
+        this.context.clickCount = value
+    }
+
+    get data(){
+        return this.context.data
+    }
+
+    set data(value){
+        this.context.data = value
+    }
+
     get settings(){
         return this.context.settings
     }
 
-    set settings(data){
-        this.context.settings = data
+    set settings(value){
+        console.log("VALUE", value, this.uuid, this.context)
+        this.context.settings = value
     }
 
     set state(stateName){
@@ -34,7 +51,7 @@ class Action {
         $SD.on(this.type + '.keyUp', (jsonObj) => this.onKeyUp(jsonObj))
         $SD.on(this.type + '.longPress', (jsonObj) => this.onLongPress(jsonObj))
         $SD.on(this.type + '.sendToPlugin', (jsonObj) => this.onSendToPlugin(jsonObj))
-        $SD.on(this.type + '.propertyInspectorDidAppear', (jsonObj) => console.log("propertyInspectorDidAppear"))
+        $SD.on(this.type + '.propertyInspectorDidAppear', (jsonObj) => this.onPropertyInspectorDidAppear(jsonObj))
         $SD.on(this.type + '.propertyInspectorDidDisappear', (jsonObj) => console.log("propertyInspectorDidDisappear"))
     }
 
@@ -45,7 +62,7 @@ class Action {
     }
 
     onWillAppear(jsn) {
-        this.uuid = jsn.context    
+        this.uuid = jsn.context
         this.onDidReceiveSettings(jsn)
 
         this.canvas = document.createElement("canvas")
@@ -56,7 +73,6 @@ class Action {
 
     onKeyDown(jsn) {
         this.uuid = jsn.context
-        lastPressed = this.uuid 
     }
 
     onKeyUp(jsn) {
@@ -68,8 +84,16 @@ class Action {
         this.uuid = jsn.context
     }
 
-    updateDisplay(){};
+    //-----------------------------------------------------------------------------------------
 
+    onPropertyInspectorDidAppear(jsn) {
+        this.uuid = jsn.context
+        this.state = STATE_DEFAULT
+        this.updateDisplay()
+    }
+
+    //-----------------------------------------------------------------------------------------
+    
     onSendToPlugin(jsn) {
         this.uuid = jsn.context
         const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
@@ -84,10 +108,20 @@ class Action {
         }
     } 
 
+    //-----------------------------------------------------------------------------------------
+
+    updateDisplay(jsn){
+        this.uuid = jsn.context
+    };
+
+    //-----------------------------------------------------------------------------------------
+
     setFontFor = function(text, weight, maxWidth) {
         return this.calculateFont(text, weight, 4, 40, maxWidth);
     };
     
+    //-----------------------------------------------------------------------------------------
+
     calculateFont = function(text, weight, min, max, desiredWidth) {
         if (max - min < 1) {
             this.drawingCtx.font = weight + " " + min + "px Arial";

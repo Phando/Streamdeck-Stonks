@@ -15,6 +15,6 @@ class SimpleActionPI extends ActionPI {
     };
 
     onSymbolResult() {
-        console.log("onSymbolResultPI", this.settings.symbol, dataprovider.getResultForSymbo(this.settings.symbol))
+        console.log("onSymbolResultPI", this.settings.symbol, dataManager.getResultForSymbo(this.settings.symbol))
     }
 };

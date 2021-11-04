@@ -4,24 +4,52 @@ const STATE_LIMITS  = 'limits'
 
 const LIMIT_TYPE_NUMERIC = 'numeric'
 const LIMIT_TYPE_PERCENT = 'percent'
+        
+const ViewType = Object.freeze({
+    DEFAULT         : 'defaultView',
+    DAY_DEC         : 'showDayDecmial',
+    DAY_PERC        : 'showDayPercent',
+    CHART_1MIN      : 'show1minChart',
+    CHART_3MIN      : 'show3minChart',
+    CHART_DAY_3MIN  : 'show3minDayChart',
+    CHART_DAY_5MIN  : 'show5minDayChart',
+    CHART_DAY_5     : 'show5DayChart',
+    CHART_MONTH_1   : 'show1MonthChart',
+    CHART_MONTH_3   : 'show3MonthChart',
+    CHART_MONTH_6   : 'show6MonthChart',
+    CHART_MONTH_12  : 'show12MonthChart',
+
+    keyFor : (value) => {
+        for (const [key, match] of Object.entries(ViewType)) {
+            if(value == match){
+                return key
+            }
+        }
+    }
+});
 
 class SimpleAction extends Action {
     chartWidth = 138
+    chartManager = new ChartManager()
 
-    get data(){
-        return this.context.data
+    get chartData(){
+        return this.context.chartData
     }
 
-    set data(data){
-        this.context.data = data
+    set chartData(value){
+        this.context.chartData = value
     }
 
-    get chart(){
-        return this.context.chart
+    get currentView(){
+        return this.viewList[this.clickCount]
     }
 
-    set chart(data){
-        this.context.chart = data
+    get viewList(){
+        return this.context.viewList
+    }
+
+    set viewList(value){
+        this.context.viewList = value
     }
 
     constructor() {
@@ -46,14 +74,11 @@ class SimpleAction extends Action {
         $SD.on(this.type + '.didReceiveSymbolError', (jsonObj) => this.onDidReceiveSymbolError(jsonObj));
     }
 
-    //-----------------------------------------------------------------------------------------
-
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn);
-        console.log("SimpleAction - Update Settings", jsn, this.settings);
-        
-        this.context.chartRange = this.context.chartRange || ''
-        
+        this.chartManager.onDidReceiveSettings(jsn)
+
+        console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
         this.settings.symbol = this.settings.symbol || "GME"
         this.settings.decimals  = this.settings.decimals || 2
         this.settings.foreground = this.settings.foreground || "#D8D8D8"
@@ -63,41 +88,28 @@ class SimpleAction extends Action {
         this.settings.limitIncrement = this.settings.limitIncrement = 1
         this.settings.limitsEnabled = this.settings.limitsEnabled || 'false'
         
-        this.settings.upperlimit = this.settings.upperlimit || Number.MIN_VALUE
-        this.settings.lowerlimit = this.settings.lowerlimit || Number.MIN_VALUE
+        this.settings.upperlimit = this.settings.upperlimit || 0
+        this.settings.lowerlimit = this.settings.lowerlimit || 0
         this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#00AA00"
         this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#AA0000"
 
-        //$SD.api.setSettings(this.uuid, {}) // Clear the settings
+        this.prepViewList()
+        
+        //this.settings = {} // Uncomment to clear the settings
         $SD.api.setSettings(this.uuid, this.settings) 
     } 
 
     //-----------------------------------------------------------------------------------------
 
     onKeyUp(jsn){
-        //ranges = ["1d","5d","1mo","3mo","6mo","1y","2y","5y","10y","ytd","max"]
-        //valid intervals: [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
         super.onKeyUp(jsn)
-
-        switch(this.state){    
-            case STATE_CHARTS : 
-                this.onChartClick(jsn)
-                break
-            case STATE_DAY : 
-                this.context.clickCount = 0
-                this.context.stateName = STATE_CHARTS
-                this.onChartClick(jsn)
-                break
-            case STATE_LIMITS :        
-                if(this.context.clickCount == 2){
-                    this.state = STATE_DEFAULT
-                    return
-                }
-                this.updateDisplay() 
-                break
-            default:
-                this.state = STATE_DAY
+        
+        if( this.state == STATE_LIMITS ){    
+            this.onLimitClick()
+            return
         }
+        
+        this.onDefaultClick(jsn) 
     }
 
     //-----------------------------------------------------------------------------------------
@@ -105,9 +117,6 @@ class SimpleAction extends Action {
     onLongPress(jsn){
         super.onLongPress(jsn)
         this.onAdjustLimit(jsn,true)
-
-        // Decrementing clickCount to anticipate the keyUp
-        this.context.clickCount -= 1
     }
 
     //-----------------------------------------------------------------------------------------
@@ -129,45 +138,31 @@ class SimpleAction extends Action {
 
     onSendToPlugin(jsn) {
         super.onSendToPlugin(jsn)
-        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
-
-        // // TODO : Automate this better, the root is radios and checkboxes
-        // if(sdpi_collection.hasOwnProperty('key') && sdpi_collection.hasOwnProperty('value')){
-        //     if(sdpi_collection.key.includes('limitType')){
-        //         this.updatePIValue('limitType', sdpi_collection)
-        //     }
-
-        //     if(sdpi_collection.key.includes('limitsEnabled')){
-        //         this.updatePIValue('limitsEnabled', sdpi_collection)
-        //         this.settings.limitsEnabled = this.settings.limitsEnabled == 'true'
-        //     }
-        // }
-
-        dataprovider.fetchSymbolData()
+        //const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        dataManager.fetchSymbolData()
     }
 
     // Custom Event Handlers
     //-----------------------------------------------------------------------------------------
+    
+    onDefaultClick(jsn){
+        console.log("Click View", this.clickCount, this.viewList, this.currentView)
 
-    onChartClick(jsn){
-        console.log("Chart Click", this.context.clickCount, jsn)
-        switch (this.context.clickCount) {
-            case 0:
-                this.context.chartRange = '1d'
-                dataprovider.fetchChartData('1d','1m')
-                break
-            case 1:
-                this.context.chartRange = '5d'
-                dataprovider.fetchChartData('5d','15m')
-                break
-            case 2:
-                this.context.chartRange = '1mo'
-                dataprovider.fetchChartData('1mo','1h')
-                break
-            default:
-                this.state = STATE_DEFAULT
-                return
+        if(this.clickCount >= this.viewList.length)
+            this.clickCount = 0
+
+        if(this.currentView.includes('Chart')){
+            this.chartManager.onKeyUp(jsn)
+            dataManager.fetchChartData(this.chartManager.chartType)
+            return
         }
+        
+        this.updateDisplay(jsn)
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onLimitClick(jsn){
     }
 
     //-----------------------------------------------------------------------------------------
@@ -200,7 +195,7 @@ class SimpleAction extends Action {
 
         let value = increment ? this.settings.limitIncrement : -this.settings.limitIncrement
         
-        if( this.context.clickCount == 0){    
+        if( this.clickCount == 0){    
             this.settings.lowerlimit = this.settings.lowerlimit + value
         }
         else {
@@ -208,37 +203,6 @@ class SimpleAction extends Action {
         }
         
         $SD.api.setSettings(this.uuid, this.settings)
-        this.updateDisplay()
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    onDidReceiveChartData(jsn) {
-        console.log("SimpleAction - onDidReceiveChartData: ", jsn)
-        
-        this.uuid = jsn.context
-        var payload = jsn.payload.response[0].meta
-        
-        // If the response chart range is other than what is expected, return
-        if(payload.range != this.context.chartRange) return
-
-        payload.data = jsn.payload.response[0].indicators.quote[0].close
-        
-        payload.min = Math.min(...payload.data)
-        payload.max = Math.max(...payload.data)
-        payload.interval = (payload.data.length-1) / this.chartWidth
-
-        // if(this.context.clickCount == 1){
-        //     var tmp = []
-        //     for(var i = payload.data.length - 1; i >= 0; i--){
-        //         tmp.push(payload.data[i]);
-        //     }
-        //     payload.range = "1m"
-        //     payload.data = tmp.reverse();
-        //     payload.interva = 1
-        // }
-
-        this.chart = payload
         this.updateDisplay()
     }
 
@@ -267,8 +231,19 @@ class SimpleAction extends Action {
             return
         }
 
-        this.data = this.prepSymbolData(symbol)
-        this.updateDisplay()
+        this.data = this.prepData(symbol)
+        this.updateDisplay(jsn)
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onDidReceiveChartData(jsn) {
+        console.log("SimpleAction - onDidReceiveChartData: ", jsn)
+        this.uuid = jsn.context
+        this.chartManager.onDidReceiveData(jsn)
+        
+        if(Object.keys(this.chartManager.chartData).length > 0)
+            this.updateDisplay(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -281,19 +256,34 @@ class SimpleAction extends Action {
     // Utils
     //-----------------------------------------------------------------------------------------
 
-    prepPrice(value){
-        // Apply decimal option
-        value = value.toFixed(this.settings.decimals)
+    prepViewList(){
+        this.settings.hasViews = this.settings.hasViews || false
         
-        if(value > 100000)
-            value = this.abbreviateNumber(value, 4)
+        if(this.settings.hasViews == false){
+            this.settings.hasViews = true
+            this.settings[ViewType.DEFAULT]        = 'true'
+            this.settings[ViewType.DAY_DEC]        = 'true'
+            this.settings[ViewType.CHART_1MIN]     = 'true'
+            this.settings[ViewType.CHART_DAY_3MIN] = 'true'
+            this.settings[ViewType.CHART_DAY_5]    = 'true'
+            this.settings[ViewType.CHART_MONTH_1]  = 'true'
+        }
 
-        return value
+        this.viewList = this.viewList || []
+        this.viewList.length = 0
+        this.viewList.push(ViewType.DEFAULT)
+        
+        for (const [key, value] of Object.entries(ViewType)) {
+            if(typeof value == 'function') continue
+            if(value.startsWith('show') && this.settings[value] == 'true'){
+                this.viewList.push(value)
+            }
+        }
     }
 
     //-----------------------------------------------------------------------------------------
 
-    prepSymbolData(symbol){
+    prepData(symbol){
         var payload = {}
 
         payload.price       = symbol.regularMarketPrice
@@ -333,9 +323,9 @@ class SimpleAction extends Action {
             payload.high = payload.price > payload.high ? payload.price : payload.high
         }
 
-        // Implement the limits
-        var limit = 0
-        if (this.settings.limitsEnabled) {
+        // Limits
+        if (this.settings.limitsEnabled == 'true') {
+            var limit = 0
             if(this.settings.limitType == LIMIT_TYPE_PERCENT){
                 limit = payload.percent >= this.settings.upperlimit ? 1 : 0
                 limit = payload.percent <= this.settings.lowerlimit ? -1 : limit
@@ -356,26 +346,40 @@ class SimpleAction extends Action {
         return payload
     }
 
+    //-----------------------------------------------------------------------------------------
+
+    prepPrice(value){
+        // Apply decimal option
+        value = value.toFixed(this.settings.decimals)
+        
+        if(value > 100000)
+            value = this.abbreviateNumber(value, 4)
+
+        return value
+    }
+
     // Display Handlers
     //-----------------------------------------------------------------------------------------
 
-    updateDisplay() {
+    updateDisplay(jsn) {
+        super.updateDisplay(jsn)
         this.drawingCtx.fillStyle = this.settings.background
         this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
         this.drawingCtx.fillStyle = this.settings.foreground
-
-        switch(this.state){    
-            case STATE_CHARTS : 
-                this.updateChartView()
+        
+        switch(this.currentView){    
+            case ViewType.DEFAULT:
+                this.updateDefaultView()
+                this.drawFooter()
                 break
-            case STATE_DAY : 
+            case ViewType.DAY_DEC :
+            case ViewType.DAY_PERC : 
                 this.updateDayView()
-                break
-            case STATE_LIMITS :
-                this.updateLimitsView()
                 break
             default:
                 this.updateDefaultView()
+                this.chartManager.drawingCtx = this.drawingCtx
+                this.chartManager.updateDisplay(jsn)
         }
 
         $SD.api.setImage(this.uuid, this.canvas.toDataURL());
@@ -383,22 +387,14 @@ class SimpleAction extends Action {
 
     //-----------------------------------------------------------------------------------------
 
-    updateChartView(){
-        this.drawSymbol(this.settings.foreground)
-        this.drawPrice(this.data.price)
-        this.drawChart()
-    }
-
-    //-----------------------------------------------------------------------------------------
-
     updateDayView(){
-        console.log('updateDayView', this.context.clickCount)
+        console.log('updateDayView', this.clickCount)
         
         this.drawSymbol(this.settings.foreground)
 
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.font = 400 + " " + 25 + "px Arial";
-
+        
         this.drawChangeItemValue("Cl", this.data.prevClose, 40)
         this.drawChangeItemValue("Hi", this.data.high, 72)
         this.drawChangeItemValue("Lo", this.data.low, 104)
@@ -415,13 +411,12 @@ class SimpleAction extends Action {
 
         this.drawSymbol()
         this.drawPrice(this.data.price)
-        this.drawFooter()
     }
 
     //-----------------------------------------------------------------------------------------
 
     updateLimitsView(){
-        let isLow = this.context.clickCount == 0
+        let isLow = this.clickCount == 0
         var label = isLow ? "Low" : "High"
         var value = isLow ? this.settings.lowerlimit : this.settings.upperlimit
         
@@ -499,43 +494,6 @@ class SimpleAction extends Action {
 
     //-----------------------------------------------------------------------------------------
 
-    drawChart(){
-        let xPos = (this.canvas.width-this.chartWidth)/2
-        let range = 0
-        var index = 0
-        let chart = this.chart
-        let isUp = chart.chartPreviousClose <= chart.regularMarketPrice
-        let fillColor = isUp ? '#007700' : '#770000'
-        let tipColor = isUp ? '#00FF00' : '#FF0000'
-
-        for(let i = 0; i < this.chartWidth && index < chart.data.length; i++){
-            range = (chart.data[Math.round(index)] - chart.min) / (chart.max - chart.min)
-            this.drawingCtx.fillStyle = fillColor
-            this.drawingCtx.fillRect(xPos, 144, 1, -(15 + 40 * range));
-            this.drawingCtx.fillStyle = tipColor
-            this.drawingCtx.fillRect(xPos, 144-(15 + 40 * range), 1, 3);
-            index += chart.interval
-            xPos++
-        }
-
-        if(chart.range == '1d') {
-            this.drawingCtx.fillStyle = this.settings.foreground
-            range = (chart.chartPreviousClose - chart.min) / (chart.max - chart.min)
-            this.drawingCtx.fillRect(0, 144 - (15 + 40 * range), 144, 2);
-        }
-        
-        var chartRange = chart.range.toUpperCase()
-        chartRange = chartRange.substring(0, 2)
-    
-        this.drawingCtx.fillStyle = this.settings.foreground
-        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.textBaseline = "top" 
-        this.drawingCtx.fillText(chartRange, 3, 10);
-    }
-
-    //-----------------------------------------------------------------------------------------
-
     drawChangeItemPercent(label, value, yPos){ 
         this.drawingCtx.fillStyle = this.settings.foreground;
         this.drawingCtx.textAlign = "left"
@@ -567,8 +525,15 @@ class SimpleAction extends Action {
             // These lines retain white for the market close value
             this.drawingCtx.fillStyle = value < this.data.prevClose ? '#FF0000' : this.drawingCtx.fillStyle;
             this.drawingCtx.fillStyle = value > this.data.prevClose ? '#00FF00' : this.drawingCtx.fillStyle;
-        
-            value = this.prepPrice(value)
+            
+            if(this.currentView == ViewType.DAY_DEC){
+                value = this.prepPrice(value)
+            }
+            else {
+                value = (value - this.data.prevClose) / this.data.prevClose
+                if(value < 0) value *= -1
+                value += '%'
+            }
         }
         else {
             value = '--'

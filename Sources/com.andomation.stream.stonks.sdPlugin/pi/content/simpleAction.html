@@ -10,8 +10,6 @@
         <input id="decimals" class="sdpi-item-value" type="number" placeholder="2" />
 </div>
 
-<div class="sdpi-heading">Limits</div>
-
 <div type="radio" class="sdpi-item" id="limit_enabled">
     <div class="sdpi-item-label">Enabled</div>
     <div class="sdpi-item-value ">
@@ -45,8 +43,6 @@
     <input id="limitIncrement" class="sdpi-item-value" type="number"/>     
 </div>
 
-
-
 <div class="sdpi-heading">Upper Limit</div>
 
 <div class="sdpi-item">
@@ -56,7 +52,7 @@
 
 <div type="color" class="sdpi-item" >
     <div class="sdpi-item-label">Background</div>
-    <input id="upperlimitbackground" type="color" class="sdpi-item-value"> -->
+    <input id="upperlimitbackground" type="color" class="sdpi-item-value">
 </div>
 
 <div class="sdpi-heading">Lower Limit</div>
@@ -85,32 +81,53 @@
 </div>
 -->
 
-<div type="checkbox" class="sdpi-item" id="multi-items">
-    <div class="sdpi-item-label">Select day</div>
-    <div class="sdpi-item-value min100">
+<div class="sdpi-heading">Alternate Views</div>
+</div>
+<div type="checkbox" class="sdpi-item" id="summary-views">
+    <div class="sdpi-item-value min120">
         <div class="sdpi-item-child">
-            <input id="days-1" type="checkbox" value="Monday" name="days">
-            <label for="days-1" class="sdpi-item-label"><span></span>Monday</label>
+            <input id="showDayDecmial" type="checkbox" value="true">
+            <label for="showDayDecmial" class="sdpi-item-label"><span></span>Day Numeric</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="days-2" type="checkbox" value="Tuesday" name="days">
-            <label for="days-2" class="sdpi-item-label"><span></span>Tuesday</label>
+            <input id="showDayPercent" type="checkbox" value="true">
+            <label for="showDayPercent" class="sdpi-item-label"><span></span>Day Percent</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="days-3" type="checkbox" value="Wednesday" name="days">
-            <label for="days-3" class="sdpi-item-label"><span></span>Wednesday</label>
+            <input id="show1minChart" type="checkbox" value="true">
+            <label for="show1minChart" class="sdpi-item-label"><span></span>1min Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="days-4" type="checkbox" value="Thursday" name="days">
-            <label for="days-4" class="sdpi-item-label"><span></span>Thursday</label>
+            <input id="show3minChart" type="checkbox" value="true">
+            <label for="show3minChart" class="sdpi-item-label"><span></span>3min Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="days-5" type="checkbox" value="Friday" name="days">
-            <label for="days-5" class="sdpi-item-label"><span></span>Friday</label>
+            <input id="show3minDayChart" type="checkbox" value="true">
+            <label for="show3minDayChart" class="sdpi-item-label"><span></span>Day 3min Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="days-6" type="checkbox" value="Saturday" name="days">
-            <label for="days-6" class="sdpi-item-label"><span></span>Saturday</label>
+            <input id="show5minDayChart" type="checkbox" value="true">
+            <label for="show5minDayChart" class="sdpi-item-label"><span></span>Day 5min Chart</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="show5DayChart" type="checkbox" value="true">
+            <label for="show5DayChart" class="sdpi-item-label"><span></span>5 Day Chart</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="show1MonthChart" type="checkbox" value="true">
+            <label for="show1MonthChart" class="sdpi-item-label"><span></span>1 Month Chart</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="show3MonthChart" type="checkbox" value="true">
+            <label for="show3MonthChart" class="sdpi-item-label"><span></span>3 Month Chart</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="show6MonthChart" type="checkbox" value="true">
+            <label for="show6MonthChart" class="sdpi-item-label"><span></span>6 Month Chart</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="show12MonthChart" type="checkbox" value="true">
+            <label for="show12MonthChart" class="sdpi-item-label"><span></span>12 Month Chart</label>
         </div>
     </div>
 </div>

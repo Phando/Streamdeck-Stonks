@@ -200,15 +200,15 @@ function handleSdpiItemChange(e, idx) {
         e.setAttribute("id", e.name)
       }
     }
+    else {
+      // Checkbox Unchecked
+      if(e.value == 'true'){
+        e.setAttribute("_value", '_false')
+      }
+    }
     
     console.log("Pre Save", action.settings)
     saveSettings(action.settings)
-
-    if(!e.checked){
-      console.log("Returning... Unchecked Checkbox", action)
-      $SD.emit("piDataChanged", {})
-      return
-    }
   }
 
   if (sdpiItemGroup && !sdpiItemChildren.length) {
