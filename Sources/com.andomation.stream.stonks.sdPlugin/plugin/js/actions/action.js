@@ -1,37 +1,9 @@
-class Action {
-    uuid = 0
+class Action extends StreamDeckClient {
+    
     type = "com.andomation.stream.stonks"
 
     constructor() {
-    }
-
-    get context(){    
-        return contextList[this.uuid]
-    }
-
-    get clickCount(){
-        return this.context.clickCount
-    }
-
-    set clickCount(value){
-        this.context.clickCount = value
-    }
-
-    get data(){
-        return this.context.data
-    }
-
-    set data(value){
-        this.context.data = value
-    }
-
-    get settings(){
-        return this.context.settings
-    }
-
-    set settings(value){
-        console.log("VALUE", value, this.uuid, this.context)
-        this.context.settings = value
+        super()
     }
 
     set state(stateName){
@@ -39,7 +11,7 @@ class Action {
         this.context.stateName = stateName
         this.updateDisplay()
     }
-
+    
     get state(){
         return this.context.stateName
     }
@@ -64,11 +36,6 @@ class Action {
     onWillAppear(jsn) {
         this.uuid = jsn.context
         this.onDidReceiveSettings(jsn)
-
-        this.canvas = document.createElement("canvas")
-        this.canvas.width = 144
-        this.canvas.height = 144
-        this.drawingCtx = this.canvas.getContext("2d");
     }
 
     onKeyDown(jsn) {
@@ -89,7 +56,7 @@ class Action {
     onPropertyInspectorDidAppear(jsn) {
         this.uuid = jsn.context
         this.state = STATE_DEFAULT
-        this.updateDisplay()
+        this.updateDisplay(jsn)
     }
 
     //-----------------------------------------------------------------------------------------

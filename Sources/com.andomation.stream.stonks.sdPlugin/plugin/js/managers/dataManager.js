@@ -32,9 +32,20 @@ class DataManager {
     'postMarketChangePercent',
   ]
 
-  
-
   constructor(){
+  }
+
+  getSymbols(){
+    let symbols = []
+    Object.values(contextList).forEach(item => {
+      let symbol = Utils.getProp(item, "settings.symbol", false);
+      
+      if(!symbol) return
+      if(symbols.includes(symbol)) return
+      symbols.push(symbol)
+    })
+
+    return symbols
   }
 
   startPolling() {
@@ -53,42 +64,29 @@ class DataManager {
   fetchSymbolData(){
     var url = this.symbolURL
     url += this.symbolFields.join()
-    url += "&symbols="
+    url +=  '&symbols=' + this.getSymbols().join()
 
-    Object.values(contextList).forEach(item => {
-      let symbol = Utils.getProp(item, "settings.symbol", false);
-      
-      if(!symbol) return
-      url += item.settings.symbol + ","
-    })
-    
     console.log("fetchSymbolData:", url)
+    
     // Double check that we have symbols added to the URL
-    if(url.length != this.symbolURL.length) {
-      this.requestData(url, 
-        (response, event) => this.handleResponse(response, 'didReceiveSymbolData'), 
-        (response, event) => this.handleError(response, 'didReceiveSymbolError'))
-    }
+    if(this.getSymbols().length == 0) return 
+
+    this.requestData(url, 
+      (response, event) => this.handleResponse(response, 'didReceiveSymbolData'), 
+      (response, event) => this.handleError(response, 'didReceiveSymbolError'))
   }
 
   fetchChartData(chartType){
-    var url = this.chartURL + "range="+ chartType.range +"&interval="+ chartType.interval +"&symbols="
-    let urlLength = url.length
-
-    Object.values(contextList).forEach(item => {
-      let symbol = Utils.getProp(item, "settings.symbol", false);
-      
-      if(!symbol) return
-      url += item.settings.symbol + ","
-    })
+    var url = this.chartURL + "range="+ chartType.range +"&interval="+ chartType.interval
+    url +=  '&symbols=' + this.getSymbols().join()
     
     // Double check that we have symbols added to the URL
-    if(url.length != urlLength) {
-      this.requestData(url, 
-        (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
-        (response, event) => this.handleError(response, 'didReceiveChartError'),
-        chartType)
-    }
+    if(this.getSymbols().length == 0) return 
+
+    this.requestData(url, 
+      (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
+      (response, event) => this.handleError(response, 'didReceiveChartError'),
+      chartType)
   }
 
   handleError(response, event){

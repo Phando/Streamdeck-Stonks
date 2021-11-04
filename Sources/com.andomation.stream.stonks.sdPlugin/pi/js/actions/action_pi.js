@@ -1,21 +1,18 @@
-class ActionPI {
-	uuid = 0
-	settings = {}
+class ActionPI extends StreamDeckClient{
 	type = "com.andomation.stream.stonks"
 	
 	constructor() {
+		super()
 	}
 
 	init(jsn) {
-		this.uuid = Utils.getProp(jsn, "actionInfo.context", false)
-		this.settings = Utils.getProp(jsn, "actionInfo.payload.settings", false)
+		this.uuid = jsn.actionInfo.context
 		$SD.on(this.type + '.didReceiveSettings', (jsonObj) => this.onDidReceiveSettings(jsonObj))
 	}
 
 	onDidReceiveSettings(jsn) {
         this.uuid = jsn.context
         this.settings = Utils.getProp(jsn, 'payload.settings', false)
-		//this.settings = Utils.getProp(jsn, "actionInfo.payload.settings", false)
 		console.log("ActionPI - onDidReceiveSettings", jsn, this.settings)
     }
 

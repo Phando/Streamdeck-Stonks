@@ -1,8 +1,82 @@
+const CANVAS_WIDTH  = 144
+const CANVAS_HEIGHT = 144
+const STATE_DEFAULT = 'default'
+
+var _canvas = null
+var _drawingCtx = null
+
+// Global Variables
+// TODO : Maybe rename these to _varName
+//-----------------------------------------------------------------------------------------
+
 let actions = []
 let globalSettings = {}
 let contextList = {}
 
-const STATE_DEFAULT = 'default'
+// Bass class for Actions and PI Components for interacting with the StreamDeck
+//-----------------------------------------------------------------------------------------
+
+class StreamDeckClient {
+    _uuid = 0
+
+    get uuid(){    
+        return this._uuid
+    }
+
+    set uuid(value){    
+        this._uuid = value
+    }
+    
+    get context(){    
+        return contextList[this._uuid]
+    }
+
+    get clickCount(){
+        return this.context.clickCount
+    }
+
+    set clickCount(value){
+        this.context.clickCount = value
+    }
+
+    get data(){
+        return this.context.data
+    }
+
+    set data(value){
+        this.context.data = value
+    }
+
+    get settings(){
+        return this.context.settings
+    }
+
+    set settings(value){
+        this.context.settings = value
+    }
+
+    get currentView(){
+        return this.viewList[this.clickCount]
+    }
+
+    get viewList(){
+        return this.context.viewList
+    }
+
+    set viewList(value){
+        this.context.viewList = value
+    }
+
+    get canvas(){
+        return _canvas
+    }
+    
+    get drawingCtx(){
+        return _drawingCtx
+    }
+}
+
+//-----------------------------------------------------------------------------------------
 
 function Context(jsn){
     this.downtimer  =   null
@@ -325,7 +399,6 @@ function saveSettings(data){
                     case "keyUp" :
                     var context = contextList[jsonObj.context]
                     clearInterval(context.downtimer)
-                    console.log("UP")
                     break
                 }
 

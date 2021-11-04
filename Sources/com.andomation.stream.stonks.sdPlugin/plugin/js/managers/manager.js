@@ -1,41 +1,8 @@
-class Manager{
-    uuid = 0
-    
+class Manager extends StreamDeckClient {
     constructor() {
+        super()
     }
-
-    get context(){    
-        return contextList[this.uuid]
-    }
-
-    get clickCount(){
-        return this.context.clickCount
-    }
-
-    set clickCount(value){
-        this.context.clickCount = value
-    }
-
-    get currentView(){
-        return this.viewList[this.clickCount]
-    }
-
-    get settings(){
-        return this.context.settings
-    }
-
-    set settings(data){
-        this.context.settings = data
-    }
-
-    get viewList(){
-        return this.context.viewList
-    }
-
-    set viewList(value){
-        this.context.viewList = value
-    }
-
+    
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveSettings(jsn) {

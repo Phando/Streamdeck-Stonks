@@ -1,6 +1,13 @@
+const CHART_BASE = 10
+const CHART_SCALE = 60
+const CHART_WIDTH = 140
+
 const ChartType = Object.freeze({
     // ranges    ["1d","5d","1mo","3mo","6mo","1y","2y","5y","10y","ytd","max"]
     // intervals [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
+    
+    // NOTE : The ranges below were chosen to optimize API polling.
+    // Unfortunately they make for more complicated rendering.
     CHART_1MIN      : {range:'1d', interval:'1m', label:'1m', hasLine: false},
     CHART_3MIN      : {range:'1d', interval:'1m', label:'3m', hasLine: false},
     CHART_DAY_3MIN  : {range:'1d', interval:'1m', label:'1d3', hasLine: true},
@@ -14,26 +21,30 @@ const ChartType = Object.freeze({
 
 class ChartManager extends Manager {
     
-    get chartData(){
+    constructor() {
+        super()
+    }
+
+    get data(){
         return this.context.chartData
     }
 
-    set chartData(value){
+    set data(value){
         this.context.chartData = value
     }
 
-    get chartType(){
+    get type(){
         return this.context.chartType
     }
 
-    set chartType(value){
+    set type(value){
         this.context.chartType = value
     }
 
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
-        this.chartData = this.chartData || {}
-        this.chartType = this.chartType || ChartType.CHART_1MIN
+        this.data = this.data || {}
+        this.type = this.type || ChartType.CHART_1MIN
     }
     
     //-----------------------------------------------------------------------------------------
@@ -44,7 +55,8 @@ class ChartManager extends Manager {
 
         for (const [key, value] of Object.entries(ChartType)) {
             if(viewName == key){
-                this.chartType = value
+                this.type = value
+                return
             }
         }
     }
@@ -56,56 +68,83 @@ class ChartManager extends Manager {
         console.log("ChartManager - onDidReceiveData: ", jsn)
         
         // If the response is other than what is expected, return
-        if(jsn.payload.userInfo.label != this.chartType.label) return
+        if(jsn.payload.userInfo.label != this.type.label) return
 
         var payload = jsn.payload.response[0].meta
-        payload.data = jsn.payload.response[0].indicators.quote[0].close 
-        payload.min = Math.min(...payload.data)
-        payload.max = Math.max(...payload.data)
-        payload.userInfo = jsn.payload.userInfo
+        payload.raw = jsn.payload.response[0].indicators.quote[0].close 
         payload.isUp = payload.chartPreviousClose <= payload.regularMarketPrice
         
-        delete this.chartData
-        this.chartData = payload
-        
-        switch(this.chartData.userInfo.label){
-            case ChartType.CHART_1MIN.label :
-                this.prep1MinChart()
+        this.data = payload
+        this.data.chart = []
+
+        switch(this.type){
+            case ChartType.CHART_1MIN :
+                this.prepDoubleChartTail()
                 break
-            case ChartType.CHART_3MIN.label :
-                this.prep3MinChart()
+            case ChartType.CHART_3MIN :
+                this.prepSingleChartTail()
                 break
-            case ChartType.CHART_DAY_3MIN.label :
-                this.prepDay3MinChart()
-                break
-            case ChartType.CHART_DAY_5MIN.label :
-                this.prepDay5MinChart()
-                break
-            case ChartType.CHART_DAY_5.label :
-                this.prep5DayChart()
-                break
-            case ChartType.CHART_MONTH_1.label :
-                this.prep1MonthChart()
-                break
-            case ChartType.CHART_MONTH_3.label :
-                this.prep3MonthChart()
-                break
-            case ChartType.CHART_MONTH_6.label :
-                this.prep6MonthChart()
-                break
-            case ChartType.CHART_MONTH_12.label :
-                this.prep12MonthChart()
+            case ChartType.CHART_MONTH_1 :
+                this.prepPartialChart(3)
+            case ChartType.CHART_MONTH_6 :
+                this.prepPartialChart(2)
+            default :
+                this.prepSingleChart()
                 break
         }  
+
+        // NOTE : It might be best to just go this route
+        // switch(this.type){
+        //     case ChartType.CHART_1MIN : 
+        //         this.prepChart()
+        //         break
+        //     case ChartType.CHART_3MIN : 
+        //         this.prepChart()
+        //         break
+        //     case ChartType.CHART_DAY_3MIN : 
+        //         this.prepChart()
+        //         break
+        //     case ChartType.CHART_DAY_5MIN : 
+        //         this.prepChart()
+        //         break
+        //     case ChartType.CHART_DAY_5 : 
+        //         this.prepChart()
+        //         break
+        //     case ChartType.CHART_MONTH_1 : 
+        //         this.prepChart()
+        //         break
+        //     case ChartType.CHART_MONTH_3 : 
+        //         this.prepChart()
+        //         break
+        //     case ChartType.CHART_MONTH_6 : 
+        //         this.prepChart()
+        //         break
+        //     case ChartType.CHART_MONTH_12 : 
+        //         this.prepChart()
+        //         break
+        // }
     }
 
     //-----------------------------------------------------------------------------------------
 
     updateDisplay(jsn){
         super.updateDisplay(jsn)
+        this.drawingCtx.textBaseline = "top" 
+        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
+        this.drawingCtx.fillStyle = this.settings.foreground
         this.drawCharLabel()
+        
+        if(!this.data.hasOwnProperty('chart') || this.data.chart.length == 0){
+            this.drawingCtx.textAlign = "center"
+            this.drawingCtx.fillStyle = '#FFFF00'
+            this.drawingCtx.fillText('Chart Data', CANVAS_WIDTH/2, 85);
+            this.drawingCtx.fillText('Not Found', CANVAS_WIDTH/2, 110);
+            return
+        }
+        
         this.drawChartData()
-        if(this.chartData.hasLine == true)
+        
+        if(this.type.hasLine == true)
             this.drawCharLine()
     }
     
@@ -113,87 +152,98 @@ class ChartManager extends Manager {
 
     drawCharLabel(){
         this.drawingCtx.textAlign = "left"
-        this.drawingCtx.textBaseline = "top" 
-        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
-        this.drawingCtx.fillStyle = this.settings.foreground
-        this.drawingCtx.fillText(this.chartData.userInfo.label, 3, 10);
+        this.drawingCtx.fillText(this.type.label, 3, 10);
     }
 
     //-----------------------------------------------------------------------------------------
 
     drawCharLine(){
-        let range = (this.chartData.chartPreviousClose - this.chartData.min) / (this.chartData.max - this.chartData.min)
+        let min = Math.min(...this.data.raw)
+        let max = Math.max(...this.data.raw)
+
+        // The line is based on the raw dataset range
+        let scale = (this.data.chartPreviousClose - min) / (max - min)
         this.drawingCtx.fillStyle = this.settings.foreground
-        this.drawingCtx.fillRect(0, 144 - (15 + 40 * range), 144, 2);
+        this.drawingCtx.fillRect(0, 144 - (CHART_BASE + CHART_SCALE * scale), 144, 2);
     }
 
     //-----------------------------------------------------------------------------------------
 
     drawChartData(){
-        return
-        let xPos = (this.canvas.width-this.chartWidth)/2
-        let range = 0
-        var index = 0
-        let chart = this.chartData
-        let isUp = chart.chartPreviousClose <= chart.regularMarketPrice
-        let fillColor = isUp ? '#007700' : '#770000'
-        let tipColor = isUp ? '#00FF00' : '#FF0000'
-
-        for(let i = 0; i < this.chartWidth && index < chart.data.length; i++){
-            range = (chart.data[Math.round(index)] - chart.min) / (chart.max - chart.min)
+        let xPos = 2
+        let scale = 0
+        let min = Math.min(...this.data.chart)
+        let max = Math.max(...this.data.chart)
+        let fillColor = this.data.isUp ? '#007700' : '#770000'
+        let tipColor = this.data.isUp ? '#00FF00' : '#FF0000'
+        
+        this.data.chart.forEach((item, index) => {
+            scale = (item - min) / (max - min)
             this.drawingCtx.fillStyle = fillColor
-            this.drawingCtx.fillRect(xPos, 144, 1, -(15 + 40 * range));
+            this.drawingCtx.fillRect(xPos, 144, 1, -(CHART_BASE + CHART_SCALE * scale));
             this.drawingCtx.fillStyle = tipColor
-            this.drawingCtx.fillRect(xPos, 144-(15 + 40 * range), 1, 3);
-            index += chart.interval
+            this.drawingCtx.fillRect(xPos, 144-(CHART_BASE + CHART_SCALE * scale), 1, 3);
             xPos++
+        });
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    prepSingleChart(){
+        let data = this.data.raw
+        let interval = Math.max(1,data.length / CHART_WIDTH)
+        
+        for(var index = 0; index < data.length; index += Math.round(interval)){
+            this.data.chart.push(data[index])
         }
     }
 
     //-----------------------------------------------------------------------------------------
 
-    prep1MinChart(){
-        //payload.interval = (payload.data.length-1) / this.chartWidth
-        // if(this.context.clickCount == 1){
-        //     var tmp = []
-        //     for(var i = payload.data.length - 1; i >= 0; i--){
-        //         tmp.push(payload.data[i]);
-        //     }
-        //     payload.range = "1m"
-        //     payload.data = tmp.reverse();
-        //     payload.interva = 1
-        // }
+    prepDoubleChart(){
+        let data = this.data.raw
+        let interval = data.length / (CHART_WIDTH / 2)
+        
+        for(var index = 0; index < data.length; index += Math.round(interval)){
+            this.data.chart.push(data[Math.round(index)])
+            this.data.chart.push(data[Math.round(index)])
+        }  
     }
     
     //-----------------------------------------------------------------------------------------
 
-    prep3MinChart(){}
+    prepSingleChartTail(){
+        let data = this.data.raw
+        var start = data.length > CHART_WIDTH ? data.length - CHART_WIDTH : 0
+        
+        for(var i = start; i < data.length; i++){
+            this.data.chart.push(data[i])
+        }
+    }
     
     //-----------------------------------------------------------------------------------------
-    
-    prepDay3MinChart(){}
-    
+
+    prepDoubleChartTail(){
+        let data = this.data.raw
+        var start = data.length > CHART_WIDTH/2 ? data.length - CHART_WIDTH/2 : 0
+        
+        for(var i = start; i < data.length; i++){
+            this.data.chart.push(data[i])
+            this.data.chart.push(data[i])
+        }  
+    }
+
     //-----------------------------------------------------------------------------------------
-    
-    prepDay5MinChart(){}
-    
-    //-----------------------------------------------------------------------------------------
-    
-    prep5DayChart(){}
-    
-    //-----------------------------------------------------------------------------------------
-    
-    prep1MonthChart(){}
-    
-    //-----------------------------------------------------------------------------------------
-    
-    prep3MonthChart(){}
-    
-    //-----------------------------------------------------------------------------------------
-    
-    prep6MonthChart(){}
-    
-    //-----------------------------------------------------------------------------------------
-    
-    prep12MonthChart(){}
+
+    prepPartialChart(divisor){
+        let data = this.data.raw
+        let start = Math.max(data.length-140, data.length/divisor)
+        
+        data = data.slice(start)
+        let interval = Math.max(1,data.length / CHART_WIDTH)
+        
+        for(var index = 0; index < data.length; index += Math.round(interval)){
+            this.data.chart.push(data[index])
+        } 
+    }
 }

@@ -4,7 +4,14 @@ const STATE_LIMITS  = 'limits'
 
 const LIMIT_TYPE_NUMERIC = 'numeric'
 const LIMIT_TYPE_PERCENT = 'percent'
-        
+
+const FooterType = Object.freeze({
+    CHANGE  : 'change',
+    HIGHLO  : 'hilo',
+    HIGHLOP : 'hiloprc',
+    SLIDER  : 'slider'
+});
+
 const ViewType = Object.freeze({
     DEFAULT         : 'defaultView',
     DAY_DEC         : 'showDayDecmial',
@@ -29,8 +36,12 @@ const ViewType = Object.freeze({
 });
 
 class SimpleAction extends Action {
-    chartWidth = 138
     chartManager = new ChartManager()
+
+    constructor() {
+        super() 
+        this.type = this.type + ".simple";
+    }
 
     get chartData(){
         return this.context.chartData
@@ -38,23 +49,6 @@ class SimpleAction extends Action {
 
     set chartData(value){
         this.context.chartData = value
-    }
-
-    get currentView(){
-        return this.viewList[this.clickCount]
-    }
-
-    get viewList(){
-        return this.context.viewList
-    }
-
-    set viewList(value){
-        this.context.viewList = value
-    }
-
-    constructor() {
-        super() 
-        this.type = this.type + ".simple";
     }
 
     // Streamdeck Event Handlers
@@ -75,24 +69,24 @@ class SimpleAction extends Action {
     }
 
     onDidReceiveSettings(jsn) {
-        super.onDidReceiveSettings(jsn);
+        super.onDidReceiveSettings(jsn)
         this.chartManager.onDidReceiveSettings(jsn)
 
         console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
-        this.settings.symbol = this.settings.symbol || "GME"
-        this.settings.decimals  = this.settings.decimals || 2
-        this.settings.foreground = this.settings.foreground || "#D8D8D8"
-        this.settings.background = this.settings.background || "#1D1E1F"
-
-        this.settings.limitType = this.settings.limitType || LIMIT_TYPE_PERCENT
+        this.settings.symbol     = this.settings.symbol || 'GME'
+        this.settings.decimals   = this.settings.decimals || 2
+        this.settings.foreground = this.settings.foreground || '#D8D8D8'
+        this.settings.background = this.settings.background || '#1D1E1F'
+        this.settings.footerMode = this.settings.footerMode || FooterType.CHANGE
+        
+        this.settings.limitType      = this.settings.limitType || LIMIT_TYPE_PERCENT
         this.settings.limitIncrement = this.settings.limitIncrement = 1
-        this.settings.limitsEnabled = this.settings.limitsEnabled || 'false'
+        this.settings.limitsEnabled  = this.settings.limitsEnabled || 'false'
         
         this.settings.upperlimit = this.settings.upperlimit || 0
         this.settings.lowerlimit = this.settings.lowerlimit || 0
-        this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#00AA00"
-        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#AA0000"
-
+        this.settings.upperlimitbackground = this.settings.upperlimitbackground || '#00AA00'
+        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || '#AA0000'
         this.prepViewList()
         
         //this.settings = {} // Uncomment to clear the settings
@@ -138,7 +132,7 @@ class SimpleAction extends Action {
 
     onSendToPlugin(jsn) {
         super.onSendToPlugin(jsn)
-        //const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        this.prepViewList()
         dataManager.fetchSymbolData()
     }
 
@@ -146,14 +140,12 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
     
     onDefaultClick(jsn){
-        console.log("Click View", this.clickCount, this.viewList, this.currentView)
-
         if(this.clickCount >= this.viewList.length)
             this.clickCount = 0
 
         if(this.currentView.includes('Chart')){
             this.chartManager.onKeyUp(jsn)
-            dataManager.fetchChartData(this.chartManager.chartType)
+            dataManager.fetchChartData(this.chartManager.type)
             return
         }
         
@@ -210,24 +202,23 @@ class SimpleAction extends Action {
 
     onDidReceiveSymbolData(jsn) {
         console.log("SimpleAction - onDidReceiveSymbol: ", jsn)
-        
         this.uuid = jsn.context
         var symbol = jsn.payload
 
         if(typeof symbol == 'undefined'){
-            var data = {context : jsn.context, error:{}}
-            data.error.message = this.settings.symbol
-            data.error.message1 = 'Not Found'
-            this.renderError(data)
+            var payload = {context : jsn.context, error:{}}
+            dapayloadta.error.message = this.settings.symbol
+            payload.error.message1 = 'Not Found'
+            this.renderError(payload)
             return
         }
 
         if(symbol.quoteType == "MUTUALFUND"){
-            var data = {context : jsn.context, error:{}}
-            data.error.message = 'Mutual Funds'
-            data.error.message1 = 'Not Supported'
-            data.error.message2 = 'Yet'
-            this.renderError(data)
+            var payload = {context : jsn.context, error:{}}
+            payload.error.message = 'Mutual Funds'
+            payload.error.message1 = 'Not Supported'
+            payload.error.message2 = 'Yet'
+            this.renderError(payload)
             return
         }
 
@@ -242,7 +233,7 @@ class SimpleAction extends Action {
         this.uuid = jsn.context
         this.chartManager.onDidReceiveData(jsn)
         
-        if(Object.keys(this.chartManager.chartData).length > 0)
+        if(Object.keys(this.chartManager.data).length > 0)
             this.updateDisplay(jsn)
     }
 
@@ -285,7 +276,7 @@ class SimpleAction extends Action {
 
     prepData(symbol){
         var payload = {}
-
+        
         payload.price       = symbol.regularMarketPrice
         payload.open        = symbol.regularMarketOpen
         payload.prevClose   = symbol.regularMarketPreviousClose
@@ -363,8 +354,9 @@ class SimpleAction extends Action {
 
     updateDisplay(jsn) {
         super.updateDisplay(jsn)
+        
         this.drawingCtx.fillStyle = this.settings.background
-        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = this.settings.foreground
         
         switch(this.currentView){    
@@ -378,7 +370,6 @@ class SimpleAction extends Action {
                 break
             default:
                 this.updateDefaultView()
-                this.chartManager.drawingCtx = this.drawingCtx
                 this.chartManager.updateDisplay(jsn)
         }
 
@@ -388,16 +379,15 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     updateDayView(){
-        console.log('updateDayView', this.clickCount)
-        
         this.drawSymbol(this.settings.foreground)
 
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.font = 400 + " " + 25 + "px Arial";
         
+        let asPercent = this.currentView == ViewType.DAY_PERC
         this.drawChangeItemValue("Cl", this.data.prevClose, 40)
-        this.drawChangeItemValue("Hi", this.data.high, 72)
-        this.drawChangeItemValue("Lo", this.data.low, 104)
+        this.drawChangeItemValue("Hi", this.data.high, 72, asPercent)
+        this.drawChangeItemValue("Lo", this.data.low, 104, asPercent)
     }
     
     //-----------------------------------------------------------------------------------------
@@ -407,7 +397,7 @@ class SimpleAction extends Action {
         grd.addColorStop(0, this.data.background)
         grd.addColorStop(1, this.settings.background)
         this.drawingCtx.fillStyle = grd
-        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
         this.drawSymbol()
         this.drawPrice(this.data.price)
@@ -431,7 +421,7 @@ class SimpleAction extends Action {
         }
         else {
             value += '%'
-            this.setFontFor(value, 600, this.canvas.width - 20)
+            this.setFontFor(value, 600, CANVAS_WIDTH - 20)
             this.drawingCtx.fillText(value, 140, 38);
         }
     }
@@ -454,7 +444,7 @@ class SimpleAction extends Action {
 
         // Render Price
         this.drawingCtx.fillStyle = this.settings.foreground
-        this.setFontFor(value, 600, this.canvas.width - 20)
+        this.setFontFor(value, 600, CANVAS_WIDTH - 20)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillText(value, 140, 34);
@@ -463,34 +453,68 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawFooter(){
-        let data = this.data
-        let change = data.change || 0
-        let percent = data.percent || 0
-
         // Volume
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.font = 500 + " " + 25 + "px Arial";
-        this.drawingCtx.fillText(data.volume, 138, 72);
-        
+        this.drawingCtx.fillText(this.data.volume, 138, 72);
+
         // Market State
         this.drawingCtx.textAlign = "left"
-        this.drawingCtx.font = 400 + " " + 20 + "px Arial"
-        this.drawingCtx.fillText(data.state, 7, 74);
-        
+        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
+        this.drawingCtx.fillText(this.data.state, 7, 74);
+
+        switch(this.settings.footerMode){
+            case FooterType.CHANGE:
+                this.drawFooterChange()
+                break
+            case FooterType.HIGHLO:
+                this.drawChangeItemValue("Hi", this.data.high, 95)
+                this.drawChangeItemValue("Lo", this.data.low, 115)
+                break
+            case FooterType.HIGHLOP:
+                this.drawChangeItemValue("Hi", this.data.high, 95, true)
+                this.drawChangeItemValue("Lo", this.data.low, 115, true)
+                break
+            case FooterType.SLIDER:
+                this.drawFooterSlider()
+                break
+        }
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    drawFooterChange(){
+        let change = this.data.change || 0
+        let percent = this.data.percent || 0
+
         // Range Percent
-        this.drawingCtx.font = 400 + " " + 22 + "px Arial"
-        this.drawingCtx.fillStyle = percent >= 0 ? '#00FF00' : '#FF0000'
-        percent *= percent < 0 ? -1 : 1
-        percent = percent.toFixed(2) + "%";
-        this.drawingCtx.fillText(percent, 5, 94);
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.fillText("$", 7, 95);
+        this.drawingCtx.fillText("%", 7, 115);
 
         this.drawingCtx.textAlign = "right"
+        this.drawingCtx.fillStyle = percent >= 0 ? '#00FF00' : '#FF0000'
         change *= change < 0 ? -1 : 1 
         change = this.prepPrice(change)
-        this.drawingCtx.fillText(change, 132, 114);
+        this.drawingCtx.fillText(change, 134, 95);
+
+        percent *= percent < 0 ? -1 : 1
+        percent = percent.toFixed(2)
+        this.drawingCtx.fillText(percent, 134, 115);
     }
+
+    //-----------------------------------------------------------------------------------------
+
+    drawFooterSlider(){
+        // Range Percent
+        this.drawingCtx.fillStyle = '#FFFF00'
+        this.drawingCtx.textAlign = 'center'
+        this.drawingCtx.fillText('Not Yet', CHART_WIDTH/2, 94);
+        this.drawingCtx.fillText('Implemented', CHART_WIDTH/2, 114);
+    }
+
 
     //-----------------------------------------------------------------------------------------
 
@@ -514,7 +538,7 @@ class SimpleAction extends Action {
 
     //-----------------------------------------------------------------------------------------
     
-    drawChangeItemValue(label, value, yPos){
+    drawChangeItemValue(label, value, yPos, asPercent=false){
         this.drawingCtx.fillStyle = this.settings.foreground;
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.fillText(label, 7, yPos);
@@ -526,14 +550,15 @@ class SimpleAction extends Action {
             this.drawingCtx.fillStyle = value < this.data.prevClose ? '#FF0000' : this.drawingCtx.fillStyle;
             this.drawingCtx.fillStyle = value > this.data.prevClose ? '#00FF00' : this.drawingCtx.fillStyle;
             
-            if(this.currentView == ViewType.DAY_DEC){
-                value = this.prepPrice(value)
-            }
-            else {
+            if(asPercent == true){
                 value = (value - this.data.prevClose) / this.data.prevClose
                 if(value < 0) value *= -1
-                value += '%'
+                value = value.toFixed(2) + '%'
             }
+            else{
+                value = this.prepPrice(value)
+            }
+            
         }
         else {
             value = '--'
@@ -541,7 +566,7 @@ class SimpleAction extends Action {
 
         // Render Price
         this.drawingCtx.textAlign = "right"
-        this.drawingCtx.fillText(value, 137, yPos);
+        this.drawingCtx.fillText(value, 134, yPos);
     }
 
     // Error Handler
@@ -551,26 +576,26 @@ class SimpleAction extends Action {
         console.log('Action - renderError', jsn)
         this.uuid = jsn.context
         this.drawingCtx.fillStyle = this.settings.background
-        this.drawingCtx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
-        this.drawingCtx.fillStyle =  '#FF0000'
+        this.drawingCtx.fillStyle =  '#FFFF00'
         this.drawingCtx.font = 600 + " " + 26 + "px Arial";
         this.drawingCtx.textAlign = "center"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText("Error", this.canvas.width/2, 6);
+        this.drawingCtx.fillText("Error", CANVAS_WIDTH/2, 6);
 
         // Render Message
         this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.font = 600 + " " + 19 + "px Arial";
-        this.drawingCtx.fillText(jsn.error.message, this.canvas.width/2, 40);
+        this.drawingCtx.fillText(jsn.error.message, CANVAS_WIDTH/2, 40);
 
         if(jsn.error.hasOwnProperty('message1'))
-            this.drawingCtx.fillText(jsn.error.message1, this.canvas.width/2, 70);
+            this.drawingCtx.fillText(jsn.error.message1, CANVAS_WIDTH/2, 70);
 
         if(jsn.error.hasOwnProperty('message2'))
-            this.drawingCtx.fillText(jsn.error.message2, this.canvas.width/2, 100);
+            this.drawingCtx.fillText(jsn.error.message2, CANVAS_WIDTH/2, 100);
 
-        $SD.api.setImage(this.uuid, this.canvas.toDataURL());
+        $SD.api.setImage(this.uuid, canvas.toDataURL());
     }
 
 }

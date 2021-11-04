@@ -25,11 +25,11 @@ $SD.on("connected", (jsn) => {
   
   actions.forEach((item) => {
     console.log("Action Type", item.type)
-    
+    contextList[jsn.actionInfo.context] = new Context(jsn.actionInfo)
+
     if(item.type == actionType){
-      item.init(jsn)
+		  item.init(jsn)
       action = item
-      return
     }
   });
 });
