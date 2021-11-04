@@ -207,7 +207,7 @@ class SimpleAction extends Action {
 
         if(typeof symbol == 'undefined'){
             var payload = {context : jsn.context, error:{}}
-            dapayloadta.error.message = this.settings.symbol
+            payload.error.message = this.settings.symbol
             payload.error.message1 = 'Not Found'
             this.renderError(payload)
             return
@@ -443,6 +443,7 @@ class SimpleAction extends Action {
         value = this.prepPrice(value)
 
         // Render Price
+        // this.drawingCtx.fillStyle = this.price >= this.data.prevClose ? '#00FF00' : '#FF0000'
         this.drawingCtx.fillStyle = this.settings.foreground
         this.setFontFor(value, 600, CANVAS_WIDTH - 20)
         this.drawingCtx.textAlign = "right"
