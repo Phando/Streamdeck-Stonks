@@ -17,6 +17,12 @@ class Manager extends StreamDeckClient {
 
     //-----------------------------------------------------------------------------------------
 
+    onLongPress(jsn) {
+        this.uuid = jsn.context
+    }
+
+    //-----------------------------------------------------------------------------------------
+
     onDidReceiveData(jsn) {
         this.uuid = jsn.context
     }

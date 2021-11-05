@@ -197,7 +197,7 @@ function handleSdpiItemChange(e, idx) {
       e.setAttribute("_value", e.value)
 
       if(e.type == "radio"){
-        e.setAttribute("id", e.name)
+        e._name = e.name
       }
     }
     else {
@@ -238,7 +238,7 @@ function handleSdpiItemChange(e, idx) {
   }
 
   const returnValue = {
-    key: e.id && e.id.charAt(0) !== "_" ? e.id : sdpiItem.id,
+    key: e['_name'] ? e._name : e.id && e.id.charAt(0) !== "_" ? e.id : sdpiItem.id,
     value: isList
       ? e.textContent : e.hasAttribute("_value")
       ? e.getAttribute("_value") : e.hasAttribute("value")

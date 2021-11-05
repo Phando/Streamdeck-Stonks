@@ -9,7 +9,7 @@ class Action extends StreamDeckClient {
     set state(stateName){
         this.context.clickCount = 0
         this.context.stateName = stateName
-        this.updateDisplay()
+        this.updateDisplay(this.context)
     }
     
     get state(){
@@ -79,30 +79,7 @@ class Action extends StreamDeckClient {
 
     updateDisplay(jsn){
         this.uuid = jsn.context
-    };
-
-    //-----------------------------------------------------------------------------------------
-
-    setFontFor = function(text, weight, maxWidth) {
-        return this.calculateFont(text, weight, 4, 40, maxWidth);
-    };
-    
-    //-----------------------------------------------------------------------------------------
-
-    calculateFont = function(text, weight, min, max, desiredWidth) {
-        if (max - min < 1) {
-            this.drawingCtx.font = weight + " " + min + "px Arial";
-            return
-        }
-    
-        var test = min + (max - min) / 2; //Find half interval
-        this.drawingCtx.font = weight + " " + test + "px Arial";
-        
-        if( this.drawingCtx.measureText(text).width > desiredWidth) {
-            return this.calculateFont(text, weight, min, test, desiredWidth);
-        }   
-        
-        return this.calculateFont(text, weight, test, max, desiredWidth);
+        console.log("JASON", jsn)
     };
 
 }

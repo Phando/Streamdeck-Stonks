@@ -1,9 +1,5 @@
-const STATE_CHARTS  = 'charts'
-const STATE_DAY     = 'day'
+// Additional View States
 const STATE_LIMITS  = 'limits'
-
-const LIMIT_TYPE_NUMERIC = 'numeric'
-const LIMIT_TYPE_PERCENT = 'percent'
 
 const FooterType = Object.freeze({
     CHANGE  : 'change',
@@ -37,6 +33,7 @@ const ViewType = Object.freeze({
 
 class SimpleAction extends Action {
     chartManager = new ChartManager()
+    limitManager = new LimitManager()
 
     constructor() {
         super() 
@@ -70,8 +67,7 @@ class SimpleAction extends Action {
 
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
-        this.chartManager.onDidReceiveSettings(jsn)
-
+        
         console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
         this.settings.symbol     = this.settings.symbol || 'GME'
         this.settings.decimals   = this.settings.decimals || 2
@@ -79,16 +75,10 @@ class SimpleAction extends Action {
         this.settings.background = this.settings.background || '#1D1E1F'
         this.settings.footerMode = this.settings.footerMode || FooterType.CHANGE
         
-        this.settings.limitType      = this.settings.limitType || LIMIT_TYPE_PERCENT
-        this.settings.limitIncrement = this.settings.limitIncrement = 1
-        this.settings.limitsEnabled  = this.settings.limitsEnabled || 'false'
-        
-        this.settings.upperlimit = this.settings.upperlimit || 0
-        this.settings.lowerlimit = this.settings.lowerlimit || 0
-        this.settings.upperlimitbackground = this.settings.upperlimitbackground || '#00AA00'
-        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || '#AA0000'
         this.prepViewList()
-        
+        this.chartManager.onDidReceiveSettings(jsn)
+        this.limitManager.onDidReceiveSettings(jsn)
+    
         //this.settings = {} // Uncomment to clear the settings
         $SD.api.setSettings(this.uuid, this.settings) 
     } 
@@ -110,7 +100,15 @@ class SimpleAction extends Action {
 
     onLongPress(jsn){
         super.onLongPress(jsn)
-        this.onAdjustLimit(jsn,true)
+        
+        switch(this.state){
+            case STATE_DEFAULT : 
+                this.state = STATE_LIMITS
+                break
+            case STATE_LIMITS:
+                this.limitManager.onLongPress(jsn)
+                break
+        }
     }
 
     //-----------------------------------------------------------------------------------------
@@ -222,7 +220,7 @@ class SimpleAction extends Action {
             return
         }
 
-        this.data = this.prepData(symbol)
+        this.prepData(jsn)
         this.updateDisplay(jsn)
     }
 
@@ -274,7 +272,8 @@ class SimpleAction extends Action {
 
     //-----------------------------------------------------------------------------------------
 
-    prepData(symbol){
+    prepData(jsn){
+        var symbol = jsn.payload
         var payload = {}
         
         payload.price       = symbol.regularMarketPrice
@@ -314,38 +313,18 @@ class SimpleAction extends Action {
             payload.high = payload.price > payload.high ? payload.price : payload.high
         }
 
-        // Limits
-        if (this.settings.limitsEnabled == 'true') {
-            var limit = 0
-            if(this.settings.limitType == LIMIT_TYPE_PERCENT){
-                limit = payload.percent >= this.settings.upperlimit ? 1 : 0
-                limit = payload.percent <= this.settings.lowerlimit ? -1 : limit
-            } 
-            else {
-                limit = payload.price >= this.settings.upperlimit ? 1 : 0
-                limit = payload.price <= this.settings.lowerlimit ? -1 : limit
-            }
-            
-            if( limit == 1){
-                payload.background = this.settings.upperlimitbackground
-            }
-            if( limit == -1){
-                payload.background = this.settings.lowerlimitbackground
-            }
-        }
-
-        return payload
+        this.data = payload
+        this.limitManager.prepData(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
 
     prepPrice(value){
         // Apply decimal option
-        value = value.toFixed(this.settings.decimals)
-        
-        if(value > 100000)
-            value = this.abbreviateNumber(value, 4)
-
+        //value = value.toFixed(this.settings.decimals)
+        console.log("decimals", this.settings.decimals, value)
+        //value = value.toPrecision(Math.max(1,this.settings.decimals))
+        value = Utils.abbreviateNumber(value, this.settings.decimals)
         return value
     }
 
@@ -359,18 +338,25 @@ class SimpleAction extends Action {
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = this.settings.foreground
         
-        switch(this.currentView){    
-            case ViewType.DEFAULT:
-                this.updateDefaultView()
-                this.drawFooter()
-                break
-            case ViewType.DAY_DEC :
-            case ViewType.DAY_PERC : 
-                this.updateDayView()
-                break
-            default:
-                this.updateDefaultView()
-                this.chartManager.updateDisplay(jsn)
+        // STYLE: This ifesleif could be a switch
+        if(this.state == STATE_DEFAULT){
+            // STYLE: This Switch could be a new function
+            switch(this.currentView){    
+                case ViewType.DEFAULT:
+                    this.updateDefaultView()
+                    this.drawFooter()
+                    break
+                case ViewType.DAY_DEC :
+                case ViewType.DAY_PERC : 
+                    this.updateDayView()
+                    break
+                default:
+                    this.updateDefaultView()
+                    this.chartManager.updateDisplay(jsn)
+            }
+        }
+        else if(this.state == STATE_LIMITS){
+            this.limitManager.updateDisplay(jsn)
         }
 
         $SD.api.setImage(this.uuid, this.canvas.toDataURL());
@@ -421,7 +407,7 @@ class SimpleAction extends Action {
         }
         else {
             value += '%'
-            this.setFontFor(value, 600, CANVAS_WIDTH - 20)
+            Utils.setFontFor(value, 600, CANVAS_WIDTH - 20)
             this.drawingCtx.fillText(value, 140, 38);
         }
     }
@@ -445,7 +431,7 @@ class SimpleAction extends Action {
         // Render Price
         // this.drawingCtx.fillStyle = this.price >= this.data.prevClose ? '#00FF00' : '#FF0000'
         this.drawingCtx.fillStyle = this.settings.foreground
-        this.setFontFor(value, 600, CANVAS_WIDTH - 20)
+        Utils.setFontFor(value, 600, CANVAS_WIDTH - 20)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillText(value, 140, 34);

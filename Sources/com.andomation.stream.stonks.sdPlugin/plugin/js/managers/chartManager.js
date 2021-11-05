@@ -162,7 +162,8 @@ class ChartManager extends Manager {
         let max = Math.max(...this.data.raw)
 
         // The line is based on the raw dataset range
-        let scale = (this.data.chartPreviousClose - min) / (max - min)
+        let scale = Utils.rangeToPercent(this.data.chartPreviousClose, min, max)
+        //let scale = (this.data.chartPreviousClose - min) / (max - min)
         this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.fillRect(0, 144 - (CHART_BASE + CHART_SCALE * scale), 144, 2);
     }
@@ -178,7 +179,7 @@ class ChartManager extends Manager {
         let tipColor = this.data.isUp ? '#00FF00' : '#FF0000'
         
         this.data.chart.forEach((item, index) => {
-            scale = (item - min) / (max - min)
+            scale = Utils.rangeToPercent(item, min, max)
             this.drawingCtx.fillStyle = fillColor
             this.drawingCtx.fillRect(xPos, 144, 1, -(CHART_BASE + CHART_SCALE * scale));
             this.drawingCtx.fillStyle = tipColor

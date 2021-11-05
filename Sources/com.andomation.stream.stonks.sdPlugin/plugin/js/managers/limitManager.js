@@ -1,14 +1,81 @@
-class Limits extends Manager{
+const LimitType = Object.freeze({
+    NUMERIC  : 'numeric',
+    PERCENT  : 'percent'
+});
+
+class LimitManager extends Manager{
+    
+    constructor() {
+        super()
+    }
+
+    get enabled(){
+        return this.settings.limitEnabled
+    }
+
+    set enabled(value){
+        this.settings.limitEnabled = value
+    }
+
+    get increment(){
+        return this.settings.limitIncrement
+    }
+
+    set increment(value){
+        this.settings.limitIncrement = value
+    }
+
+    get type(){
+        return this.settings.limitType
+    }
+
+    set type(value){
+        this.settings.limitType = value
+    }
+
+    get lower(){
+        return this.settings.lowerLimit
+    }
+
+    set lower(value){
+        this.settings.lowerLimit = value
+    }
+
+    get lowerBackground(){
+        return this.settings.lowerLimitBackground
+    }
+
+    set lowerBackground(value){
+        this.settings.lowerLimitBackground = value
+    }
+
+    get upper(){
+        return this.settings.upperLimit
+    }
+
+    set upper(value){
+        this.settings.upperLimit = value
+    }
+
+    get upperBackground(){
+        return this.settings.upperLimitBackground
+    }
+
+    set upperBackground(value){
+        this.settings.upperLimitBackground = value
+    }
+
     onDidReceiveSettings(jsn) {
+        super.onDidReceiveSettings(jsn)
+
+        this.enabled   = this.enabled || 'false'
+        this.increment = this.increment || 1
+        this.type      = this.type || LimitType.PERCENT
         
-        this.settings.limitType = this.settings.limitType || LIMIT_TYPE_PERCENT
-        this.settings.limitIncrement = this.settings.limitIncrement = 1
-        this.settings.limitsEnabled = this.settings.limitsEnabled || 'false'
-        
-        this.settings.upperlimit = this.settings.upperlimit || 0
-        this.settings.lowerlimit = this.settings.lowerlimit || 0
-        this.settings.upperlimitbackground = this.settings.upperlimitbackground || "#00AA00"
-        this.settings.lowerlimitbackground = this.settings.lowerlimitbackground || "#AA0000"
+        this.lower = this.lower || 0
+        this.upper = this.upper || 0
+        this.lowerBackground = this.lowerBackground || '#AA0000'
+        this.upperBackground = this.upperBackground || '#00AA00'
     } 
 
     //-----------------------------------------------------------------------------------------
@@ -68,45 +135,10 @@ class Limits extends Manager{
 
     //-----------------------------------------------------------------------------------------
 
-    prepData(symbol){
+    prepData(jsn){
+        super.prepData(jsn)
+        var symbol = jsn.payload
         var payload = {}
-
-        payload.price       = symbol.regularMarketPrice
-        payload.open        = symbol.regularMarketOpen
-        payload.prevClose   = symbol.regularMarketPreviousClose
-        payload.volume      = Utils.abbreviateNumber(symbol.regularMarketVolume)
-        payload.foreground  = this.settings.foreground
-        payload.background  = this.settings.background
-        
-        // Symbol remove currency conversion for Crypto
-        payload.symbol = symbol.symbol.split('-')[0]
-
-        // Range
-        payload.state   = ''
-        payload.low     = symbol.regularMarketDayLow
-        payload.high    = symbol.regularMarketDayHigh
-        payload.change  = symbol.regularMarketChange
-        payload.percent = symbol.regularMarketChangePercent
-
-        // Factor after market pricing
-        if (symbol.marketState != "REGULAR") {
-
-            if(symbol.marketState.includes("POST")){
-                payload.state = symbol.marketState == "POSTPOST" ? "Cl" : "AH"
-                payload.price = symbol.postMarketPrice || payload.price
-                payload.change = symbol.postMarketChange || ''
-                payload.percent = symbol.postMarketChangePercent || ''
-            }
-            else {
-                payload.state = symbol.marketState == "PREPRE" ? "Cl" : "Pre"
-                payload.price = symbol.preMarketPrice || payload.price
-                payload.change = symbol.preMarketChange || ''
-                payload.percent = symbol.preMarketChangePercent || ''
-            }
-            
-            payload.low = payload.price < payload.low ? payload.price : payload.low
-            payload.high = payload.price > payload.high ? payload.price : payload.high
-        }
 
         // Limits
         if (this.settings.limitsEnabled == 'true') {
@@ -127,11 +159,10 @@ class Limits extends Manager{
                 payload.background = this.settings.lowerlimitbackground
             }
         }
-
-        return payload
     }
 
-    updateLimitsView(){
+    updateDisplay(jsn){
+        super.updateDisplay(jsn)
         let isLow = this.clickCount == 0
         var label = isLow ? "Low" : "High"
         var value = isLow ? this.settings.lowerlimit : this.settings.upperlimit
@@ -142,12 +173,12 @@ class Limits extends Manager{
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillText(label + ' Limit', 136, 8);
 
-        if(this.settings.limitType == LIMIT_TYPE_NUMERIC){
+        if(this.settings.limitType == LimitType.NUMERIC){
             this.drawPrice(value)
         }
         else {
             value += '%'
-            this.setFontFor(value, 600, this.canvas.width - 20)
+            Utils.setFontFor(value, 600, this.canvas.width - 20)
             this.drawingCtx.fillText(value, 140, 38);
         }
     }

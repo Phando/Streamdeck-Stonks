@@ -69,32 +69,81 @@ Utils.unique = function(arr) {
     return Array.from(new Set(arr));
 };
 
+//-----------------------------------------------------------------------------------------
+
 Utils.transformValue = function(prcnt, min, max) {
     return Math.round(((max - min) * prcnt) / 100 + min);
 };
+
+//-----------------------------------------------------------------------------------------
 
 Utils.rangeToPercent = function (value, min, max) {
     return (value - min) / (max - min);
 };
 
+//-----------------------------------------------------------------------------------------
+
 Utils.percentToRange = function (percent, min, max) {
     return (max - min) * percent + min;
 };
 
-Utils.abbreviateNumber = function(value, precision=3) {
-    const suffixes = ["", "K", "M", "B", "T"];
-    let newValue = value;
-    let suffixNum = 0;
+//-----------------------------------------------------------------------------------------
+
+Utils.abbreviateNumber = function(value, precision=2) {
+    let suffixNum = 0
+    let suffixes = ["", "K", "M", "B", "T"]
+    let newValue = Number(value).toFixed(precision)
     
-    while (newValue >= 1000) {
-        newValue /= 1000;
-        suffixNum++;
+    if( newValue < 0.01 ){
+        while(newValue.charAt() == '.' || newValue.charAt() == '0'){
+            suffixNum++
+            newValue = newValue.slice(1)
+        }
+        return newValue + '-' + (suffixNum-2)
+        //return newValue + 'e-' + (suffixNum-2)
+        //return '0' + newValue + '-' + (suffixNum-3)
+        //return (suffixNum-2) +'+'+ newValue 
+        //return (suffixNum-2) +'-'+ newValue 
+        //return (suffixNum-2) +'-'+ newValue 
+    }
+
+    if( newValue >= 10000){
+        while (newValue >= 1000) {
+            newValue /= 1000;
+            suffixNum++;
+        }
+        newValue = newValue.toPrecision(precision);
+        newValue += suffixes[suffixNum];
     }
     
-    newValue = newValue.toPrecision(precision);
-    newValue += suffixes[suffixNum];
     return newValue;
 };
+
+//-----------------------------------------------------------------------------------------
+
+Utils.setFontFor = function(text, weight, maxWidth) {
+    return Utils.calculateFont(text, weight, 4, 40, maxWidth);
+};
+
+//-----------------------------------------------------------------------------------------
+
+Utils.calculateFont = function(text, weight, min, max, desiredWidth) {
+    if (max - min < 1) {
+        _drawingCtx.font = weight + " " + min + "px Arial";
+        return
+    }
+
+    var test = min + (max - min) / 2; //Find half interval
+    _drawingCtx.font = weight + " " + test + "px Arial";
+    
+    if( _drawingCtx.measureText(text).width > desiredWidth) {
+        return Utils.calculateFont(text, weight, min, test, desiredWidth);
+    }   
+    
+    return Utils.calculateFont(text, weight, test, max, desiredWidth);
+};
+
+//-----------------------------------------------------------------------------------------
 
 Utils.setDebugOutput = debug => {
     return debug === true ? console.log.bind(window.console) : function() {};
