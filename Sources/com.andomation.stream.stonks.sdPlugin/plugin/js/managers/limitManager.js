@@ -12,8 +12,8 @@ const LimitViewType = Object.freeze({
     LOWER_DEC   : 'lowerDec',
     UPPER_INC   : 'upperInc',
     UPPER_DEC   : 'upperDec',
-    LOWER_INFO  : 'LOWER_INFO',
-    UPPER_INFO  : 'UPPER_INFO'   
+    LOWER_INFO  : 'lowerInfo',
+    UPPER_INFO  : 'upperInfo'   
 });
 
 class LimitManager extends Manager{
@@ -87,7 +87,7 @@ class LimitManager extends Manager{
     }
 
     set frameTime(value){
-        this.settings.frameTime
+        this.settings.frameTime = value
     }
     
     // Runtime Variables
@@ -167,14 +167,18 @@ class LimitManager extends Manager{
     //-----------------------------------------------------------------------------------------
 
     onKeyUp(jsn){
-        super.onKeyUp(jsn)
         this.startTimer(jsn)
 
         // Interactive view click handling
         if( this.isInteractive) {
-            this.handleAdjustment(jsn)
+            this.incrementOnClick = false
+            if(!this.isLongPress)
+                this.handleAdjustment(jsn)
+            else
+                this.isLongPress = false
         }
         else {
+            super.onKeyUp(jsn)
             this.updateDisplay(jsn)
         }
     }
@@ -194,7 +198,6 @@ class LimitManager extends Manager{
             this.lowerLimit += this.isInc ? increment : -increment 
         }
         
-        console.log("Limits", typeof this.lowerLimit, typeof this.upperLimit, this.lowerLimit, this.upperLimit)
         $SD.api.setSettings(this.uuid, this.settings)
         this.updateDisplay(jsn)
     }
@@ -208,14 +211,10 @@ class LimitManager extends Manager{
         this.data.limitBackground = this.settings.background
     
         if(this.type == LimitType.PERCENT){
-            console.log("Upper%", this.data.percent, this.upperLimit)
-            console.log("Lower%", this.data.percent, this.lowerLimit)
             isLimit = this.data.percent <= -this.lowerLimit ? -1 : 0
             isLimit = this.data.percent >= this.upperLimit ? 1 : isLimit
         }
         else {
-            console.log("Upper", this.data.price, this.upperLimit)
-            console.log("Lower", this.data.price, this.lowerLimit)
             isLimit = this.data.price <= this.lowerLimit ? -1 : 0
             isLimit = this.data.price >= this.upperLimit ? 1 : isLimit
         }  
@@ -227,8 +226,7 @@ class LimitManager extends Manager{
     //-----------------------------------------------------------------------------------------
 
     prepPrice(value){
-        value = Utils.abbreviateNumber(value, this.settings.decimals)
-        return value
+        return Utils.abbreviateNumber(value, this.settings.decimals)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -236,23 +234,24 @@ class LimitManager extends Manager{
     onSendToPlugin(jsn) {
         super.onSendToPlugin(jsn)
         const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
-        if(sdpi_collection.key == "symbol")
-                this.settings[sdpi_collection.key] = this.settings[sdpi_collection.key].toUpperCase()
             
         if(sdpi_collection.key == 'limitType'){
             this.lowerLimit = this.type == LimitType.NUMERIC ? this.data.price : 0
             this.upperLimit = this.type == LimitType.NUMERIC ? this.data.price : 0
             $SD.api.setSettings(this.uuid, this.settings); 
         }
+
+        this.updateDisplay(jsn)
     } 
 
     //-----------------------------------------------------------------------------------------
 
     handleTimer(jsn){
         this.uuid = jsn.context
-
-        if( this.currentView == LimitViewType.UPPER_DEC || this.currentView == LimitViewType.UPPER_INFO ){
+        
+        if( !this.incrementOnClick && this.currentView == LimitViewType.LOWER_INFO ){
             clearInterval(this.timer)
+            this.incrementOnClick = true
             $SD.emit(jsn.action + '.exitLimits', this.context)
             return
         }
@@ -268,6 +267,7 @@ class LimitManager extends Manager{
     //-----------------------------------------------------------------------------------------
 
     startTimer(jsn){
+        this.uuid = jsn.context
         clearInterval(this.timer)
         this.countdown = this.frameTime
         this.timer = setInterval( (jasnObj) => this.handleTimer(jasnObj), 1000, this.context )
@@ -283,7 +283,7 @@ class LimitManager extends Manager{
 
     updateDisplay(jsn){
         super.updateDisplay(jsn)
-        console.log(jsn, this.currentView)
+        console.log('LimitManager updateDisplay', jsn, this.currentView)
         this.drawingCtx.fillStyle = this.settings.background
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         
@@ -350,7 +350,7 @@ class LimitManager extends Manager{
 
         if(this.type == LimitType.PERCENT){
             price  = this.data.prevClose
-            price += price * (this.isInc ? value/100 : -value/100)
+            price += price * (this.isUpper ? value/100 : -value/100)
             value  = value + '%'
         }
         else {
@@ -369,19 +369,20 @@ class LimitManager extends Manager{
         this.drawingCtx.fillText(this.isInc ? '+Inc' : '-Dec', 138, 72);
 
         // Limit
-        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
+        this.drawingCtx.font = 600 + " " + 26 + "px Arial"
         this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText(value, 8, 95);
+        this.drawingCtx.fillText(value, 8, 85);
 
         // this.drawingCtx.textAlign = "right"
-        // this.drawingCtx.fillText( price, 134, 95);
+        // this.drawingCtx.fillText(price, 134, 95);
 
         // Price
+        this.drawingCtx.font = 600 + " " + 24 + "px Arial"
         this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText(this.prepPrice(this.data.price), 10, 115);
+        this.drawingCtx.fillText(price, 10, 115);
 
         // this.drawingCtx.textAlign = "right"
-        // this.drawingCtx.fillText( this.data.price, 134, 115);
+        // this.drawingCtx.fillText(price, 134, 115);
     }
     
     //-----------------------------------------------------------------------------------------
@@ -398,7 +399,7 @@ class LimitManager extends Manager{
         // Render Price
         this.drawingCtx.fillStyle = this.isUpper ? '#00FF00' : '#FF0000'
         // this.drawingCtx.fillStyle = this.settings.foreground
-        Utils.setFontFor(value, 600, CANVAS_WIDTH - 20)
+        Utils.setFontFor(value, 600, 40, CANVAS_WIDTH - 20)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillText(value, 140, 34);

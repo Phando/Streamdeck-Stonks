@@ -122,8 +122,8 @@ Utils.abbreviateNumber = function(value, precision=2) {
 
 //-----------------------------------------------------------------------------------------
 
-Utils.setFontFor = function(text, weight, maxWidth) {
-    return Utils.calculateFont(text, weight, 4, 40, maxWidth);
+Utils.setFontFor = function(text, weight, maxFont, maxWidth) {
+    return Utils.calculateFont(text, weight, 4, maxFont, maxWidth);
 };
 
 //-----------------------------------------------------------------------------------------

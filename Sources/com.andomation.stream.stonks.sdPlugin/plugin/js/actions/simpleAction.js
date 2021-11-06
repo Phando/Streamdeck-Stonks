@@ -1,4 +1,6 @@
 
+const LENGTH_LIMIT = 6
+
 const FooterType = Object.freeze({
     CHANGE  : 'change',
     HIGHLO  : 'hilo',
@@ -38,6 +40,46 @@ class SimpleAction extends Action {
         this.type = this.type + ".simple";
     }
 
+    get symbol(){
+        return this.settings.symbol
+    }
+
+    set symbol(value){
+        this.settings.symbol = value
+    }
+
+    get decimals(){
+        return this.settings.decimals
+    }
+
+    set decimals(value){
+        this.settings.decimals = value
+    }
+
+    get foreground(){
+        return this.settings.foreground
+    }
+
+    set foreground(value){
+        this.settings.foreground = value
+    }
+
+    get background(){
+        return this.settings.background
+    }
+
+    set background(value){
+        this.settings.background = value
+    }
+
+    get footerMode(){
+        return this.settings.footerMode
+    }
+
+    set footerMode(value){
+        this.settings.footerMode = value
+    }
+
     // Streamdeck Event Handlers
     //-----------------------------------------------------------------------------------------
 
@@ -59,12 +101,12 @@ class SimpleAction extends Action {
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
         
-        console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
-        this.settings.symbol     = this.settings.symbol || 'GME'
-        this.settings.decimals   = this.settings.decimals || 2
-        this.settings.foreground = this.settings.foreground || '#D8D8D8'
-        this.settings.background = this.settings.background || '#1D1E1F'
-        this.settings.footerMode = this.settings.footerMode || FooterType.CHANGE
+        //console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
+        this.symbol     = this.symbol || 'GME'
+        this.decimals   = this.decimals || 2
+        this.foreground = this.foreground || '#D8D8D8'
+        this.background = this.background || '#1D1E1F'
+        this.footerMode = this.footerMode || FooterType.CHANGE
         
         this.prepViewList()
         this.chartManager.onDidReceiveSettings(jsn)
@@ -134,17 +176,21 @@ class SimpleAction extends Action {
 
         this.settings[keyName] = collection.value
         this.settings[collection.key] = collection.value
-        $SD.api.setSettings(this.uuid, this.settings); 
+        $SD.api.setSettings(this.uuid, this.settings)
     }
 
     //-----------------------------------------------------------------------------------------
 
     onSendToPlugin(jsn) {
         super.onSendToPlugin(jsn)
-        this.limitManager.onSendToPlugin(jsn)
-        this.symbol = this.symbol.toUpperCase()
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+
+        if(sdpi_collection.key == 'symbol')
+            this.symbol = this.symbol.toUpperCase()
             
+        
         this.prepViewList()
+        this.limitManager.onSendToPlugin(jsn)
         dataManager.fetchSymbolData()
     }
 
@@ -159,13 +205,13 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveSymbolData(jsn) {
-        console.log("SimpleAction - onDidReceiveSymbol: ", jsn)
+        //console.log("SimpleAction - onDidReceiveSymbol: ", jsn)
         this.uuid = jsn.context
         var symbol = jsn.payload
 
         if(typeof symbol == 'undefined'){
             var payload = {context : jsn.context, error:{}}
-            payload.error.message = this.settings.symbol
+            payload.error.message = this.symbol
             payload.error.message1 = 'Not Found'
             this.renderError(payload)
             return
@@ -187,7 +233,7 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveChartData(jsn) {
-        console.log("SimpleAction - onDidReceiveChartData: ", jsn)
+        //console.log("SimpleAction - onDidReceiveChartData: ", jsn)
         this.uuid = jsn.context
         this.chartManager.onDidReceiveData(jsn)
         
@@ -198,7 +244,7 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveSymbolError(jsn) {
-        console.log('Action - onDidReceiveSymbolError', jsn)
+        //console.log('SimpleAction - onDidReceiveSymbolError', jsn)
         this.renderError(jsn)
     }
 
@@ -280,8 +326,7 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     prepPrice(value){
-        value = Utils.abbreviateNumber(value, this.settings.decimals)
-        return value
+        return Utils.abbreviateNumber(value, this.decimals)
     }
 
     // Display Handlers
@@ -295,9 +340,9 @@ class SimpleAction extends Action {
             return
         }
 
-        this.drawingCtx.fillStyle = this.settings.background
+        this.drawingCtx.fillStyle = this.background
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-        this.drawingCtx.fillStyle = this.settings.foreground
+        this.drawingCtx.fillStyle = this.foreground
         this.limitManager.updateLimitView(jsn)
 
         switch(this.currentView){    
@@ -322,7 +367,7 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     updateDayView(){
-        this.drawSymbol(this.settings.foreground)
+        this.drawSymbol(this.foreground)
 
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.font = 400 + " " + 25 + "px Arial";
@@ -337,7 +382,7 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSymbol(){
-        this.drawingCtx.fillStyle =  this.settings.foreground
+        this.drawingCtx.fillStyle =  this.foreground
         this.drawingCtx.font = 600 + " " + 24 + "px Arial";
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
@@ -351,8 +396,8 @@ class SimpleAction extends Action {
 
         // Render Price
         // this.drawingCtx.fillStyle = this.price >= this.data.prevClose ? '#00FF00' : '#FF0000'
-        this.drawingCtx.fillStyle = this.settings.foreground
-        Utils.setFontFor(value, 600, CANVAS_WIDTH - 20)
+        this.drawingCtx.fillStyle = this.foreground
+        Utils.setFontFor(value, 600, 40, CANVAS_WIDTH - 20)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillText(value, 140, 34);
@@ -364,7 +409,7 @@ class SimpleAction extends Action {
         // Volume
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillStyle = this.settings.foreground
+        this.drawingCtx.fillStyle = this.foreground
         this.drawingCtx.font = 500 + " " + 25 + "px Arial";
         this.drawingCtx.fillText(this.data.volume, 138, 72);
 
@@ -373,7 +418,7 @@ class SimpleAction extends Action {
         this.drawingCtx.font = 600 + " " + 20 + "px Arial"
         this.drawingCtx.fillText(this.data.state, 7, 74);
 
-        switch(this.settings.footerMode){
+        switch(this.footerMode){
             case FooterType.CHANGE:
                 this.drawFooterChange()
                 break
@@ -396,18 +441,16 @@ class SimpleAction extends Action {
         let percent = this.data.percent || 0
         let color = '#00FF00'
 
-        console.log("CHANGE", change, percent)
         if(change < 0){
-            change *= -1
-            percent *= -1
             color = '#FF0000'
+            change = Math.abs(change)
+            percent = Math.abs(percent)
         }
         
         change = this.prepPrice(change)
         percent = percent.toFixed(2)
         
-        if(String(change).length > 5){
-            this.drawingCtx.font = 600 + " " + 20 + "px Arial"
+        if(String(change).length > LENGTH_LIMIT){
             this.drawPair("%", percent, 95, color)
             this.drawPair("$", change, 115, color)
         }
@@ -432,8 +475,7 @@ class SimpleAction extends Action {
             low = this.prepPrice(low)
         }
         
-        if(String(high).length > 6 || String(low).length > 6){
-            this.drawingCtx.font = 600 + " " + 20 + "px Arial"
+        if(String(high).length > LENGTH_LIMIT || String(low).length > LENGTH_LIMIT){
             this.drawPair("Hi", high, 95, '#00FF00')
             this.drawPair("Lo", low, 115, '#FF0000')
         }
@@ -456,9 +498,9 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     renderError(jsn) {
-        console.log('Action - renderError', jsn)
+        //console.log('SimpleAction - renderError', jsn)
         this.uuid = jsn.context
-        this.drawingCtx.fillStyle = this.settings.background
+        this.drawingCtx.fillStyle = this.background
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
         this.drawingCtx.fillStyle =  '#FFFF00'
@@ -468,7 +510,7 @@ class SimpleAction extends Action {
         this.drawingCtx.fillText("Error", CANVAS_WIDTH/2, 6);
 
         // Render Message
-        this.drawingCtx.fillStyle = this.settings.foreground
+        this.drawingCtx.fillStyle = this.foreground
         this.drawingCtx.font = 600 + " " + 19 + "px Arial";
         this.drawingCtx.fillText(jsn.error.message, CANVAS_WIDTH/2, 40);
 

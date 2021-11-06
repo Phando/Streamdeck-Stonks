@@ -15,14 +15,15 @@ let contextList = {}
 //-----------------------------------------------------------------------------------------
 
 function Context(jsn){
-    this.downtimer  =   null
-    this.clickCount =   0
+    this.downtimer   = null
+    this.clickCount  = 0
     this.incrementOnClick = true
-    this.stateName  =   STATE_DEFAULT
-    this.action =       Utils.getProp(jsn, 'action', '')
-    this.context =      Utils.getProp(jsn, 'context', '')
-    this.coordinates =  Utils.getProp(jsn, 'payload.coordinates', {})
-    this.settings =     Utils.getProp(jsn, 'payload.settings', {})
+    this.isLongPress = false
+    this.stateName   = STATE_DEFAULT
+    this.action      = Utils.getProp(jsn, 'action', '')
+    this.context     = Utils.getProp(jsn, 'context', '')
+    this.coordinates = Utils.getProp(jsn, 'payload.coordinates', {})
+    this.settings    = Utils.getProp(jsn, 'payload.settings', {})
 }
 
 // Bass class for Actions and PI Components for interacting with the StreamDeck
@@ -79,6 +80,14 @@ class StreamDeckClient {
         this.context.incrementOnClick = value
     }
 
+    get isLongPress(){
+        return this.context.isLongPress
+    }
+
+    set isLongPress(value){
+        this.context.isLongPress = value
+    }
+
     get settings(){
         return this.context.settings
     }
@@ -130,7 +139,6 @@ class StreamDeckClient {
     onDidReceiveSettings(jsn) {
         this.uuid = jsn.context
         this.settings = Utils.getProp(jsn, 'payload.settings', {})
-        console.log("StreamDeckClient - onDidReceiveSettings", jsn, this.settings)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -143,6 +151,7 @@ class StreamDeckClient {
             this.settings[sdpi_collection.key] = sdpi_collection.value;      
             $SD.api.setSettings(this.uuid, this.settings); 
         }
+        this.updateDisplay(jsn)
     } 
 
     //-----------------------------------------------------------------------------------------
@@ -204,20 +213,18 @@ class StreamDeckClient {
 
     //-----------------------------------------------------------------------------------------
     
-    drawMaxPair(label, value, yPos, color1 = this.settings.foregroundColor, color2 = this.settings.foregroundColor){
+    drawMaxPair(value1, value2, yPos, color1 = this.settings.foregroundColor, color2 = this.settings.foregroundColor){
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.font = 600 + " " + 22 + "px Arial"
-        // Label
-        //Utils.setFontFor(label, 600, (CANVAS_WIDTH-20)/2)
+        
+        Utils.setFontFor(value1, 600, 24, (CANVAS_WIDTH-20)/2)
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.fillStyle = color1
-        this.drawingCtx.fillText(label, 7, yPos);
+        this.drawingCtx.fillText(value1, 7, yPos);
 
-        // Render Price
-        //Utils.setFontFor(value, 600, (CANVAS_WIDTH-20)/2)
+        Utils.setFontFor(value2, 600, 24, (CANVAS_WIDTH-20)/2)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.fillStyle = color2
-        this.drawingCtx.fillText(value, 137, yPos);
+        this.drawingCtx.fillText(value2, 137, yPos);
     }
 }
 

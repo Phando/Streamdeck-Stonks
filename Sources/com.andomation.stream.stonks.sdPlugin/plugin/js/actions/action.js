@@ -1,7 +1,6 @@
 class Action extends StreamDeckClient {
     
     type = "com.andomation.stream.stonks"
-    isLongPress  = false
 
     constructor() {
         super()
