@@ -28,15 +28,15 @@ class LimitManager extends Manager{
     }
 
     get enabled(){
-        return this.settings.limitEnabled
+        return this.settings.limitEnabled == 'true'
     }
 
     set enabled(value){
-        this.settings.limitEnabled = value
+        this.settings.limitEnabled = String(value)
     }
 
     get increment(){
-        return this.settings.limitIncrement
+        return Number(this.settings.limitIncrement)
     }
 
     set increment(value){
@@ -52,7 +52,7 @@ class LimitManager extends Manager{
     }
 
     get lowerLimit(){
-        return this.settings.lowerLimit
+        return Number(this.settings.lowerLimit)
     }
 
     set lowerLimit(value){
@@ -68,7 +68,7 @@ class LimitManager extends Manager{
     }
 
     get upperLimit(){
-        return this.settings.upperLimit
+        return Number(this.settings.upperLimit)
     }
 
     set upperLimit(value){
@@ -175,35 +175,17 @@ class LimitManager extends Manager{
 
     handleAdjustment(jsn){
         this.uuid = jsn.context
-        console.log("Adjust")
-        this.updateDisplay(jsn)
-        return
+        this.enabled = true
+        let increment = Number(this.increment) 
 
-        if(this.state != STATE_LIMITS){
-            this.settings.limitsEnabled = true
-            
-            if(this.settings.lowerlimit == Number.MIN_VALUE){
-                this.settings.lowerlimit = this.settings.limitType == LIMIT_TYPE_PERCENT ? 0 : this.data.price
-            }
-            
-            if(this.settings.upperlimit == Number.MIN_VALUE){
-                this.settings.upperlimit = this.settings.limitType == LIMIT_TYPE_PERCENT ? 0 : this.data.price
-            }
-
-            $SD.api.setSettings(this.uuid, this.settings);
-            this.state = STATE_LIMITS
-            return
-        }
-
-        let value = increment ? this.settings.limitIncrement : -this.settings.limitIncrement
-        
-        if( this.clickCount == 0){    
-            this.settings.lowerlimit = this.settings.lowerlimit + value
+        if(this.isUpper){
+            this.upperLimit += this.isInc ? increment : -increment 
         }
         else {
-            this.settings.upperlimit = this.settings.upperlimit + value
+            this.lowerLimit += this.isInc ? increment : -increment 
         }
         
+        console.log("Limits", typeof this.lowerLimit, typeof this.upperLimit, this.lowerLimit, this.upperLimit)
         $SD.api.setSettings(this.uuid, this.settings)
         this.updateDisplay(jsn)
     }
@@ -212,29 +194,42 @@ class LimitManager extends Manager{
 
     prepData(jsn){
         super.prepData(jsn)
-        var symbol = jsn.payload
-        var payload = {}
-
-        // Limits
-        if (this.settings.limitsEnabled == 'true') {
-            var limit = 0
-            if(this.settings.limitType == LIMIT_TYPE_PERCENT){
-                limit = payload.percent >= this.settings.upperlimit ? 1 : 0
-                limit = payload.percent <= this.settings.lowerlimit ? -1 : limit
-            } 
-            else {
-                limit = payload.price >= this.settings.upperlimit ? 1 : 0
-                limit = payload.price <= this.settings.lowerlimit ? -1 : limit
-            }
-            
-            if( limit == 1){
-                payload.background = this.settings.upperlimitbackground
-            }
-            if( limit == -1){
-                payload.background = this.settings.lowerlimitbackground
-            }
+        
+        let isLimit = 0
+        this.data.limitBackground = this.settings.background
+    
+        if(this.type == LimitType.PERCENT){
+            isLimit = this.data.percent <= this.lowerLimit ? -1 : 0
+            isLimit = this.data.percent >= this.upperLimit ? 1 : isLimit
         }
+        else {
+            isLimit = this.data.price <= this.lowerLimit ? -1 : 0
+            isLimit = this.data.price >= this.upperLimit ? 1 : isLimit
+        }  
+        
+        if( isLimit == 0) return // Not in limit state
+        this.data.limitBackground = isLimit == 1 ? this.upperBackground : this.lowerBackground
     }
+
+    //-----------------------------------------------------------------------------------------
+
+    prepPrice(value){
+        value = Utils.abbreviateNumber(value, this.settings.decimals)
+        return value
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onSendToPlugin(jsn) {
+        super.onSendToPlugin(jsn)
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        
+        if(sdpi_collection.key == 'limitType'){
+            this.lowerLimit = this.type == LimitType.NUMERIC ? this.data.price : 0
+            this.upperLimit = this.type == LimitType.NUMERIC ? this.data.price : 0
+            $SD.api.setSettings(this.uuid, this.settings); 
+        }
+    } 
 
     //-----------------------------------------------------------------------------------------
 
@@ -303,25 +298,54 @@ class LimitManager extends Manager{
 
     updateInfoView(){
         this.drawHeader('Limits')
+        // Upper
+        this.drawingCtx.fillStyle = '#00FF00'
+        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.fillText('Upper', 8, 95);
+
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.fillText( this.upperLimit, 134, 95);
+
+        // Lower
+        this.drawingCtx.fillStyle = '#FF0000'
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.fillText('Lower', 10, 115);
+
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.fillText( this.lowerLimit, 134, 115);
     }
     
     //-----------------------------------------------------------------------------------------
 
+    updateLimitView(jsn){
+        this.uuid = jsn.context
+        if(!this.enabled) return
+
+        var grd = this.drawingCtx.createLinearGradient(0, 0, 0, 60)
+        grd.addColorStop(0, this.data.limitBackground)
+        grd.addColorStop(1, this.settings.background)
+        this.drawingCtx.fillStyle = grd
+        this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    }
+
+    //-----------------------------------------------------------------------------------------
+
     updateAdjustmentView(){
         let value = this.isUpper ? this.upperLimit : this.lowerLimit
-        let price = this.data.price
-        
+        let price = value    
+
         if(this.type == LimitType.PERCENT){
-            price += price * this.isUpper ? this.upperLimit/100 : -this.lowerLimit/100
-            value = value + '%'
+            price  = this.data.prevClose
+            price += price * (this.isInc ? value/100 : -value/100)
+            value  = value + '%'
         }
         else {
-            price += this.isUpper ? this.upperLimit : -this.lowerLimit
             value = this.prepPrice(value)
         }  
 
         price = this.prepPrice(price)
-        this.drawHeader(this.isUpper?'Upper':'Lower')
+        this.drawHeader(this.isUpper ? 'Upper' : 'Lower')
         this.drawLimit(price)
 
         this.drawingCtx.fillStyle =  this.settings.foreground
@@ -329,12 +353,12 @@ class LimitManager extends Manager{
         
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.font = 500 + " " + 25 + "px Arial";
-        this.drawingCtx.fillText(this.isInc?'+Inc':'-Dec', 138, 72);
+        this.drawingCtx.fillText(this.isInc ? '+Inc' : '-Dec', 138, 72);
 
         // Limit
-        //this.drawingCtx.font = 600 + " " + 20 + "px Arial"
-        // this.drawingCtx.textAlign = "left"
-        // this.drawingCtx.fillText('Limit', 8, 95);
+        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.fillText(value, 8, 95);
 
         // this.drawingCtx.textAlign = "right"
         // this.drawingCtx.fillText( price, 134, 95);
@@ -355,6 +379,20 @@ class LimitManager extends Manager{
         this.drawingCtx.fillText((this.isUpper?'Upper':'Lower') + ' Limit', CANVAS_WIDTH/2, 8);
     }
     
+    //-----------------------------------------------------------------------------------------
+
+    drawLimit(value){
+        // Render Price
+        this.drawingCtx.fillStyle = this.isUpper ? '#00FF00' : '#FF0000'
+        // this.drawingCtx.fillStyle = this.settings.foreground
+        Utils.setFontFor(value, 600, CANVAS_WIDTH - 20)
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillText(value, 140, 34);
+    }
+
+    //-----------------------------------------------------------------------------------------
+
     drawHeader(value){
         this.drawingCtx.fillStyle =  this.settings.foreground
         this.drawingCtx.font = 600 + " " + 24 + "px Arial";
@@ -367,22 +405,6 @@ class LimitManager extends Manager{
         this.drawingCtx.fillText(value, 10, 8);
     }
 
-    //-----------------------------------------------------------------------------------------
-
-    drawLimit(value){
-        //this.drawingCtx.fillStyle = this.settings.foreground
-        this.drawingCtx.fillStyle = this.isUpper ? '#00FF00' : '#FF0000'
-        Utils.setFontFor(value, 600, CANVAS_WIDTH - 20)
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(value, 140, 34);
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    prepPrice(value){
-        value = Utils.abbreviateNumber(value, this.settings.decimals)
-        return value
-    }
+    
 
 }

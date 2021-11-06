@@ -149,6 +149,7 @@ class SimpleAction extends Action {
 
     onSendToPlugin(jsn) {
         super.onSendToPlugin(jsn)
+        this.limitManager.onSendToPlugin(jsn)
         this.prepViewList()
         dataManager.fetchSymbolData()
     }
@@ -303,10 +304,12 @@ class SimpleAction extends Action {
         this.drawingCtx.fillStyle = this.settings.background
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = this.settings.foreground
-        
+        this.limitManager.updateLimitView(jsn)
+
         switch(this.currentView){    
             case ViewType.DEFAULT:
-                this.updateDefaultView()
+                this.drawSymbol()
+                this.drawPrice(this.data.price)
                 this.drawFooter()
                 break
             case ViewType.DAY_DEC :
@@ -314,13 +317,14 @@ class SimpleAction extends Action {
                 this.updateDayView()
                 break
             default:
-                this.updateDefaultView()
+                this.drawSymbol()
+                this.drawPrice(this.data.price)
                 this.chartManager.updateDisplay(jsn)
         }
 
         $SD.api.setImage(this.uuid, this.canvas.toDataURL());
     }
-
+    
     //-----------------------------------------------------------------------------------------
 
     updateDayView(){
@@ -333,42 +337,6 @@ class SimpleAction extends Action {
         this.drawChangeItemValue("Cl", this.data.prevClose, 40)
         this.drawChangeItemValue("Hi", this.data.high, 72, asPercent)
         this.drawChangeItemValue("Lo", this.data.low, 104, asPercent)
-    }
-    
-    //-----------------------------------------------------------------------------------------
-
-    updateDefaultView(){
-        var grd = this.drawingCtx.createLinearGradient(0, 0, 0, 50)
-        grd.addColorStop(0, this.data.background)
-        grd.addColorStop(1, this.settings.background)
-        this.drawingCtx.fillStyle = grd
-        this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-
-        this.drawSymbol()
-        this.drawPrice(this.data.price)
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    updateLimitsView(){
-        let isLow = this.clickCount == 0
-        var label = isLow ? "Low" : "High"
-        var value = isLow ? this.settings.lowerlimit : this.settings.upperlimit
-        
-        this.drawingCtx.fillStyle =  this.settings.foreground;
-        this.drawingCtx.font = 600 + " " + 24 + "px Arial";
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(label + ' Limit', 136, 8);
-
-        if(this.settings.limitType == LIMIT_TYPE_NUMERIC){
-            this.drawPrice(value)
-        }
-        else {
-            value += '%'
-            Utils.setFontFor(value, 600, CANVAS_WIDTH - 20)
-            this.drawingCtx.fillText(value, 140, 38);
-        }
     }
 
     // Rendering Functions (little to no logic)

@@ -40,6 +40,12 @@ class Manager extends StreamDeckClient {
     }
 
     //-----------------------------------------------------------------------------------------
+    
+    onSendToPlugin(jsn) {
+        this.uuid = jsn.context
+    } 
+
+    //-----------------------------------------------------------------------------------------
 
     updateDisplay(jsn){
         this.uuid = jsn.context

@@ -99,12 +99,13 @@ Utils.abbreviateNumber = function(value, precision=2) {
             suffixNum++
             newValue = newValue.slice(1)
         }
-        return newValue + '-' + (suffixNum-2)
+        //return newValue + '-' + (suffixNum-2)
         //return newValue + 'e-' + (suffixNum-2)
         //return '0' + newValue + '-' + (suffixNum-3)
         //return (suffixNum-2) +'+'+ newValue 
         //return (suffixNum-2) +'-'+ newValue 
         //return (suffixNum-2) +'-'+ newValue 
+        return '..'+ newValue 
     }
 
     if( newValue >= 10000){
