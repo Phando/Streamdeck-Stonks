@@ -297,23 +297,21 @@ class LimitManager extends Manager{
     //-----------------------------------------------------------------------------------------
 
     updateInfoView(){
+        let upper = this.upperLimit
+        let lower = this.lowerLimit
+        
+        if(this.type == LimitType.PERCENT){
+            upper += '%'
+            lower += '%'
+        }
+        else {
+            upper = this.prepPrice(upper)
+            lower = this.prepPrice(lower)
+        }
+
         this.drawHeader('Limits')
-        // Upper
-        this.drawingCtx.fillStyle = '#00FF00'
-        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText('Upper', 8, 95);
-
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.fillText( this.upperLimit, 134, 95);
-
-        // Lower
-        this.drawingCtx.fillStyle = '#FF0000'
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText('Lower', 10, 115);
-
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.fillText( this.lowerLimit, 134, 115);
+        this.drawPair("Up", upper, 95, '#00FF00')
+        this.drawPair("Low", lower, 115, '#FF0000')
     }
     
     //-----------------------------------------------------------------------------------------
