@@ -1,5 +1,3 @@
-// Additional View States
-const STATE_LIMITS  = 'limits'
 
 const FooterType = Object.freeze({
     CHANGE  : 'change',
@@ -57,6 +55,7 @@ class SimpleAction extends Action {
         // Limit Handlers
         $SD.on(this.type + '.onDecrement', (jsonObj) => this.onAdjustLimit(jsonObj, false));
         $SD.on(this.type + '.onIncrement', (jsonObj) => this.onAdjustLimit(jsonObj, true));
+        $SD.on(this.type + '.exitLimits', (jsonObj) => this.onExitLimits(jsonObj));
         
         // Data Provider Handlers
         $SD.on(this.type + '.didReceiveChartData', (jsonObj) => this.onDidReceiveChartData(jsonObj));
@@ -85,15 +84,35 @@ class SimpleAction extends Action {
 
     //-----------------------------------------------------------------------------------------
 
+    onKeyDown(jsn) {
+        super.onKeyDown(jsn)
+        
+        if( this.state == STATE_LIMITS ){    
+            this.limitManager.onKeyDown(jsn)
+            return
+        }
+    }
+
+    //-----------------------------------------------------------------------------------------
+
     onKeyUp(jsn){
         super.onKeyUp(jsn)
         
         if( this.state == STATE_LIMITS ){    
-            this.onLimitClick()
+            this.limitManager.onKeyUp(jsn)
             return
         }
         
-        this.onDefaultClick(jsn) 
+        if(this.clickCount >= this.viewList.length)
+            this.clickCount = 0
+
+        if(this.currentView.includes('Chart')){
+            this.chartManager.onKeyUp(jsn)
+            dataManager.fetchChartData(this.chartManager.type)
+            return
+        }
+        
+        this.updateDisplay(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -137,63 +156,9 @@ class SimpleAction extends Action {
     // Custom Event Handlers
     //-----------------------------------------------------------------------------------------
     
-    onDefaultClick(jsn){
-        if(this.clickCount >= this.viewList.length)
-            this.clickCount = 0
-
-        if(this.currentView.includes('Chart')){
-            this.chartManager.onKeyUp(jsn)
-            dataManager.fetchChartData(this.chartManager.type)
-            return
-        }
-        
-        this.updateDisplay(jsn)
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    onLimitClick(jsn){
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    onAdjustLimit(jsn, increment){
+    onExitLimits(jsn){
         this.uuid = jsn.context
-        clearInterval(this.context.adjustTimer)
-        
-        this.context.adjustTimer = setInterval( function(uuid) {
-            this.uuid = uuid
-            clearInterval(this.context.adjustTimer)
-            this.state = STATE_DEFAULT
-        }.bind(this), 5000, this.uuid);
-
-        if(this.state != STATE_LIMITS){
-            this.settings.limitsEnabled = true
-            
-            if(this.settings.lowerlimit == Number.MIN_VALUE){
-                this.settings.lowerlimit = this.settings.limitType == LIMIT_TYPE_PERCENT ? 0 : this.data.price
-            }
-            
-            if(this.settings.upperlimit == Number.MIN_VALUE){
-                this.settings.upperlimit = this.settings.limitType == LIMIT_TYPE_PERCENT ? 0 : this.data.price
-            }
-
-            $SD.api.setSettings(this.uuid, this.settings);
-            this.state = STATE_LIMITS
-            return
-        }
-
-        let value = increment ? this.settings.limitIncrement : -this.settings.limitIncrement
-        
-        if( this.clickCount == 0){    
-            this.settings.lowerlimit = this.settings.lowerlimit + value
-        }
-        else {
-            this.settings.upperlimit = this.settings.upperlimit + value
-        }
-        
-        $SD.api.setSettings(this.uuid, this.settings)
-        this.updateDisplay()
+        this.state = STATE_DEFAULT
     }
 
     //-----------------------------------------------------------------------------------------
@@ -320,10 +285,6 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     prepPrice(value){
-        // Apply decimal option
-        //value = value.toFixed(this.settings.decimals)
-        console.log("decimals", this.settings.decimals, value)
-        //value = value.toPrecision(Math.max(1,this.settings.decimals))
         value = Utils.abbreviateNumber(value, this.settings.decimals)
         return value
     }
@@ -334,29 +295,27 @@ class SimpleAction extends Action {
     updateDisplay(jsn) {
         super.updateDisplay(jsn)
         
+        if(this.state == STATE_LIMITS){
+            this.limitManager.updateDisplay(jsn)
+            return
+        }
+
         this.drawingCtx.fillStyle = this.settings.background
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = this.settings.foreground
         
-        // STYLE: This ifesleif could be a switch
-        if(this.state == STATE_DEFAULT){
-            // STYLE: This Switch could be a new function
-            switch(this.currentView){    
-                case ViewType.DEFAULT:
-                    this.updateDefaultView()
-                    this.drawFooter()
-                    break
-                case ViewType.DAY_DEC :
-                case ViewType.DAY_PERC : 
-                    this.updateDayView()
-                    break
-                default:
-                    this.updateDefaultView()
-                    this.chartManager.updateDisplay(jsn)
-            }
-        }
-        else if(this.state == STATE_LIMITS){
-            this.limitManager.updateDisplay(jsn)
+        switch(this.currentView){    
+            case ViewType.DEFAULT:
+                this.updateDefaultView()
+                this.drawFooter()
+                break
+            case ViewType.DAY_DEC :
+            case ViewType.DAY_PERC : 
+                this.updateDayView()
+                break
+            default:
+                this.updateDefaultView()
+                this.chartManager.updateDisplay(jsn)
         }
 
         $SD.api.setImage(this.uuid, this.canvas.toDataURL());

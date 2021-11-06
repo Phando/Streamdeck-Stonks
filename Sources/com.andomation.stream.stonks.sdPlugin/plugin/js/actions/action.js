@@ -1,6 +1,7 @@
 class Action extends StreamDeckClient {
     
     type = "com.andomation.stream.stonks"
+    isLongPress  = false
 
     constructor() {
         super()
@@ -45,10 +46,16 @@ class Action extends StreamDeckClient {
     onKeyUp(jsn) {
         this.uuid = jsn.context
         this.context.clickCount += 1
+
+        if(this.isLongPress){
+            this.isLongPress = false
+            this.context.clickCount = Math.max(0, this.context.clickCount-1)
+        }
     }
     
     onLongPress(jsn) {
         this.uuid = jsn.context
+        this.isLongPress = true
     }
 
     //-----------------------------------------------------------------------------------------
@@ -79,7 +86,6 @@ class Action extends StreamDeckClient {
 
     updateDisplay(jsn){
         this.uuid = jsn.context
-        console.log("JASON", jsn)
     };
 
 }
