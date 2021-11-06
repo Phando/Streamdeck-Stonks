@@ -26,7 +26,7 @@ class StreamDeckClient {
     set uuid(value){    
         this._uuid = value
     }
-    
+
     get context(){    
         return contextList[this._uuid]
     }
@@ -73,6 +73,38 @@ class StreamDeckClient {
     
     get drawingCtx(){
         return _drawingCtx
+    }
+
+    //-----------------------------------------------------------------------------------------
+    
+    drawPair(label, value, yPos, color){
+        this.drawingCtx.font = 600 + " " + 22 + "px Arial"
+        this.drawingCtx.fillStyle = this.settings.foreground
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.fillText(label, 7, yPos)
+
+        // Render VALUE
+        this.drawingCtx.fillStyle = color
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.fillText(value, 136, yPos)
+    }
+
+    //-----------------------------------------------------------------------------------------
+    
+    drawMaxPair(label, value, yPos, color1 = this.settings.foregroundColor, color2 = this.settings.foregroundColor){
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.font = 600 + " " + 22 + "px Arial"
+        // Label
+        //Utils.setFontFor(label, 600, (CANVAS_WIDTH-20)/2)
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.fillStyle = color1
+        this.drawingCtx.fillText(label, 7, yPos);
+
+        // Render Price
+        //Utils.setFontFor(value, 600, (CANVAS_WIDTH-20)/2)
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.fillStyle = color2
+        this.drawingCtx.fillText(value, 137, yPos);
     }
 }
 

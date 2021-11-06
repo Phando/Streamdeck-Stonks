@@ -265,14 +265,14 @@ class SimpleAction extends Action {
             if(symbol.marketState.includes("POST")){
                 payload.state = symbol.marketState == "POSTPOST" ? "Cl" : "AH"
                 payload.price = symbol.postMarketPrice || payload.price
-                payload.change = symbol.postMarketChange || ''
-                payload.percent = symbol.postMarketChangePercent || ''
+                payload.change = symbol.postMarketChange || payload.change // 
+                payload.percent = symbol.postMarketChangePercent || payload.percent
             }
             else {
                 payload.state = symbol.marketState == "PREPRE" ? "Cl" : "Pre"
                 payload.price = symbol.preMarketPrice || payload.price
-                payload.change = symbol.preMarketChange || ''
-                payload.percent = symbol.preMarketChangePercent || ''
+                payload.change = symbol.preMarketChange || payload.change
+                payload.percent = symbol.preMarketChangePercent || payload.percent
             }
             
             payload.low = payload.price < payload.low ? payload.price : payload.low
@@ -334,9 +334,9 @@ class SimpleAction extends Action {
         this.drawingCtx.font = 400 + " " + 25 + "px Arial";
         
         let asPercent = this.currentView == ViewType.DAY_PERC
-        this.drawChangeItemValue("Cl", this.data.prevClose, 40)
-        this.drawChangeItemValue("Hi", this.data.high, 72, asPercent)
-        this.drawChangeItemValue("Lo", this.data.low, 104, asPercent)
+        this.drawPair("Cl", this.data.prevClose, 40)
+        this.drawPair("Hi", this.data.high, 72, '#00FF00')
+        this.drawPair("Lo", this.data.low, 104, '#FF0000')
     }
 
     // Rendering Functions (little to no logic)
@@ -384,12 +384,10 @@ class SimpleAction extends Action {
                 this.drawFooterChange()
                 break
             case FooterType.HIGHLO:
-                this.drawChangeItemValue("Hi", this.data.high, 95)
-                this.drawChangeItemValue("Lo", this.data.low, 115)
+                this.drawHighLow()
                 break
             case FooterType.HIGHLOP:
-                this.drawChangeItemValue("Hi", this.data.high, 95, true)
-                this.drawChangeItemValue("Lo", this.data.low, 115, true)
+                this.drawHighLow(true)
                 break
             case FooterType.SLIDER:
                 this.drawFooterSlider()
@@ -402,21 +400,52 @@ class SimpleAction extends Action {
     drawFooterChange(){
         let change = this.data.change || 0
         let percent = this.data.percent || 0
+        let color = '#00FF00'
 
-        // Range Percent
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText("$", 7, 95);
-        this.drawingCtx.fillText("%", 7, 115);
-
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.fillStyle = percent >= 0 ? '#00FF00' : '#FF0000'
-        change *= change < 0 ? -1 : 1 
+        console.log("CHANGE", change, percent)
+        if(change < 0){
+            change *= -1
+            percent *= -1
+            color = '#FF0000'
+        }
+        
         change = this.prepPrice(change)
-        this.drawingCtx.fillText(change, 134, 95);
-
-        percent *= percent < 0 ? -1 : 1
         percent = percent.toFixed(2)
-        this.drawingCtx.fillText(percent, 134, 115);
+        
+        if(String(change).length > 5){
+            this.drawingCtx.font = 600 + " " + 20 + "px Arial"
+            this.drawPair("%", percent, 95, color)
+            this.drawPair("$", change, 115, color)
+        }
+        else {
+            this.drawMaxPair('$'+change, percent+'%', 110, color, color)
+        }
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    drawHighLow(asPercent=false){
+        let high = this.data.high || 0
+        let low = this.data.low || 0
+        
+        if(asPercent){
+            // TODO: Calculate the proper percent values
+            // high = high.toFixed(2) +'%'
+            // low = low.toFixed(2) + '%' 
+        }
+        else {
+            high = this.prepPrice(high)
+            low = this.prepPrice(low)
+        }
+        
+        if(String(high).length > 6 || String(low).length > 6){
+            this.drawingCtx.font = 600 + " " + 20 + "px Arial"
+            this.drawPair("Hi", high, 95, '#00FF00')
+            this.drawPair("Lo", low, 115, '#FF0000')
+        }
+        else {
+            this.drawMaxPair(high, low, 110, '#00FF00', '#FF0000')
+        }
     }
 
     //-----------------------------------------------------------------------------------------
@@ -427,60 +456,6 @@ class SimpleAction extends Action {
         this.drawingCtx.textAlign = 'center'
         this.drawingCtx.fillText('Not Yet', CHART_WIDTH/2, 94);
         this.drawingCtx.fillText('Implemented', CHART_WIDTH/2, 114);
-    }
-
-
-    //-----------------------------------------------------------------------------------------
-
-    drawChangeItemPercent(label, value, yPos){ 
-        this.drawingCtx.fillStyle = this.settings.foreground;
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText(label, 7, yPos);
-
-        // These lines retain white for the market close value
-        this.drawingCtx.fillStyle = value < this.data.prevClose ? '#FF0000' : this.drawingCtx.fillStyle;
-        this.drawingCtx.fillStyle = value > this.data.prevClose ? '#00FF00' : this.drawingCtx.fillStyle;
-        value *= value < 0 ? -1 : 1
-        value = value.toFixed(2) + "%";
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.fillText(value, 130, yPos);
-
-        this.drawingCtx.fillStyle = this.settings.foreground;
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText(label, 2, yPos);
-    }
-
-    //-----------------------------------------------------------------------------------------
-    
-    drawChangeItemValue(label, value, yPos, asPercent=false){
-        this.drawingCtx.fillStyle = this.settings.foreground;
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText(label, 7, yPos);
-
-        value = Number(value)
-        
-        if(!isNaN(value)){
-            // These lines retain white for the market close value
-            this.drawingCtx.fillStyle = value < this.data.prevClose ? '#FF0000' : this.drawingCtx.fillStyle;
-            this.drawingCtx.fillStyle = value > this.data.prevClose ? '#00FF00' : this.drawingCtx.fillStyle;
-            
-            if(asPercent == true){
-                value = (value - this.data.prevClose) / this.data.prevClose
-                if(value < 0) value *= -1
-                value = value.toFixed(2) + '%'
-            }
-            else{
-                value = this.prepPrice(value)
-            }
-            
-        }
-        else {
-            value = '--'
-        }
-
-        // Render Price
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.fillText(value, 134, yPos);
     }
 
     // Error Handler

@@ -322,7 +322,7 @@ class LimitManager extends Manager{
         this.uuid = jsn.context
         if(!this.enabled) return
 
-        var grd = this.drawingCtx.createLinearGradient(0, 0, 0, 60)
+        var grd = this.drawingCtx.createLinearGradient(0, 0, 0, 70)
         grd.addColorStop(0, this.data.limitBackground)
         grd.addColorStop(1, this.settings.background)
         this.drawingCtx.fillStyle = grd
