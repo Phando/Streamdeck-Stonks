@@ -7,7 +7,7 @@ const LimitType = Object.freeze({
 });
 
 const LimitViewType = Object.freeze({
-    LIMIT_INFO  : 'summary',
+    //LIMIT_INFO  : 'summary',
     LOWER_INC   : 'lowerInc',
     LOWER_DEC   : 'lowerDec',
     UPPER_INC   : 'upperInc',
@@ -18,7 +18,7 @@ const LimitViewType = Object.freeze({
 
 class LimitManager extends Manager{
     _viewList = []
-    screenTime = 4
+    screenTime = 3
     countdown = 0
 
     constructor() {
@@ -199,10 +199,14 @@ class LimitManager extends Manager{
         this.data.limitBackground = this.settings.background
     
         if(this.type == LimitType.PERCENT){
-            isLimit = this.data.percent <= this.lowerLimit ? -1 : 0
+            console.log("Upper%", this.data.percent, this.upperLimit)
+            console.log("Lower%", this.data.percent, this.lowerLimit)
+            isLimit = this.data.percent <= -this.lowerLimit ? -1 : 0
             isLimit = this.data.percent >= this.upperLimit ? 1 : isLimit
         }
         else {
+            console.log("Upper", this.data.price, this.upperLimit)
+            console.log("Lower", this.data.price, this.lowerLimit)
             isLimit = this.data.price <= this.lowerLimit ? -1 : 0
             isLimit = this.data.price >= this.upperLimit ? 1 : isLimit
         }  
