@@ -38,14 +38,6 @@ class SimpleAction extends Action {
         this.type = this.type + ".simple";
     }
 
-    get chartData(){
-        return this.context.chartData
-    }
-
-    set chartData(value){
-        this.context.chartData = value
-    }
-
     // Streamdeck Event Handlers
     //-----------------------------------------------------------------------------------------
 
@@ -150,6 +142,8 @@ class SimpleAction extends Action {
     onSendToPlugin(jsn) {
         super.onSendToPlugin(jsn)
         this.limitManager.onSendToPlugin(jsn)
+        this.symbol = this.symbol.toUpperCase()
+            
         this.prepViewList()
         dataManager.fetchSymbolData()
     }

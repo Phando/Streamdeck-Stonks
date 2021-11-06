@@ -18,7 +18,6 @@ const LimitViewType = Object.freeze({
 
 class LimitManager extends Manager{
     _viewList = []
-    screenTime = 3
     countdown = 0
 
     constructor() {
@@ -82,6 +81,14 @@ class LimitManager extends Manager{
     set upperBackground(value){
         this.settings.upperLimitBackground = value
     }
+
+    get frameTime(){
+        return this.settings.frameTime
+    }
+
+    set frameTime(value){
+        this.settings.frameTime
+    }
     
     // Runtime Variables
     //-----------------------------------------------------------------------------------------
@@ -107,6 +114,9 @@ class LimitManager extends Manager{
         this.context.limitTimer = value
     }
 
+    // Overrides
+    //-----------------------------------------------------------------------------------------
+
     get currentView(){
         return this.viewList[this.clickCount]
     }
@@ -129,11 +139,14 @@ class LimitManager extends Manager{
         this._viewList = value
     }
 
+    //-----------------------------------------------------------------------------------------
+
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
 
         this.enabled   = this.enabled || 'false'
         this.increment = this.increment || 1
+        this.frameTime = this.frameTime || 4
         this.type      = this.type || LimitType.PERCENT
         
         this.lowerLimit = this.lowerLimit || 0
@@ -147,10 +160,8 @@ class LimitManager extends Manager{
     onKeyDown(jsn){
         super.onKeyDown(jsn)
 
-        // Pad the click count
-        if(this.currentView == LimitViewType.LIMIT_INFO){
-            this.clickCount++
-        }
+        if(this.isInteractive)
+            this.incrementOnClick = false
     }
 
     //-----------------------------------------------------------------------------------------
@@ -158,11 +169,9 @@ class LimitManager extends Manager{
     onKeyUp(jsn){
         super.onKeyUp(jsn)
         this.startTimer(jsn)
-        console.log('Click', this.clickCount, this.context)
 
         // Interactive view click handling
-        if( this.isInteractive || this.currentView == LimitViewType.LOWER_INFO) {
-            this.clickCount = Math.max(0, this.clickCount-1) // Ignore clickCount 
+        if( this.isInteractive) {
             this.handleAdjustment(jsn)
         }
         else {
@@ -227,7 +236,9 @@ class LimitManager extends Manager{
     onSendToPlugin(jsn) {
         super.onSendToPlugin(jsn)
         const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
-        
+        if(sdpi_collection.key == "symbol")
+                this.settings[sdpi_collection.key] = this.settings[sdpi_collection.key].toUpperCase()
+            
         if(sdpi_collection.key == 'limitType'){
             this.lowerLimit = this.type == LimitType.NUMERIC ? this.data.price : 0
             this.upperLimit = this.type == LimitType.NUMERIC ? this.data.price : 0
@@ -258,7 +269,7 @@ class LimitManager extends Manager{
 
     startTimer(jsn){
         clearInterval(this.timer)
-        this.countdown = this.screenTime
+        this.countdown = this.frameTime
         this.timer = setInterval( (jasnObj) => this.handleTimer(jasnObj), 1000, this.context )
     }
 

@@ -2,16 +2,28 @@ const CANVAS_WIDTH  = 144
 const CANVAS_HEIGHT = 144
 const STATE_DEFAULT = 'default'
 
-var _canvas = null
-var _drawingCtx = null
-
 // Global Variables
-// TODO : Maybe rename these to _varName
+// TODO : Maybe rename all these to _varName
 //-----------------------------------------------------------------------------------------
 
+var _canvas = null
+var _drawingCtx = null
 let actions = []
 let globalSettings = {}
 let contextList = {}
+
+//-----------------------------------------------------------------------------------------
+
+function Context(jsn){
+    this.downtimer  =   null
+    this.clickCount =   0
+    this.incrementOnClick = true
+    this.stateName  =   STATE_DEFAULT
+    this.action =       Utils.getProp(jsn, 'action', '')
+    this.context =      Utils.getProp(jsn, 'context', '')
+    this.coordinates =  Utils.getProp(jsn, 'payload.coordinates', {})
+    this.settings =     Utils.getProp(jsn, 'payload.settings', {})
+}
 
 // Bass class for Actions and PI Components for interacting with the StreamDeck
 //-----------------------------------------------------------------------------------------
@@ -27,8 +39,8 @@ class StreamDeckClient {
         this._uuid = value
     }
 
-    get context(){    
-        return contextList[this._uuid]
+    get canvas(){
+        return _canvas
     }
 
     get clickCount(){
@@ -39,12 +51,32 @@ class StreamDeckClient {
         this.context.clickCount = value
     }
 
+    get context(){    
+        return contextList[this._uuid]
+    }
+
+    get currentView(){
+        return this.viewList[this.clickCount]
+    }
+    
     get data(){
         return this.context.data
     }
 
     set data(value){
         this.context.data = value
+    }
+
+    get drawingCtx(){
+        return _drawingCtx
+    }
+
+    get incrementOnClick(){
+        return this.context.incrementOnClick
+    }
+
+    set incrementOnClick(value){
+        this.context.incrementOnClick = value
     }
 
     get settings(){
@@ -55,8 +87,14 @@ class StreamDeckClient {
         this.context.settings = value
     }
 
-    get currentView(){
-        return this.viewList[this.clickCount]
+    set state(stateName){
+        this.context.clickCount = 0
+        this.context.stateName = stateName
+        this.updateDisplay(this.context)
+    }
+    
+    get state(){
+        return this.context.stateName
     }
 
     get viewList(){
@@ -67,12 +105,87 @@ class StreamDeckClient {
         this.context.viewList = value
     }
 
-    get canvas(){
-        return _canvas
+    //-----------------------------------------------------------------------------------------
+
+    onConnected(jsn) {
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onWillAppear(jsn) {
+        this.uuid = jsn.context
+        this.onDidReceiveSettings(jsn)
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onPropertyInspectorDidAppear(jsn) {
+        this.uuid = jsn.context
+        this.state = STATE_DEFAULT
+        this.updateDisplay(jsn)
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onDidReceiveSettings(jsn) {
+        this.uuid = jsn.context
+        this.settings = Utils.getProp(jsn, 'payload.settings', {})
+        console.log("StreamDeckClient - onDidReceiveSettings", jsn, this.settings)
+    }
+
+    //-----------------------------------------------------------------------------------------
+    
+    onSendToPlugin(jsn) {
+        this.uuid = jsn.context
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        
+        if (sdpi_collection.value && sdpi_collection.value !== undefined) {
+            this.settings[sdpi_collection.key] = sdpi_collection.value;      
+            $SD.api.setSettings(this.uuid, this.settings); 
+        }
+    } 
+
+    //-----------------------------------------------------------------------------------------
+
+    onKeyDown(jsn) {
+        this.uuid = jsn.context
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onKeyUp(jsn) {
+        this.uuid = jsn.context
+
+        if(this.incrementOnClick && !this.isLongPress)
+            this.context.clickCount += 1
+
+        if(this.isLongPress)
+            this.isLongPress = false
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onLongPress(jsn) {
+        this.uuid = jsn.context
+        this.isLongPress = true
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onDidReceiveData(jsn) {
+        this.uuid = jsn.context
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    prepData(jsn){
+        this.uuid = jsn.context
     }
     
-    get drawingCtx(){
-        return _drawingCtx
+    //-----------------------------------------------------------------------------------------
+
+    updateDisplay(jsn){
+        this.uuid = jsn.context
     }
 
     //-----------------------------------------------------------------------------------------
@@ -109,16 +222,6 @@ class StreamDeckClient {
 }
 
 //-----------------------------------------------------------------------------------------
-
-function Context(jsn){
-    this.downtimer  =   null
-    this.clickCount =   0
-    this.stateName  =   STATE_DEFAULT
-    this.action =       Utils.getProp(jsn, 'action', '')
-    this.context =      Utils.getProp(jsn, 'context', '')
-    this.coordinates =  Utils.getProp(jsn, 'payload.coordinates', {})
-    this.settings =     Utils.getProp(jsn, 'payload.settings', {})
-}
 
 var $localizedStrings = $localizedStrings || {},
     REMOTESETTINGS = REMOTESETTINGS || {},
