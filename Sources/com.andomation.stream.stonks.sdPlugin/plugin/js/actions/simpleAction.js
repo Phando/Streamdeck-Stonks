@@ -8,6 +8,13 @@ const FooterType = Object.freeze({
     SLIDER  : 'slider'
 });
 
+const MarketStateType = Object.freeze({
+    PRE     : 'marketPre',
+    REG     : 'marketReg',
+    POST    : 'marketPost',
+    CLOSED  : 'marketClosed'
+});
+
 const ViewType = Object.freeze({
     DEFAULT         : 'defaultView',
     DAY_DEC         : 'showDayDecmial',
@@ -156,10 +163,11 @@ class SimpleAction extends Action {
         switch(this.state){
             case STATE_DEFAULT : 
                 this.state = STATE_LIMITS
-                break
-            case STATE_LIMITS:
                 this.limitManager.onLongPress(jsn)
                 break
+            // case STATE_LIMITS:
+            //     this.limitManager.onLongPress(jsn)
+            //     break
         }
     }
 
@@ -292,7 +300,7 @@ class SimpleAction extends Action {
         payload.symbol = symbol.symbol.split('-')[0]
 
         // Range
-        payload.state   = ''
+        payload.state   = MarketStateType.REG
         payload.low     = symbol.regularMarketDayLow
         payload.high    = symbol.regularMarketDayHigh
         payload.change  = symbol.regularMarketChange
@@ -302,13 +310,13 @@ class SimpleAction extends Action {
         if (symbol.marketState != "REGULAR") {
 
             if(symbol.marketState.includes("POST")){
-                payload.state = symbol.marketState == "POSTPOST" ? "Cl" : "AH"
+                payload.state = symbol.marketState == "POSTPOST" ? MarketStateType.CLOSED : MarketStateType.POST
                 payload.price = symbol.postMarketPrice || payload.price
                 payload.change = symbol.postMarketChange || payload.change // 
                 payload.percent = symbol.postMarketChangePercent || payload.percent
             }
             else {
-                payload.state = symbol.marketState == "PREPRE" ? "Cl" : "Pre"
+                payload.state = symbol.marketState == "PREPRE" ? MarketStateType.CLOSED : MarketStateType.PRE
                 payload.price = symbol.preMarketPrice || payload.price
                 payload.change = symbol.preMarketChange || payload.change
                 payload.percent = symbol.preMarketChangePercent || payload.percent
@@ -343,7 +351,7 @@ class SimpleAction extends Action {
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = this.foreground
         this.limitManager.updateLimitView(jsn)
-
+        
         switch(this.currentView){    
             case ViewType.DEFAULT:
                 this.drawSymbol()
@@ -395,7 +403,7 @@ class SimpleAction extends Action {
 
         // Render Price
         // this.drawingCtx.fillStyle = this.price >= this.data.prevClose ? '#00FF00' : '#FF0000'
-        this.drawingCtx.fillStyle = this.foreground
+        this.drawingCtx.fillStyle = this.data.foreground
         Utils.setFontFor(value, 600, 40, CANVAS_WIDTH - 20)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
@@ -412,10 +420,8 @@ class SimpleAction extends Action {
         this.drawingCtx.font = 500 + " " + 25 + "px Arial";
         this.drawingCtx.fillText(this.data.volume, 138, 72);
 
-        // Market State
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
-        this.drawingCtx.fillText(this.data.state, 7, 74);
+        var img = document.getElementById(this.data.state)
+        this.drawingCtx.drawImage(img, 2, 67, 35, 35)
 
         switch(this.footerMode){
             case FooterType.CHANGE:

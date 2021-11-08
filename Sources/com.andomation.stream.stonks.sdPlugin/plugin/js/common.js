@@ -200,7 +200,7 @@ class StreamDeckClient {
     //-----------------------------------------------------------------------------------------
     
     drawPair(label, value, yPos, color){
-        this.drawingCtx.font = 600 + " " + 22 + "px Arial"
+        this.drawingCtx.font = 600 + " " + 23 + "px Arial"
         this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.fillText(label, 7, yPos)

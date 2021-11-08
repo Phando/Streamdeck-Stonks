@@ -7,25 +7,36 @@ const LimitType = Object.freeze({
 });
 
 const LimitViewType = Object.freeze({
-    //LIMIT_INFO  : 'summary',
+    PRE_INFO    : 'preInfo',
     UPPER_ENABLED : 'upperEnabled',
     UPPER_INC   : 'upperInc',
     UPPER_DEC   : 'upperDec',
     LOWER_ENABLED : 'lowerEnabled',
     LOWER_DEC   : 'lowerDec',
     LOWER_INC   : 'lowerInc',
+    POST_INFO   : 'postInfo',
     LOWER_INFO  : 'lowerInfo',
     UPPER_INFO  : 'upperInfo'   
 });
 
 class LimitManager extends Manager{
     _viewList = []
-    countdown = 5
+    countChanged = false
 
     constructor() {
         super()
+        this.countdown = 5
         for (const [key, value] of Object.entries(LimitViewType))
             this.viewList.push(value)
+    }
+
+
+    get countDown(){
+        return this.context.countDown
+    }
+
+    set countDown(value){
+        this.context.countDown = value
     }
 
     get increment(){
@@ -51,7 +62,6 @@ class LimitManager extends Manager{
     set lowerEnabled(value){
         this.settings.lowerLimitEnabled = value
     }
-
 
     get lowerLimit(){
         return Number(this.settings.lowerLimit)
@@ -100,12 +110,44 @@ class LimitManager extends Manager{
     set frameTime(value){
         this.settings.frameTime = value
     }
+
+    get showTrend(){
+        return this.settings.showTrend
+    }
+
+    set showTrend(value){
+        this.settings.showTrend = value
+    }
     
     // Runtime Variables
     //-----------------------------------------------------------------------------------------
 
-    get isEnabledViewView(){
+    get limitState(){
+        var result = 0
+        var price = this.data.price
+        
+        if(this.type == LimitType.PERCENT)
+            price = Math.abs(this.data.percent)    
+        
+        if(this.upperEnabled == 'enabled')
+            result = price >= this.upperLimit ? 1 : 0
+
+        if(this.lowerEnabled == 'enabled')
+            result = price <= this.lowerLimit ? -1 : result
+
+        return result
+    }
+
+    get limitsEnabled(){
+        return this.upperEnabled == 'enabled' || this.lowerEnabled == 'enabled'
+    }
+
+    get isEnabledView(){
         return this.currentView == LimitViewType.UPPER_ENABLED || this.currentView == LimitViewType.LOWER_ENABLED
+    }
+
+    get isInfoView(){
+        return this.currentView == LimitViewType.PRE_INFO || this.currentView == LimitViewType.POST_INFO
     }
 
     get isUpper(){
@@ -117,7 +159,9 @@ class LimitManager extends Manager{
     }
 
     get isInteractive(){
-        return  this.currentView != LimitViewType.LOWER_INFO && this.currentView != LimitViewType.UPPER_INFO
+        return  this.isEnabledView || 
+                this.currentView ==  LimitViewType.LOWER_INC ||  this.currentView ==  LimitViewType.LOWER_DEC || 
+                this.currentView ==  LimitViewType.UPPER_INC ||  this.currentView ==  LimitViewType.UPPER_DEC
     }
     
     get timer(){
@@ -156,7 +200,8 @@ class LimitManager extends Manager{
         this.increment = this.increment || 1
         this.frameTime = this.frameTime || 4
         this.type      = this.type || LimitType.PERCENT
-        
+        this.showTrend = this.showTrend || 'disabled'
+
         this.upperLimit = this.upperLimit || 0
         this.upperEnabled   = this.upperEnabled || 'disabled'
         this.upperBackground = this.upperBackground || '#00AA00'
@@ -171,40 +216,56 @@ class LimitManager extends Manager{
     onKeyDown(jsn){
         super.onKeyDown(jsn)
 
-        if(this.isInteractive)
-            this.incrementOnClick = false
+        if(this.currentView == LimitViewType.POST_INFO){
+            this.exitlLimits(jsn)
+            return
+        }
+        
+        if(!this.isInteractive){
+            this.countChanged = true
+            this.clickCount++
+        }
     }
 
     //-----------------------------------------------------------------------------------------
 
     onKeyUp(jsn){
         this.uuid = jsn.context
-        this.startTimer(jsn)
 
-        // Interactive view click handling
-        if( this.isInteractive) {
-            this.incrementOnClick = false
-            
-            if(this.isLongPress){
-                this.countdown = this.frameTime
-                this.isLongPress = false
-                this.updateDisplay(jsn)
-                return
-            }
-            
-            if(this.isEnabledViewView)
+        if(this.isLongPress){
+            this.isLongPress = false
+        }
+        else if(this.isInteractive && !this.countChanged) {        
+            if(this.isEnabledView)
                 this.handleEnabled(jsn)
             else 
                 this.handleAdjustment(jsn)
-            
+
             $SD.api.setSettings(this.uuid, this.settings)
         }
+
+        if(this.isInteractive){
+            this.startTimer(jsn)
+        }
         else {
-            super.onKeyUp(jsn)
+            this.stopTimer(jsn)
         }
 
+        this.countChanged = false
         this.updateDisplay(jsn)
     }
+
+    //-----------------------------------------------------------------------------------------
+
+    onLongPress(jsn){
+        super.onLongPress(jsn)
+        
+        if(!this.limitsEnabled)
+            this.clickCount = this.viewList.findIndex(item => item == LimitViewType.UPPER_ENABLED)
+        
+        this.updateDisplay(jsn)
+    }
+
 
     //-----------------------------------------------------------------------------------------
 
@@ -221,7 +282,7 @@ class LimitManager extends Manager{
 
     handleAdjustment(jsn){
         this.uuid = jsn.context
-        let increment = Number(this.increment) * this.isInc ? 1 : -1 
+        var increment = Number(this.increment) * this.isInc ? 1 : -1 
         
         // NOTE: Special case to keep percentages positive
         if(this.type == LimitType.PERCENT && !this.isUpper)
@@ -241,21 +302,16 @@ class LimitManager extends Manager{
 
     prepData(jsn){
         super.prepData(jsn)
-        
-        let isLimit = 0
         this.data.limitBackground = this.settings.background
-    
-        if(this.type == LimitType.PERCENT){
-            isLimit = this.data.percent <= -this.lowerLimit ? -1 : 0
-            isLimit = this.data.percent >= this.upperLimit ? 1 : isLimit
+
+        if(this.showTrend == 'enabled'){
+            var color = this.data.price > this.data.prevClose ? "#00FF00" : this.data.foreground
+            this.data.foreground = this.data.price < this.data.prevClose ? "#FF0000" : color
         }
-        else {
-            isLimit = this.data.price <= this.lowerLimit ? -1 : 0
-            isLimit = this.data.price >= this.upperLimit ? 1 : isLimit
-        }  
         
-        if( isLimit == 0) return // Not in limit state
-        this.data.limitBackground = isLimit == 1 ? this.upperBackground : this.lowerBackground
+        if(this.limitState == 0) return
+        this.data.foreground = this.settings.foreground
+        this.data.limitBackground = this.limitState == 1 ? this.upperBackground : this.lowerBackground
     }
 
     //-----------------------------------------------------------------------------------------
@@ -284,7 +340,7 @@ class LimitManager extends Manager{
     exitlLimits(jsn){
         this.uuid = jsn.context
         
-        clearInterval(this.timer)
+        this.stopTimer(jsn)
         this.countdown = this.frameTime
         this.incrementOnClick = true
         $SD.emit(jsn.action + '.exitLimits', this.context)
@@ -309,18 +365,25 @@ class LimitManager extends Manager{
             this.clickCount = this.viewList.findIndex(item => item == LimitViewType.LOWER_ENABLED)
         } 
         else if(this.currentView == LimitViewType.LOWER_ENABLED && this.lowerEnabled == 'disabled'){
+            this.clickCount = this.viewList.findIndex(item => item == LimitViewType.POST_INFO)
+        }
+        else if(this.currentView == LimitViewType.POST_INFO){
             this.exitlLimits(jsn)
             return
         }
         else {
             this.clickCount++
         }
-
+        
         // Exit : No more adjustment screens
-        if(!this.incrementOnClick && this.currentView == LimitViewType.LOWER_INFO) {
+        if( (!this.incrementOnClick && this.currentView == LimitViewType.LOWER_INFO) || 
+            (!this.limitsEnabled && this.currentView == LimitViewType.POST_INFO)) {
             this.exitlLimits(jsn)
             return
         }
+
+        if(!this.isInteractive)
+            this.stopTimer(jsn)
 
         this.updateDisplay(jsn)
     }
@@ -329,14 +392,15 @@ class LimitManager extends Manager{
 
     startTimer(jsn){
         this.uuid = jsn.context
-        clearInterval(this.timer)
+        this.stopTimer(jsn)
         this.countdown = this.frameTime
-        this.timer = setInterval( (jasnObj) => this.handleTimer(jasnObj), 1000, this.context )
+        this.timer = setInterval( (jasnObj) => this.handleTimer(jasnObj), 900, this.context )
     }
 
     //-----------------------------------------------------------------------------------------
 
     stopTimer(jsn){
+        this.uuid = jsn.context
         clearInterval(this.timer)
     }
 
@@ -352,7 +416,8 @@ class LimitManager extends Manager{
         this.drawingCtx.fillStyle = this.settings.foreground
 
         switch(this.currentView){    
-            case LimitViewType.LIMIT_INFO :
+            case LimitViewType.PRE_INFO :
+            case LimitViewType.POST_INFO :
                 this.updateInfoView()
                 break
             case LimitViewType.UPPER_ENABLED :
@@ -376,49 +441,11 @@ class LimitManager extends Manager{
 
     //-----------------------------------------------------------------------------------------
 
-    updateInfoView(){
-        let upper = this.upperLimit
-        let lower = this.lowerLimit
-        
-        if(this.type == LimitType.PERCENT){
-            upper += '%'
-            lower += '%'
-        }
-        else {
-            upper = this.prepPrice(upper)
-            lower = this.prepPrice(lower)
-        }
-
-        this.drawHeader('Limits')
-        this.drawPair("Up", upper, 95, '#00FF00')
-        this.drawPair("Low", lower, 115, '#FF0000')
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    updateEnabledView(){
-        let enabled = this.isUpper ? this.upperEnabled : this.lowerEnabled
-        enabled = enabled == 'enabled'
-        
-        this.drawHeader(this.isUpper ? 'Upper' : 'Lower')
-
-        this.drawingCtx.fillStyle =  this.settings.foreground 
-        this.drawingCtx.font = 600 + " " + 25 + "px Arial";
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText('Limit', 136, 36);
-
-        var img = document.getElementById(enabled ? 'limitEnabledImg' : 'limitDisabledImg')
-        this.drawingCtx.drawImage(img, 35, 66)
-    }
-    
-    //-----------------------------------------------------------------------------------------
-
     updateLimitView(jsn){
         this.uuid = jsn.context
-        if(!this.enabled) return
+        if(this.limitState == 0) return
 
-        var grd = this.drawingCtx.createLinearGradient(0, 0, 0, 70)
+        var grd = this.drawingCtx.createLinearGradient(0, 20, 0, 70)
         grd.addColorStop(0, this.data.limitBackground)
         grd.addColorStop(1, this.settings.background)
         this.drawingCtx.fillStyle = grd
@@ -427,14 +454,68 @@ class LimitManager extends Manager{
 
     //-----------------------------------------------------------------------------------------
 
+    updateInfoView(){
+        var upper = this.upperLimit
+        var lower = this.lowerLimit
+        var price = this.data.price
+        var market = this.data.state
+
+        if(this.type == LimitType.PERCENT){
+            upper += '%'
+            lower += '%'
+            price = this.data.prevClose
+            market = MarketStateType.CLOSED
+        }
+        else {
+            upper = this.prepPrice(upper)
+            lower = this.prepPrice(lower)
+        }
+
+        price = this.prepPrice(price)
+        
+        this.drawHeader('Limits')
+        this.drawPair('', upper, 45, '#00FF00')
+        
+        this.drawingCtx.font = 600 + " " + 22 + "px Arial"
+        this.drawingCtx.fillStyle = this.settings.foreground
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.fillText(price, 136, 79)
+
+        var img = document.getElementById(market)
+        this.drawingCtx.drawImage(img, 4, 69, 35, 35)
+        this.drawPair('', lower, 110, '#FF0000')
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    updateEnabledView(){
+        var enabled = this.isUpper ? this.upperEnabled : this.lowerEnabled
+        enabled = enabled == 'enabled'
+        
+        this.drawHeader(this.isUpper ? 'Upper' : 'Lower')
+
+        this.drawingCtx.fillStyle =  this.settings.foreground 
+        this.drawingCtx.font = 600 + " " + 22 + "px Arial";
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillText('Limit', 136, 36);
+
+        var img = document.getElementById(enabled ? 'limitEnabledImg' : 'limitDisabledImg')
+        this.drawingCtx.drawImage(img, 35, 66)
+    }
+
+    //-----------------------------------------------------------------------------------------
+
     updateAdjustmentView(){
-        let limit = this.isUpper ? this.upperLimit : this.lowerLimit
-        let price = this.data.price    
-        let adjusted = limit
+        var limit = this.isUpper ? this.upperLimit : this.lowerLimit
+        var price = this.data.price    
+        var adjusted = limit
+        var market = this.data.state
 
         if(this.type == LimitType.PERCENT){
             price = this.data.prevClose
             adjusted = price + (price * (this.isUpper ? limit/100 : -limit/100))
+            market = MarketStateType.CLOSED
             limit +='%'
         }
         else {
@@ -444,8 +525,8 @@ class LimitManager extends Manager{
         adjusted = this.prepPrice(adjusted)
         price = this.prepPrice(price)
         
-        var img = document.getElementById(this.isInc ? 'arrowUp' : 'arrowDown')
-        this.drawingCtx.drawImage(img, 30, 6)
+        var arrow = document.getElementById(this.isInc ? 'arrowUp' : 'arrowDown')
+        this.drawingCtx.drawImage(arrow, 33, 7)
 
         this.drawHeader(this.isUpper ? 'Upper' : 'Lower')
         this.drawLimit(adjusted)
@@ -455,28 +536,10 @@ class LimitManager extends Manager{
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillStyle =  this.settings.foreground
         this.drawingCtx.font = 500 + " " + 25 + "px Arial";
-        this.drawingCtx.fillText(limit, 138, 72);
-        
-        // Limit
-        // this.drawingCtx.font = 600 + " " + 26 + "px Arial"
-        // this.drawingCtx.textAlign = "left"
-        // this.drawingCtx.fillText(value, 8, 85);
+        this.drawingCtx.fillText(limit, 138, 80);
 
-        // this.drawingCtx.textAlign = "right"
-        // this.drawingCtx.fillText(price, 134, 95);
-
-        // Price
-        //this.drawPair("%", percent, 95, color)
-        //this.drawingCtx.font = 600 + " " + 24 + "px Arial"
-        //this.drawingCtx.textAlign = "left"
-        //this.drawingCtx.fillText(price, 10, 115);
-
-        // this.drawingCtx.textAlign = "right"
-        // this.drawingCtx.fillText(price, 134, 115);
-        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
-        this.drawingCtx.fillStyle = this.settings.foreground
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText('Icn', 8, 95)
+        var img = document.getElementById(market)
+        this.drawingCtx.drawImage(img, 4, 107, 35, 35)
 
         // Render VALUE
         Utils.setFontFor(price, 600, 26, CANVAS_WIDTH-20)
@@ -484,7 +547,7 @@ class LimitManager extends Manager{
         this.drawingCtx.fillText(price, 136, 115)
 
     }
-    
+
     //-----------------------------------------------------------------------------------------
 
     updateDetailView(){
@@ -492,7 +555,7 @@ class LimitManager extends Manager{
         this.drawingCtx.font = 600 + " " + 24 + "px Arial";
         this.drawingCtx.fillText((this.isUpper?'Upper':'Lower') + ' Limit', CANVAS_WIDTH/2, 8);
     }
-    
+
     //-----------------------------------------------------------------------------------------
 
     drawLimit(value){
@@ -502,7 +565,7 @@ class LimitManager extends Manager{
         Utils.setFontFor(value, 600, 40, CANVAS_WIDTH - 20)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(value, 140, 34);
+        this.drawingCtx.fillText(value, 140, 38);
     }
 
     //-----------------------------------------------------------------------------------------
@@ -510,12 +573,15 @@ class LimitManager extends Manager{
     drawHeader(value){
         this.drawingCtx.fillStyle =  this.settings.foreground
         this.drawingCtx.font = 600 + " " + 25 + "px Arial";
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(this.countdown, 10, 8);
-
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(value, 136, 8);
+        this.drawingCtx.fillText(value, 136, 8)
+
+        if(this.isInteractive){
+            this.drawingCtx.textAlign = "left"
+            this.drawingCtx.textBaseline = "top"
+            this.drawingCtx.fillText(this.countdown, 12, 8)
+        }
     }
+
 }
