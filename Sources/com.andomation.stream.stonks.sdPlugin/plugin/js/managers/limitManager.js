@@ -20,7 +20,7 @@ const LimitViewType = Object.freeze({
 
 class LimitManager extends Manager{
     _viewList = []
-    countdown = 0
+    countdown = 5
 
     constructor() {
         super()
@@ -192,18 +192,18 @@ class LimitManager extends Manager{
                 return
             }
             
-            if(this.isEnabledViewView){
+            if(this.isEnabledViewView)
                 this.handleEnabled(jsn)
-            }
-            else {
-                console.log("Doing Adjustment")
+            else 
                 this.handleAdjustment(jsn)
-            }
+            
+            $SD.api.setSettings(this.uuid, this.settings)
         }
         else {
             super.onKeyUp(jsn)
-            this.updateDisplay(jsn)
         }
+
+        this.updateDisplay(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -215,26 +215,26 @@ class LimitManager extends Manager{
             this.upperEnabled = this.upperEnabled == 'enabled' ? 'disabled' : 'enabled'
         else 
             this.lowerEnabled = this.lowerEnabled == 'enabled' ? 'disabled' : 'enabled'
-        
-        $SD.api.setSettings(this.uuid, this.settings)
-        this.updateDisplay(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
 
     handleAdjustment(jsn){
         this.uuid = jsn.context
-        let increment = Number(this.increment) 
+        let increment = Number(this.increment) * this.isInc ? 1 : -1 
+        
+        // NOTE: Special case to keep percentages positive
+        if(this.type == LimitType.PERCENT && !this.isUpper)
+            increment *= -1 
 
-        if(this.isUpper){
-            this.upperLimit += this.isInc ? increment : -increment 
+        if(this.isUpper) {
+            this.upperLimit += increment
+            this.upperLimit = this.type == LimitType.PERCENT ? Math.max(0, this.upperLimit) : this.upperLimit
         }
         else {
-            this.lowerLimit += this.isInc ? increment : -increment 
+            this.lowerLimit += increment
+            this.lowerLimit = this.type == LimitType.PERCENT ? Math.max(0, this.lowerLimit) : this.lowerLimit 
         }
-        
-        $SD.api.setSettings(this.uuid, this.settings)
-        this.updateDisplay(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -285,6 +285,7 @@ class LimitManager extends Manager{
         this.uuid = jsn.context
         
         clearInterval(this.timer)
+        this.countdown = this.frameTime
         this.incrementOnClick = true
         $SD.emit(jsn.action + '.exitLimits', this.context)
     }
@@ -295,11 +296,13 @@ class LimitManager extends Manager{
         this.uuid = jsn.context
         this.countdown--
         
-        // Decrement the timer and update the display
+        // Note: Update countdown timer if not below limit
         if(this.countdown >= 0){
             this.updateDisplay(jsn)
             return
         }
+        
+        this.countdown = this.frameTime
 
         // Show the next screen
         if(this.currentView == LimitViewType.UPPER_ENABLED && this.upperEnabled == 'disabled'){
@@ -319,7 +322,6 @@ class LimitManager extends Manager{
             return
         }
 
-        this.startTimer(jsn)
         this.updateDisplay(jsn)
     }
 
@@ -327,8 +329,8 @@ class LimitManager extends Manager{
 
     startTimer(jsn){
         this.uuid = jsn.context
-        this.countdown = this.frameTime
         clearInterval(this.timer)
+        this.countdown = this.frameTime
         this.timer = setInterval( (jasnObj) => this.handleTimer(jasnObj), 1000, this.context )
     }
 
@@ -404,7 +406,7 @@ class LimitManager extends Manager{
         this.drawingCtx.font = 600 + " " + 25 + "px Arial";
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText('Enabled', 136, 36);
+        this.drawingCtx.fillText('Limit', 136, 36);
 
         var img = document.getElementById(enabled ? 'limitEnabledImg' : 'limitDisabledImg')
         this.drawingCtx.drawImage(img, 35, 66)
@@ -426,34 +428,34 @@ class LimitManager extends Manager{
     //-----------------------------------------------------------------------------------------
 
     updateAdjustmentView(){
-        let value = this.isUpper ? this.upperLimit : this.lowerLimit
-        let price = value    
+        let limit = this.isUpper ? this.upperLimit : this.lowerLimit
+        let price = this.data.price    
+        let adjusted = limit
 
         if(this.type == LimitType.PERCENT){
-            price  = this.data.prevClose
-            price += price * (this.isUpper ? value/100 : -value/100)
-            value  = value + '%'
+            price = this.data.prevClose
+            adjusted = price + (price * (this.isUpper ? limit/100 : -limit/100))
+            limit +='%'
         }
         else {
-            value = this.prepPrice(value)
-        }  
+            limit = this.prepPrice(limit - price)
+        }
 
+        adjusted = this.prepPrice(adjusted)
         price = this.prepPrice(price)
-
-        this.drawHeader(this.isUpper ? 'Upper' : 'Lower')
         
         var img = document.getElementById(this.isInc ? 'arrowUp' : 'arrowDown')
-        this.drawingCtx.drawImage(img, 30, 6)//, 72, 72)
+        this.drawingCtx.drawImage(img, 30, 6)
 
-        this.drawLimit(price)
+        this.drawHeader(this.isUpper ? 'Upper' : 'Lower')
+        this.drawLimit(adjusted)
 
-        if(this.type == LimitType.PERCENT){
-            this.drawingCtx.textAlign = "right"
-            this.drawingCtx.textBaseline = "top"
-            this.drawingCtx.fillStyle =  this.settings.foreground
-            this.drawingCtx.font = 500 + " " + 25 + "px Arial";
-            this.drawingCtx.fillText(value, 138, 72);
-        }
+        // Adjustment
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillStyle =  this.settings.foreground
+        this.drawingCtx.font = 500 + " " + 25 + "px Arial";
+        this.drawingCtx.fillText(limit, 138, 72);
         
         // Limit
         // this.drawingCtx.font = 600 + " " + 26 + "px Arial"
@@ -474,11 +476,9 @@ class LimitManager extends Manager{
         this.drawingCtx.font = 600 + " " + 20 + "px Arial"
         this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText('Current', 8, 95)
-        this.drawingCtx.fillText('$', 8, 118)
+        this.drawingCtx.fillText('Icn', 8, 95)
 
         // Render VALUE
-        price = this.prepPrice(this.data.price)
         Utils.setFontFor(price, 600, 26, CANVAS_WIDTH-20)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.fillText(price, 136, 115)
