@@ -237,6 +237,7 @@ function handleSdpiItemChange(e, idx) {
       });
   }
 
+  console.log("ENAME", e.hasAttribute("_name"), e['_name'], e._name)
   const returnValue = {
     key: e['_name'] ? e._name : e.id && e.id.charAt(0) !== "_" ? e.id : sdpiItem.id,
     value: isList

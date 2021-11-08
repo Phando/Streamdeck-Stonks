@@ -35,20 +35,6 @@
 
 <div class="sdpi-heading">Limits</div>
 
-<div type="radio" class="sdpi-item" id="limit_enabled">
-    <div class="sdpi-item-label">Enabled</div>
-    <div class="sdpi-item-value ">
-        <div class="sdpi-item-child">
-            <input id="limitEnabled-radio1" type="radio" value="true" name="limitEnabled">
-            <label for="limitEnabled-radio1" class="sdpi-item-label"><span></span>True</label>
-        </div>
-        <div class="sdpi-item-child">
-            <input id="limitEnabled-radio2" type="radio" value="false" name="limitEnabled">
-            <label for="limitEnabled-radio2" class="sdpi-item-label"><span></span>False</label>
-        </div>
-    </div>
-</div>
-
 <div type="radio" class="sdpi-item" id="limit_type">
     <div class="sdpi-item-label">Type</div>
     <div class="sdpi-item-value ">
@@ -70,6 +56,20 @@
 
 <div class="sdpi-heading">Upper Limit</div>
 
+<div type="radio" class="sdpi-item" id="upper_limit_enabled">
+    <div class="sdpi-item-label">Enabled</div>
+    <div class="sdpi-item-value ">
+        <div class="sdpi-item-child">
+            <input id="upperLimitEnabled-radio1" type="radio" value="enabled" name="upperLimitEnabled">
+            <label for="upperLimitEnabled-radio1" class="sdpi-item-label"><span></span>True</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="upperLimitEnabled-radio2" type="radio" value="disabled" name="upperLimitEnabled">
+            <label for="upperLimitEnabled-radio2" class="sdpi-item-label"><span></span>False</label>
+        </div>
+    </div>
+</div>
+
 <div class="sdpi-item">
     <div class="sdpi-item-label">Limit</div>
     <input id="upperLimit" class="sdpi-item-value" type="number"/>     
@@ -81,6 +81,20 @@
 </div>
 
 <div class="sdpi-heading">Lower Limit</div>
+
+<div type="radio" class="sdpi-item" id="lower_limit_enabled">
+    <div class="sdpi-item-label">Enabled</div>
+    <div class="sdpi-item-value ">
+        <div class="sdpi-item-child">
+            <input id="lowerLimitEnabled-radio1" type="radio" value="enabled" name="lowerLimitEnabled">
+            <label for="lowerLimitEnabled-radio1" class="sdpi-item-label"><span></span>True</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="lowerLimitEnabled-radio2" type="radio" value="disabled" name="lowerLimitEnabled">
+            <label for="lowerLimitEnabled-radio2" class="sdpi-item-label"><span></span>False</label>
+        </div>
+    </div>
+</div>
 
 <div class="sdpi-item">
     <div class="sdpi-item-label">Limit</div>
@@ -111,47 +125,47 @@
 <div type="checkbox" class="sdpi-item" id="summary-views">
     <div class="sdpi-item-value min120">
         <div class="sdpi-item-child">
-            <input id="showDayDecmial" type="checkbox" value="true">
+            <input id="showDayDecmial" type="checkbox" value="enabled">
             <label for="showDayDecmial" class="sdpi-item-label"><span></span>Day Numeric</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="showDayPercent" type="checkbox" value="true">
+            <input id="showDayPercent" type="checkbox" value="enabled">
             <label for="showDayPercent" class="sdpi-item-label"><span></span>Day Percent</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show1minChart" type="checkbox" value="true">
+            <input id="show1minChart" type="checkbox" value="enabled">
             <label for="show1minChart" class="sdpi-item-label"><span></span>1min Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show3minChart" type="checkbox" value="true">
+            <input id="show3minChart" type="checkbox" value="enabled">
             <label for="show3minChart" class="sdpi-item-label"><span></span>3min Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show3minDayChart" type="checkbox" value="true">
+            <input id="show3minDayChart" type="checkbox" value="enabled">
             <label for="show3minDayChart" class="sdpi-item-label"><span></span>Day 3min Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show5minDayChart" type="checkbox" value="true">
+            <input id="show5minDayChart" type="checkbox" value="enabled">
             <label for="show5minDayChart" class="sdpi-item-label"><span></span>Day 5min Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show5DayChart" type="checkbox" value="true">
+            <input id="show5DayChart" type="checkbox" value="enabled">
             <label for="show5DayChart" class="sdpi-item-label"><span></span>5 Day Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show1MonthChart" type="checkbox" value="true">
+            <input id="show1MonthChart" type="checkbox" value="enabled">
             <label for="show1MonthChart" class="sdpi-item-label"><span></span>1 Month Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show3MonthChart" type="checkbox" value="true">
+            <input id="show3MonthChart" type="checkbox" value="enabled">
             <label for="show3MonthChart" class="sdpi-item-label"><span></span>3 Month Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show6MonthChart" type="checkbox" value="true">
+            <input id="show6MonthChart" type="checkbox" value="enabled">
             <label for="show6MonthChart" class="sdpi-item-label"><span></span>6 Month Chart</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show12MonthChart" type="checkbox" value="true">
+            <input id="show12MonthChart" type="checkbox" value="enabled">
             <label for="show12MonthChart" class="sdpi-item-label"><span></span>12 Month Chart</label>
         </div>
     </div>

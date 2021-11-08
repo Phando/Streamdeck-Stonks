@@ -89,7 +89,7 @@ class StreamDeckClient {
     }
 
     get settings(){
-        return this.context.settings
+        return this.context.settings || {}
     }
 
     set settings(value){

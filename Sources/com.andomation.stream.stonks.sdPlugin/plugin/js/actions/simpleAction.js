@@ -101,7 +101,7 @@ class SimpleAction extends Action {
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
         
-        //console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
+        console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
         this.symbol     = this.symbol || 'GME'
         this.decimals   = this.decimals || 2
         this.foreground = this.foreground || '#D8D8D8'
@@ -130,13 +130,12 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onKeyUp(jsn){
-        super.onKeyUp(jsn)
-        
         if( this.state == STATE_LIMITS ){    
             this.limitManager.onKeyUp(jsn)
             return
         }
         
+        super.onKeyUp(jsn)
         if(this.clickCount >= this.viewList.length)
             this.clickCount = 0
 
@@ -256,12 +255,12 @@ class SimpleAction extends Action {
         
         if(this.settings.hasViews == false){
             this.settings.hasViews = true
-            this.settings[ViewType.DEFAULT]        = 'true'
-            this.settings[ViewType.DAY_DEC]        = 'true'
-            this.settings[ViewType.CHART_1MIN]     = 'true'
-            this.settings[ViewType.CHART_DAY_3MIN] = 'true'
-            this.settings[ViewType.CHART_DAY_5]    = 'true'
-            this.settings[ViewType.CHART_MONTH_1]  = 'true'
+            this.settings[ViewType.DEFAULT]        = 'enabled'
+            this.settings[ViewType.DAY_DEC]        = 'enabled'
+            this.settings[ViewType.CHART_1MIN]     = 'enabled'
+            this.settings[ViewType.CHART_DAY_3MIN] = 'enabled'
+            this.settings[ViewType.CHART_DAY_5]    = 'enabled'
+            this.settings[ViewType.CHART_MONTH_1]  = 'enabled'
         }
 
         this.viewList = this.viewList || []
@@ -270,7 +269,7 @@ class SimpleAction extends Action {
         
         for (const [key, value] of Object.entries(ViewType)) {
             if(typeof value == 'function') continue
-            if(value.startsWith('show') && this.settings[value] == 'true'){
+            if(value.startsWith('show') && this.settings[value] == 'enabled'){
                 this.viewList.push(value)
             }
         }
