@@ -1,6 +1,3 @@
-
-const LENGTH_LIMIT = 6
-
 const FooterType = Object.freeze({
     CHANGE  : 'change',
     HIGHLO  : 'hilo',
@@ -92,6 +89,7 @@ class SimpleAction extends Action {
 
     onConnected(jsn) {
         super.onConnected(jsn)
+        this.limitManager.onConnected(jsn)
 
         // Limit Handlers
         $SD.on(this.type + '.onDecrement', (jsonObj) => this.onAdjustLimit(jsonObj, false));
@@ -127,7 +125,7 @@ class SimpleAction extends Action {
 
     onKeyDown(jsn) {
         super.onKeyDown(jsn)
-        
+
         if( this.state == STATE_LIMITS ){    
             this.limitManager.onKeyDown(jsn)
             return
@@ -165,9 +163,6 @@ class SimpleAction extends Action {
                 this.state = STATE_LIMITS
                 this.limitManager.onLongPress(jsn)
                 break
-            // case STATE_LIMITS:
-            //     this.limitManager.onLongPress(jsn)
-            //     break
         }
     }
 
@@ -195,7 +190,6 @@ class SimpleAction extends Action {
         if(sdpi_collection.key == 'symbol')
             this.symbol = this.symbol.toUpperCase()
             
-        
         this.prepViewList()
         this.limitManager.onSendToPlugin(jsn)
         dataManager.fetchSymbolData()
@@ -251,7 +245,6 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveSymbolError(jsn) {
-        //console.log('SimpleAction - onDidReceiveSymbolError', jsn)
         this.renderError(jsn)
     }
 
@@ -289,6 +282,9 @@ class SimpleAction extends Action {
         var symbol = jsn.payload
         var payload = {}
         
+        // Symbol remove currency conversion for Crypto
+        payload.symbol = symbol.symbol.split('-')[0]
+
         payload.price       = symbol.regularMarketPrice
         payload.open        = symbol.regularMarketOpen
         payload.prevClose   = symbol.regularMarketPreviousClose
@@ -296,9 +292,6 @@ class SimpleAction extends Action {
         payload.foreground  = this.settings.foreground
         payload.background  = this.settings.background
         
-        // Symbol remove currency conversion for Crypto
-        payload.symbol = symbol.symbol.split('-')[0]
-
         // Range
         payload.state   = MarketStateType.REG
         payload.low     = symbol.regularMarketDayLow
@@ -308,7 +301,6 @@ class SimpleAction extends Action {
 
         // Factor after market pricing
         if (symbol.marketState != "REGULAR") {
-
             if(symbol.marketState.includes("POST")){
                 payload.state = symbol.marketState == "POSTPOST" ? MarketStateType.CLOSED : MarketStateType.POST
                 payload.price = symbol.postMarketPrice || payload.price
@@ -322,9 +314,13 @@ class SimpleAction extends Action {
                 payload.percent = symbol.preMarketChangePercent || payload.percent
             }
             
+            // Note: Does high and low extend to after hours?
             payload.low = payload.price < payload.low ? payload.price : payload.low
             payload.high = payload.price > payload.high ? payload.price : payload.high
         }
+
+        payload.lowPerc = (Math.abs(payload.low/payload.price)).toFixed(2)
+        payload.highPerc = (Math.abs(payload.high/payload.price)).toFixed(2)
 
         this.data = payload
         this.limitManager.prepData(jsn)
@@ -374,15 +370,22 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     updateDayView(){
-        this.drawSymbol(this.foreground)
+        var price  = this.prepPrice(this.data.price)
+        var high = this.prepPrice(this.data.high)
+        var low = this.prepPrice(this.data.low)
 
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.font = 400 + " " + 25 + "px Arial";
-        
-        let asPercent = this.currentView == ViewType.DAY_PERC
-        this.drawPair("Cl", this.data.prevClose, 40)
-        this.drawPair("Hi", this.data.high, 72, '#00FF00')
-        this.drawPair("Lo", this.data.low, 104, '#FF0000')
+        if(this.currentView == ViewType.DAY_PERC){
+            high = this.data.highPerc + '%'
+            low = this.data.lowPerc + '%'
+        }
+
+        var img = document.getElementById(this.data.state)
+        this.drawingCtx.drawImage(img, 4, 72, 22, 22)
+
+        this.drawSymbol(this.foreground)
+        this.drawPair('', high, 45, '#00FF00')
+        this.drawPair('', price, 77, this.settings.foreground)
+        this.drawPair('', low, 110, '#FF0000')
     }
 
     // Rendering Functions (little to no logic)
@@ -418,20 +421,18 @@ class SimpleAction extends Action {
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillStyle = this.foreground
         this.drawingCtx.font = 500 + " " + 25 + "px Arial";
-        this.drawingCtx.fillText(this.data.volume, 138, 72);
+        this.drawingCtx.fillText(this.data.volume, 138, 70);
 
         var img = document.getElementById(this.data.state)
-        this.drawingCtx.drawImage(img, 2, 67, 35, 35)
+        this.drawingCtx.drawImage(img, 4, 69, 22, 22)
 
         switch(this.footerMode){
             case FooterType.CHANGE:
                 this.drawFooterChange()
                 break
             case FooterType.HIGHLO:
-                this.drawHighLow()
-                break
             case FooterType.HIGHLOP:
-                this.drawHighLow(true)
+                this.drawHighLow()
                 break
             case FooterType.SLIDER:
                 this.drawFooterSlider()
@@ -454,8 +455,10 @@ class SimpleAction extends Action {
         
         change = this.prepPrice(change)
         percent = percent.toFixed(2)
-        
-        if(String(change).length > LENGTH_LIMIT){
+
+        this.shouldWrapPair(change, percent)
+
+        if( this.shouldWrapPair(change, percent) ){
             this.drawPair("%", percent, 95, color)
             this.drawPair("$", change, 115, color)
         }
@@ -466,23 +469,20 @@ class SimpleAction extends Action {
 
     //-----------------------------------------------------------------------------------------
 
-    drawHighLow(asPercent=false){
-        let high = this.data.high || 0
-        let low = this.data.low || 0
-        
-        if(asPercent){
-            // TODO: Calculate the proper percent values
-            // high = high.toFixed(2) +'%'
-            // low = low.toFixed(2) + '%' 
-        }
-        else {
-            high = this.prepPrice(high)
-            low = this.prepPrice(low)
+    drawHighLow(){
+        var high = this.prepPrice(this.data.high)
+        var low = this.prepPrice(this.data.low)
+
+        if(this.currentView == ViewType.DAY_PERC){
+            high = this.data.highPerc + '%'
+            low = this.data.lowPerc + '%'
         }
         
-        if(String(high).length > LENGTH_LIMIT || String(low).length > LENGTH_LIMIT){
-            this.drawPair("Hi", high, 95, '#00FF00')
-            this.drawPair("Lo", low, 115, '#FF0000')
+        this.shouldWrapPair(high,low)
+
+        if( this.shouldWrapPair(high,low) ){
+            this.drawPair("Hi", high, 96, '#00FF00')
+            this.drawPair("Lo", low, 117, '#FF0000')
         }
         else {
             this.drawMaxPair(high, low, 110, '#00FF00', '#FF0000')

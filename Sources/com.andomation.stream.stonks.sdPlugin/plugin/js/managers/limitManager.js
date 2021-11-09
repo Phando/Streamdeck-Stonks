@@ -30,7 +30,6 @@ class LimitManager extends Manager{
             this.viewList.push(value)
     }
 
-
     get countDown(){
         return this.context.countDown
     }
@@ -39,20 +38,20 @@ class LimitManager extends Manager{
         this.context.countDown = value
     }
 
+    get frameTime(){
+        return this.settings.frameTime
+    }
+
+    set frameTime(value){
+        this.settings.frameTime = value
+    }
+
     get increment(){
         return Number(this.settings.limitIncrement)
     }
 
     set increment(value){
         this.settings.limitIncrement = value
-    }
-
-    get type(){
-        return this.settings.limitType
-    }
-
-    set type(value){
-        this.settings.limitType = value
     }
 
     get lowerEnabled(){
@@ -79,6 +78,22 @@ class LimitManager extends Manager{
         this.settings.lowerLimitBackground = value
     }
 
+    get showTrend(){
+        return this.settings.showTrend
+    }
+
+    set showTrend(value){
+        this.settings.showTrend = value
+    }
+
+    get type(){
+        return this.settings.limitType
+    }
+
+    set type(value){
+        this.settings.limitType = value
+    }
+
     get upperEnabled(){
         return this.settings.upperLimitEnabled
     }
@@ -101,22 +116,6 @@ class LimitManager extends Manager{
 
     set upperBackground(value){
         this.settings.upperLimitBackground = value
-    }
-
-    get frameTime(){
-        return this.settings.frameTime
-    }
-
-    set frameTime(value){
-        this.settings.frameTime = value
-    }
-
-    get showTrend(){
-        return this.settings.showTrend
-    }
-
-    set showTrend(value){
-        this.settings.showTrend = value
     }
     
     // Runtime Variables
@@ -215,7 +214,7 @@ class LimitManager extends Manager{
 
     onKeyDown(jsn){
         super.onKeyDown(jsn)
-
+    
         if(this.currentView == LimitViewType.POST_INFO){
             this.exitlLimits(jsn)
             return
@@ -231,10 +230,10 @@ class LimitManager extends Manager{
 
     onKeyUp(jsn){
         this.uuid = jsn.context
-
-        if(this.isLongPress){
+        
+        if(this.isLongPress)
             this.isLongPress = false
-        }
+        
         else if(this.isInteractive && !this.countChanged) {        
             if(this.isEnabledView)
                 this.handleEnabled(jsn)
@@ -244,12 +243,10 @@ class LimitManager extends Manager{
             $SD.api.setSettings(this.uuid, this.settings)
         }
 
-        if(this.isInteractive){
+        if(this.isInteractive)
             this.startTimer(jsn)
-        }
-        else {
+        else 
             this.stopTimer(jsn)
-        }
 
         this.countChanged = false
         this.updateDisplay(jsn)
@@ -290,11 +287,15 @@ class LimitManager extends Manager{
 
         if(this.isUpper) {
             this.upperLimit += increment
-            this.upperLimit = this.type == LimitType.PERCENT ? Math.max(0, this.upperLimit) : this.upperLimit
+            this.upperLimit = this.type == LimitType.PERCENT ? 
+                Math.max(0, this.upperLimit) : 
+                Math.min(this.data.price, this.upperLimit)  
         }
         else {
             this.lowerLimit += increment
-            this.lowerLimit = this.type == LimitType.PERCENT ? Math.max(0, this.lowerLimit) : this.lowerLimit 
+            this.lowerLimit = this.type == LimitType.PERCENT ? 
+                Math.max(0, this.lowerLimit) :
+                Math.max(this.data.price, this.lowerLimit)
         }
     }
 
@@ -482,7 +483,7 @@ class LimitManager extends Manager{
         this.drawingCtx.fillText(price, 136, 79)
 
         var img = document.getElementById(market)
-        this.drawingCtx.drawImage(img, 4, 69, 35, 35)
+        this.drawingCtx.drawImage(img, 4, 72, 22, 22)
         this.drawPair('', lower, 110, '#FF0000')
     }
 
@@ -539,7 +540,7 @@ class LimitManager extends Manager{
         this.drawingCtx.fillText(limit, 138, 80);
 
         var img = document.getElementById(market)
-        this.drawingCtx.drawImage(img, 4, 107, 35, 35)
+        this.drawingCtx.drawImage(img, 4, 108, 22, 22)
 
         // Render VALUE
         Utils.setFontFor(price, 600, 26, CANVAS_WIDTH-20)

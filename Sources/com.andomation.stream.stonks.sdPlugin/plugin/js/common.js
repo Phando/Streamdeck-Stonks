@@ -1,3 +1,4 @@
+const WRAP_WIDTH = 130
 const CANVAS_WIDTH  = 144
 const CANVAS_HEIGHT = 144
 const STATE_DEFAULT = 'default'
@@ -200,7 +201,7 @@ class StreamDeckClient {
     //-----------------------------------------------------------------------------------------
     
     drawPair(label, value, yPos, color){
-        this.drawingCtx.font = 600 + " " + 23 + "px Arial"
+        this.drawingCtx.font = 500 + " " + 22 + "px Arial"
         this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.fillText(label, 7, yPos)
@@ -216,16 +217,29 @@ class StreamDeckClient {
     drawMaxPair(value1, value2, yPos, color1 = this.settings.foregroundColor, color2 = this.settings.foregroundColor){
         this.drawingCtx.textBaseline = "top"
         
-        Utils.setFontFor(value1, 600, 24, (CANVAS_WIDTH-20)/2)
+        Utils.setFontFor(value1, 600, 22, (CANVAS_WIDTH-20)/2)
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.fillStyle = color1
         this.drawingCtx.fillText(value1, 7, yPos);
 
-        Utils.setFontFor(value2, 600, 24, (CANVAS_WIDTH-20)/2)
+        Utils.setFontFor(value2, 600, 22, (CANVAS_WIDTH-20)/2)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.fillStyle = color2
-        this.drawingCtx.fillText(value2, 137, yPos);
+        this.drawingCtx.fillText(value2, 140, yPos);
     }
+
+    //-----------------------------------------------------------------------------------------
+    
+    shouldWrapPair(value1, value2){
+        Utils.setFontFor(value1, 600, 22, (CANVAS_WIDTH-20)/2)
+        var width = this.drawingCtx.measureText(value1).width
+
+        Utils.setFontFor(value2, 600, 22, (CANVAS_WIDTH-20)/2)
+        width += this.drawingCtx.measureText(value2).width
+        
+        //console.log("WRAP_WIDTH", width)
+        return width > WRAP_WIDTH
+    }    
 }
 
 //-----------------------------------------------------------------------------------------
