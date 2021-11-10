@@ -187,24 +187,19 @@ function handleSdpiItemChange(e, idx) {
 
   if(e.type == "radio" || e.type == "checkbox"){
     sdpiItemChildren.forEach((item) => { 
-      if(!item.checked){
+      if(!item.checked)
         delete action.settings[item.id]
-      }
     });
 
     if(e.checked){
       action.settings[e.id] = e.value
       e.setAttribute("_value", e.value)
-
-      if(e.type == "radio"){
-        e._name = e.name
-      }
+      
+      if(e.type == "radio")
+        e.setAttribute("_name", e.name)
     }
-    else {
-      // Checkbox Unchecked
-      if(e.value == 'true'){
+    else if(e.value == 'enabled'){
         e.setAttribute("_value", '_false')
-      }
     }
     
     console.log("Pre Save", action.settings)
@@ -237,7 +232,8 @@ function handleSdpiItemChange(e, idx) {
       });
   }
 
-  console.log("ENAME", e.hasAttribute("_name"), e['_name'], e._name)
+  // console.log("ENAME", e.hasAttribute("_name"), e.getAttribute("_name"))
+  // console.log("EVALUE", e.hasAttribute("_value"), e.getAttribute("_value"))
   const returnValue = {
     key: e['_name'] ? e._name : e.id && e.id.charAt(0) !== "_" ? e.id : sdpiItem.id,
     value: isList
@@ -282,7 +278,9 @@ const updateUI = (pl) => {
         return;
       }
       
+      
       if(foundElement.type == "checkbox" || foundElement.type ==  "radio"){
+        console.log("RADIO",  pl[e], foundElement)
         foundElement.checked = foundElement.value == pl[e]
       }
       else {

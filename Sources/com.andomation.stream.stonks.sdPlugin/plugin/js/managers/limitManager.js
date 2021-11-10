@@ -229,7 +229,7 @@ class LimitManager extends Manager{
     //-----------------------------------------------------------------------------------------
 
     onKeyUp(jsn){
-        this.uuid = jsn.context
+        super.onKeyUp(jsn)
         
         if(this.isLongPress)
             this.isLongPress = false
@@ -289,13 +289,13 @@ class LimitManager extends Manager{
             this.upperLimit += increment
             this.upperLimit = this.type == LimitType.PERCENT ? 
                 Math.max(0, this.upperLimit) : 
-                Math.min(this.data.price, this.upperLimit)  
+                Math.max(this.data.price, this.upperLimit)  
         }
         else {
             this.lowerLimit += increment
             this.lowerLimit = this.type == LimitType.PERCENT ? 
                 Math.max(0, this.lowerLimit) :
-                Math.max(this.data.price, this.lowerLimit)
+                Math.min(this.data.price, this.lowerLimit)
         }
     }
 
@@ -475,7 +475,7 @@ class LimitManager extends Manager{
         price = this.prepPrice(price)
         
         this.drawHeader('Limits')
-        this.drawPair('', upper, 45, '#00FF00')
+        this.drawPair('', upper, '#00FF00', 45)
         
         this.drawingCtx.font = 600 + " " + 22 + "px Arial"
         this.drawingCtx.fillStyle = this.settings.foreground
@@ -484,7 +484,7 @@ class LimitManager extends Manager{
 
         var img = document.getElementById(market)
         this.drawingCtx.drawImage(img, 4, 72, 22, 22)
-        this.drawPair('', lower, 110, '#FF0000')
+        this.drawPair('', lower, '#FF0000', 110)
     }
 
     //-----------------------------------------------------------------------------------------

@@ -64,8 +64,7 @@ class DataManager {
   fetchSymbolData(){
     var url = this.symbolURL
     url += this.symbolFields.join()
-    url +=  '&symbols=' + this.getSymbols().join()
-
+    url += '&symbols=' + this.getSymbols().join()
     console.log("fetchSymbolData:", url)
     
     // Double check that we have symbols added to the URL

@@ -1,6 +1,9 @@
-const WRAP_WIDTH = 130
+const WRAP_FONT = 20
+const WRAP_SIZE = 122.5
 const CANVAS_WIDTH  = 144
 const CANVAS_HEIGHT = 144
+const MARGIN_LEFT = 10
+const MARGIN_RIGHT = 138
 const STATE_DEFAULT = 'default'
 
 // Global Variables
@@ -124,7 +127,17 @@ class StreamDeckClient {
 
     onWillAppear(jsn) {
         this.uuid = jsn.context
+        var settings = Utils.getProp(jsn, 'payload.settings', {})
+
+        if(settings.version != $pluginVersion){
+            console.log('onWillAppear - new version')
+            settings = {}
+            settings.version = $pluginVersion
+            jsn.payload.settings = settings
+        }
+
         this.onDidReceiveSettings(jsn)
+        //this.updateDisplay(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -200,46 +213,59 @@ class StreamDeckClient {
 
     //-----------------------------------------------------------------------------------------
     
-    drawPair(label, value, yPos, color){
-        this.drawingCtx.font = 500 + " " + 22 + "px Arial"
+    drawPair(label, value, color, yPos, fontSize = 22){
+        this.drawingCtx.textBaseline = 'middle'
+        this.drawingCtx.font = 500 + " " + Number(fontSize-1) + "px Arial"
         this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText(label, 7, yPos)
+        this.drawingCtx.fillText(label, MARGIN_LEFT, yPos)
 
-        // Render VALUE
+        this.drawingCtx.font = 600 + " " + fontSize + "px Arial"
         this.drawingCtx.fillStyle = color
         this.drawingCtx.textAlign = "right"
-        this.drawingCtx.fillText(value, 136, yPos)
+        this.drawingCtx.fillText(value, MARGIN_RIGHT, yPos)
     }
 
     //-----------------------------------------------------------------------------------------
     
-    drawMaxPair(value1, value2, yPos, color1 = this.settings.foregroundColor, color2 = this.settings.foregroundColor){
-        this.drawingCtx.textBaseline = "top"
+    drawSmartPair(label1, value1, color1, label2, value2, color2, yPos = 116, maxFont = 23, maxWidth = CANVAS_WIDTH-20){
+        var test1 = this.getIntegratedValue(label1, value1)
+        var test2 = this.getIntegratedValue(label2, value2)
+
+        var content = test1 + test2
+        Utils.setFontFor(content, 600, maxFont, maxWidth)
+        var font = Number(this.drawingCtx.font.replace(/[^0-9.]/g,''))
+        var width = this.drawingCtx.measureText(content).width
         
-        Utils.setFontFor(value1, 600, 22, (CANVAS_WIDTH-20)/2)
-        this.drawingCtx.textAlign = "left"
+        if( font < WRAP_FONT || width > maxWidth - 1){
+            Utils.setFontFor(value1, 600, maxFont, CANVAS_WIDTH * 0.75)
+            font = Number(this.drawingCtx.font.replace(/[^0-9.]/g,''))
+
+            Utils.setFontFor(value2, 600, maxFont, CANVAS_WIDTH * 0.75)
+            font = Math.min(font, this.drawingCtx.font.replace(/[^0-9.]/g,''))
+
+            this.drawPair(label1, value1, color1, 103, font)
+            this.drawPair(label2, value2, color2, 126, font)
+            return
+        }
+
+        this.drawingCtx.textBaseline = 'middle'
+        this.drawingCtx.textAlign = 'left'
         this.drawingCtx.fillStyle = color1
-        this.drawingCtx.fillText(value1, 7, yPos);
+        this.drawingCtx.fillText(test1, MARGIN_LEFT, yPos);
 
-        Utils.setFontFor(value2, 600, 22, (CANVAS_WIDTH-20)/2)
-        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.textAlign = 'right'
         this.drawingCtx.fillStyle = color2
-        this.drawingCtx.fillText(value2, 140, yPos);
+        this.drawingCtx.fillText(test2, MARGIN_RIGHT, yPos);
     }
 
     //-----------------------------------------------------------------------------------------
     
-    shouldWrapPair(value1, value2){
-        Utils.setFontFor(value1, 600, 22, (CANVAS_WIDTH-20)/2)
-        var width = this.drawingCtx.measureText(value1).width
-
-        Utils.setFontFor(value2, 600, 22, (CANVAS_WIDTH-20)/2)
-        width += this.drawingCtx.measureText(value2).width
-        
-        //console.log("WRAP_WIDTH", width)
-        return width > WRAP_WIDTH
-    }    
+    getIntegratedValue(label, value){
+        var pre  = label == '$' ? label : ''
+        var post = label == '%' ? label : ''
+        return pre + value + post
+    }
 }
 
 //-----------------------------------------------------------------------------------------
@@ -297,6 +323,15 @@ const loadLocalization = (lang, pathPrefix, cb) => {
         const manifest = Utils.parseJson(jsn);
         $localizedStrings = manifest && manifest.hasOwnProperty('Localization') ? manifest['Localization'] : {};
         debugLog($localizedStrings);
+        if (cb && typeof cb === 'function') cb();
+    });
+};
+
+const loadVersion = (cb) => {
+    Utils.readJson(`../manifest.json`, function (jsn) {
+        const manifest = Utils.parseJson(jsn);
+        $pluginVersion = manifest && manifest.hasOwnProperty('Version') ? manifest['Version'] : 0;
+        debugLog($pluginVersion);
         if (cb && typeof cb === 'function') cb();
     });
 };
@@ -456,6 +491,7 @@ function saveSettings(data){
             inMessageType = args[2];
             inApplicationInfo = Utils.parseJson(args[3]);
             inActionInfo = args[4] !== 'undefined' ? Utils.parseJson(args[4]) : args[4];
+            loadVersion( function() { events.emit('versionLoaded', {version:$pluginVersion}); });
 
             /** Debug variables */
             if (debug) {

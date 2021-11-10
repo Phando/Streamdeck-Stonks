@@ -1,4 +1,3 @@
-
 var Utils = {
     sleep: function (milliseconds) {
         return new Promise(resolve => setTimeout(resolve, milliseconds));
@@ -7,14 +6,6 @@ var Utils = {
         return typeof value === 'undefined';
     },
     isObject: function (o) {
-        return (
-            typeof o === 'object' &&
-            o !== null &&
-            o.constructor &&
-            o.constructor === Object
-        );
-    },
-    isPlainObject: function (o) {
         return (
             typeof o === 'object' &&
             o !== null &&
@@ -94,17 +85,11 @@ Utils.abbreviateNumber = function(value, precision=2) {
     let suffixes = ["", "K", "M", "B", "T"]
     let newValue = Number(value).toFixed(precision)
     
-    if( newValue < 0.01 ){
+    if( newValue < 0.001 ){
         while(newValue.charAt() == '.' || newValue.charAt() == '0'){
             suffixNum++
             newValue = newValue.slice(1)
         }
-        //return newValue + '-' + (suffixNum-2)
-        //return newValue + 'e-' + (suffixNum-2)
-        //return '0' + newValue + '-' + (suffixNum-3)
-        //return (suffixNum-2) +'+'+ newValue 
-        //return (suffixNum-2) +'-'+ newValue 
-        //return (suffixNum-2) +'-'+ newValue 
         return '..'+ newValue 
     }
 
