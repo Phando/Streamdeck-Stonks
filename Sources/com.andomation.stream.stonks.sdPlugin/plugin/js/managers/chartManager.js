@@ -94,11 +94,15 @@ class ChartManager extends Manager {
             for(let t=0; t<tickWidth; t++)
                 this.chart.data.push(scratch[index])
         }
+        
+        let rangeSource = this.type.range == '1d' ? this.chart.raw : this.chart.data
+        this.chart.min = Math.min(...rangeSource)
+        this.chart.max = Math.max(...rangeSource)
 
         if(this.isDay)
             this.chart.isUp = this.data.close < this.chart.data[this.chart.data.length-1]
         else
-            this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1]
+            this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1]        
     }
 
     //-----------------------------------------------------------------------------------------
@@ -134,14 +138,7 @@ class ChartManager extends Manager {
     //-----------------------------------------------------------------------------------------
 
     drawCharLine(){
-        let min = Math.min(...this.chart.data)
-        let max = Math.max(...this.chart.data)
-        
-        // Line is not in chart range
-        if(min > this.chart.previousClose || max < this.chart.previousClose) return
-
-        // The line is based on the raw dataset range
-        let scale = Utils.rangeToPercent(this.chart.previousClose, min, max)
+        let scale = Utils.rangeToPercent(this.chart.previousClose, this.chart.min, this.chart.max)
         this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.fillRect(0, 144 - (CHART_BASE + CHART_SCALE * scale), 144, 2);
     }
@@ -151,13 +148,11 @@ class ChartManager extends Manager {
     drawChartData(){
         let xPos = 2
         let scale = 0
-        let min = Math.min(...this.chart.data)
-        let max = Math.max(...this.chart.data)
         let fillColor = this.chart.isUp ? '#007700' : '#770000'
         let tipColor = this.chart.isUp ? '#00FF00' : '#FF0000'
         
         this.chart.data.forEach((item, index) => {
-            scale = Utils.rangeToPercent(item, min, max)
+            scale = Utils.rangeToPercent(item, this.chart.min, this.chart.max)
             this.drawingCtx.fillStyle = fillColor
             this.drawingCtx.fillRect(xPos, 144, 1, -(CHART_BASE + CHART_SCALE * scale));
             this.drawingCtx.fillStyle = tipColor

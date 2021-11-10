@@ -8,21 +8,21 @@ const LimitType = Object.freeze({
 
 const LimitViewType = Object.freeze({
     PRE_INFO    : 'preInfo',
-    UPPER_ENABLED : 'upperEnabled',
     UPPER_INC   : 'upperInc',
     UPPER_DEC   : 'upperDec',
-    LOWER_ENABLED : 'lowerEnabled',
     LOWER_DEC   : 'lowerDec',
     LOWER_INC   : 'lowerInc',
     POST_INFO   : 'postInfo',
+    UPPER_ENABLED : 'upperEnabled',
+    LOWER_ENABLED : 'lowerEnabled',
+    EXIT_LIMITS : 'exitLimits',
     LOWER_INFO  : 'lowerInfo',
     UPPER_INFO  : 'upperInfo'   
 });
 
 class LimitManager extends Manager{
     _viewList = []
-    countChanged = false
-
+ 
     constructor() {
         super()
         this.countdown = 5
@@ -76,14 +76,6 @@ class LimitManager extends Manager{
 
     set lowerBackground(value){
         this.settings.lowerLimitBackground = value
-    }
-
-    get showTrend(){
-        return this.settings.showTrend
-    }
-
-    set showTrend(value){
-        this.settings.showTrend = value
     }
 
     get type(){
@@ -199,7 +191,6 @@ class LimitManager extends Manager{
         this.increment = this.increment || 1
         this.frameTime = this.frameTime || 4
         this.type      = this.type || LimitType.PERCENT
-        this.showTrend = this.showTrend || 'disabled'
 
         this.upperLimit = this.upperLimit || 0
         this.upperEnabled   = this.upperEnabled || 'disabled'
@@ -221,7 +212,6 @@ class LimitManager extends Manager{
         }
         
         if(!this.isInteractive){
-            this.countChanged = true
             this.clickCount++
         }
     }
@@ -231,10 +221,11 @@ class LimitManager extends Manager{
     onKeyUp(jsn){
         super.onKeyUp(jsn)
         
-        if(this.isLongPress)
+        // Ignore the long press click
+        if(this.isLongPress){
             this.isLongPress = false
-        
-        else if(this.isInteractive && !this.countChanged) {        
+        }
+        else if(this.isInteractive) {        
             if(this.isEnabledView)
                 this.handleEnabled(jsn)
             else 
@@ -243,12 +234,7 @@ class LimitManager extends Manager{
             $SD.api.setSettings(this.uuid, this.settings)
         }
 
-        if(this.isInteractive)
-            this.startTimer(jsn)
-        else 
-            this.stopTimer(jsn)
-
-        this.countChanged = false
+        this.startTimer(jsn)
         this.updateDisplay(jsn)
     }
 
@@ -305,11 +291,6 @@ class LimitManager extends Manager{
         super.prepData(jsn)
         this.data.limitBackground = this.settings.background
 
-        if(this.showTrend == 'enabled'){
-            var color = this.data.price > this.data.prevClose ? "#00FF00" : this.data.foreground
-            this.data.foreground = this.data.price < this.data.prevClose ? "#FF0000" : color
-        }
-        
         if(this.limitState == 0) return
         this.data.foreground = this.settings.foreground
         this.data.limitBackground = this.limitState == 1 ? this.upperBackground : this.lowerBackground
@@ -368,23 +349,15 @@ class LimitManager extends Manager{
         else if(this.currentView == LimitViewType.LOWER_ENABLED && this.lowerEnabled == 'disabled'){
             this.clickCount = this.viewList.findIndex(item => item == LimitViewType.POST_INFO)
         }
-        else if(this.currentView == LimitViewType.POST_INFO){
-            this.exitlLimits(jsn)
-            return
-        }
         else {
             this.clickCount++
         }
         
         // Exit : No more adjustment screens
-        if( (!this.incrementOnClick && this.currentView == LimitViewType.LOWER_INFO) || 
-            (!this.limitsEnabled && this.currentView == LimitViewType.POST_INFO)) {
+        if( this.currentView == LimitViewType.EXIT_LIMITS ) {
             this.exitlLimits(jsn)
             return
         }
-
-        if(!this.isInteractive)
-            this.stopTimer(jsn)
 
         this.updateDisplay(jsn)
     }
@@ -578,11 +551,10 @@ class LimitManager extends Manager{
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillText(value, 136, 8)
 
-        if(this.isInteractive){
-            this.drawingCtx.textAlign = "left"
-            this.drawingCtx.textBaseline = "top"
-            this.drawingCtx.fillText(this.countdown, 12, 8)
-        }
+        this.drawingCtx.textAlign = "left"
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillText(this.countdown, 12, 8)
+        
     }
 
 }

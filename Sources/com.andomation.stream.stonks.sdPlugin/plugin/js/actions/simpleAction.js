@@ -83,6 +83,14 @@ class SimpleAction extends Action {
         this.settings.footerMode = value
     }
 
+    get showTrend(){
+        return this.settings.showTrend
+    }
+
+    set showTrend(value){
+        this.settings.showTrend = value
+    }
+
     // Streamdeck Event Handlers
     //-----------------------------------------------------------------------------------------
 
@@ -111,7 +119,8 @@ class SimpleAction extends Action {
         this.foreground = this.foreground || '#D8D8D8'
         this.background = this.background || '#1D1E1F'
         this.footerMode = this.footerMode || FooterType.CHANGE
-        
+        this.showTrend  = this.showTrend || 'disabled'
+
         this.prepViewList()
         this.chartManager.onDidReceiveSettings(jsn)
         this.limitManager.onDidReceiveSettings(jsn)
@@ -138,6 +147,8 @@ class SimpleAction extends Action {
         }
         
         super.onKeyUp(jsn)
+        this.clickCount += 1
+
         if(this.clickCount >= this.viewList.length)
             this.clickCount = 0
 
@@ -296,7 +307,7 @@ class SimpleAction extends Action {
         payload.open        = symbol.regularMarketOpen
         payload.close       = symbol.regularMarketPreviousClose
         payload.prevClose   = symbol.regularMarketPreviousClose
-        payload.volume      = Utils.abbreviateNumber(symbol.regularMarketVolume)
+        payload.volume      = symbol.regularMarketVolume
         payload.foreground  = this.settings.foreground
         payload.background  = this.settings.background
         
@@ -326,6 +337,12 @@ class SimpleAction extends Action {
 
         payload.lowPerc = (Math.abs(payload.low/payload.close)).toFixed(2)
         payload.highPerc = (Math.abs(payload.high/payload.close)).toFixed(2)
+
+        // Show Trend
+        if(this.showTrend == 'enabled'){
+            var color = payload.price > payload.close ? "#00FF00" : payload.foreground
+            payload.foreground = payload.price < payload.close ? "#FF0000" : color
+        }
 
         this.data = payload
         this.limitManager.prepData(jsn)
@@ -462,11 +479,12 @@ class SimpleAction extends Action {
         if(Utils.isUndefined(this.data))
             return
 
+        let volume = Utils.abbreviateNumber(this.data.volume)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillStyle = this.foreground
         this.drawingCtx.font = 500 + " " + 24 + "px Arial"
-        this.drawingCtx.fillText(this.data.volume, 138, 68)
+        this.drawingCtx.fillText(volume, 138, 68)
     }
 
     //-----------------------------------------------------------------------------------------

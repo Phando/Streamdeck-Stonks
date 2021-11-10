@@ -81,28 +81,15 @@ Utils.percentToRange = function (percent, min, max) {
 //-----------------------------------------------------------------------------------------
 
 Utils.abbreviateNumber = function(value, precision=2) {
-    let suffixNum = 0
-    let suffixes = ["", "K", "M", "B", "T"]
-    let newValue = Number(value).toFixed(precision)
-    
-    if( newValue < 0.001 ){
-        while(newValue.charAt() == '.' || newValue.charAt() == '0'){
-            suffixNum++
-            newValue = newValue.slice(1)
-        }
-        return '..'+ newValue 
-    }
+    if(value < 10000)
+        return value.toFixed(precision)
 
-    if( newValue >= 10000){
-        while (newValue >= 1000) {
-            newValue /= 1000;
-            suffixNum++;
-        }
-        newValue = newValue.toPrecision(precision);
-        newValue += suffixes[suffixNum];
+    if(value > 0.001){
+        let digits = value % 3 == 0 ? 0 : 1
+        return new Intl.NumberFormat( 'en-US', { maximumFractionDigits: digits, notation: 'compact', compactDisplay: 'short'}).format(value)
     }
     
-    return newValue;
+    return  '..' + String(value).replace(/[^1-9]*/,'')
 };
 
 //-----------------------------------------------------------------------------------------

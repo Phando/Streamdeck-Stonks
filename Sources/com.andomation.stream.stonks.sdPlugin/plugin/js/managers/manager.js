@@ -24,10 +24,4 @@ class Manager extends StreamDeckClient {
     onSendToPlugin(jsn) {
         this.uuid = jsn.context
     } 
-
-    //-----------------------------------------------------------------------------------------
-
-    onKeyUp(jsn) {
-        this.uuid = jsn.context
-    }
 }

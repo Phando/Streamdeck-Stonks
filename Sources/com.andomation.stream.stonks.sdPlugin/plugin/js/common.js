@@ -21,7 +21,6 @@ let contextList = {}
 function Context(jsn){
     this.downtimer   = null
     this.clickCount  = 0
-    this.incrementOnClick = true
     this.isLongPress = false
     this.stateName   = STATE_DEFAULT
     this.action      = Utils.getProp(jsn, 'action', '')
@@ -74,14 +73,6 @@ class StreamDeckClient {
 
     get drawingCtx(){
         return _drawingCtx
-    }
-
-    get incrementOnClick(){
-        return this.context.incrementOnClick
-    }
-
-    set incrementOnClick(value){
-        this.context.incrementOnClick = value
     }
 
     get isLongPress(){
@@ -179,11 +170,8 @@ class StreamDeckClient {
     onKeyUp(jsn) {
         this.uuid = jsn.context
 
-        if(this.incrementOnClick && !this.isLongPress)
-            this.context.clickCount += 1
-
-        if(this.isLongPress)
-            this.isLongPress = false
+        // if(this.isLongPress)
+        //     this.isLongPress = false
     }
 
     //-----------------------------------------------------------------------------------------

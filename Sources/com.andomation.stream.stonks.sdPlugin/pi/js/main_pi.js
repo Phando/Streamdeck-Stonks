@@ -186,24 +186,27 @@ function handleSdpiItemChange(e, idx) {
   console.log("E Type", e.type, e, $SD)
 
   if(e.type == "radio" || e.type == "checkbox"){
+    var settings = $SD.actionInfo.payload.settings
+    
     sdpiItemChildren.forEach((item) => { 
-      if(!item.checked)
-        delete action.settings[item.id]
+      if(!item.checked || e.type == "radio"){
+        delete settings[item.id]
+      }
     });
 
     if(e.checked){
-      action.settings[e.id] = e.value
       e.setAttribute("_value", e.value)
-      
       if(e.type == "radio")
         e.setAttribute("_name", e.name)
+      else 
+        settings[e.id] = e.value
     }
     else if(e.value == 'enabled'){
-        e.setAttribute("_value", '_false')
+      e.setAttribute("_value", '_false')
     }
     
-    console.log("Pre Save", action.settings)
-    saveSettings(action.settings)
+    $SD.actionInfo.payload.settings = settings
+    //saveSettings(action.settings)
   }
 
   if (sdpiItemGroup && !sdpiItemChildren.length) {
@@ -232,21 +235,19 @@ function handleSdpiItemChange(e, idx) {
       });
   }
 
-  // console.log("ENAME", e.hasAttribute("_name"), e.getAttribute("_name"))
-  // console.log("EVALUE", e.hasAttribute("_value"), e.getAttribute("_value"))
   const returnValue = {
-    key: e['_name'] ? e._name : e.id && e.id.charAt(0) !== "_" ? e.id : sdpiItem.id,
+    key: e.hasAttribute('_name') ? e.getAttribute('_name') : e.id && e.id.charAt(0) !== '_' ? e.id : sdpiItem.id,
     value: isList
-      ? e.textContent : e.hasAttribute("_value")
-      ? e.getAttribute("_value") : e.hasAttribute("value")
-      ? e.getAttribute("value") : e.value,
+      ? e.textContent : e.hasAttribute('_value')
+      ? e.getAttribute('_value') : e.hasAttribute('value')
+      ? e.getAttribute('value') : e.value,
     group: sdpiItemGroup ? sdpiItemGroup.id : false,
     index: idx,
     selection: selectedElements,
     checked: e.checked
   };
 
-  $SD.emit("piDataChanged", returnValue);
+  $SD.emit("piDataChanged", returnValue)
 }
 
 //------------------------------ DOM Helpers -----------------------------------//
