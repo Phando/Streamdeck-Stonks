@@ -101,6 +101,11 @@ Utils.setFontFor = function(text, weight, maxFont, maxWidth) {
 //-----------------------------------------------------------------------------------------
 
 Utils.calculateFont = function(text, weight, min, max, desiredWidth) {
+    // const canvas = document.getElementById('contentLoaded') ? Utils.calculateFont.canvas : document.createElement('canvas')
+    // canvas.width = CANVAS_WIDTH
+    // canvas.height = CANVAS_HEIGHT
+    // let drawingCtx = canvas.getContext("2d");
+
     if (max - min < 1) {
         _drawingCtx.font = weight + " " + min + "px Arial";
         return
@@ -155,9 +160,7 @@ Utils.randomString = function (len = 8) {
                 return charset.charAt(
                     Math.floor(Math.random() * charset.length)
                 );
-            })(
-                'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-            );
+            })('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789');
         })
         .join('');
 };

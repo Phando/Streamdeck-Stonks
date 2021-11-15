@@ -12,6 +12,7 @@ const STATE_DEFAULT = 'default'
 
 var _canvas = null
 var _drawingCtx = null
+
 let actions = []
 let globalSettings = {}
 let contextList = {}
@@ -19,8 +20,10 @@ let contextList = {}
 //-----------------------------------------------------------------------------------------
 
 function Context(jsn){
-    this.downtimer   = null
     this.clickCount  = 0
+    //this.canvas      = null
+    this.downtimer   = null
+    //this.drawingCtx  = null
     this.isLongPress = false
     this.stateName   = STATE_DEFAULT
     this.action      = Utils.getProp(jsn, 'action', '')
@@ -46,6 +49,10 @@ class StreamDeckClient {
     get canvas(){
         return _canvas
     }
+
+    // set canvas(value){
+    //     this.context.canvas = value
+    // }
 
     get clickCount(){
         return this.context.clickCount
@@ -74,6 +81,10 @@ class StreamDeckClient {
     get drawingCtx(){
         return _drawingCtx
     }
+
+    // set drawingCtx(value){
+    //     this.context.drawingCtx = value
+    // }
 
     get isLongPress(){
         return this.context.isLongPress
@@ -128,7 +139,6 @@ class StreamDeckClient {
         }
 
         this.onDidReceiveSettings(jsn)
-        //this.updateDisplay(jsn)
     }
 
     //-----------------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 class DataManager {
-  symbolTimer = null;
+  dataTimer = null;
   chartURL  = "https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&" //indicators=close&includeTimestamps=false&includePrePost=false
   symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields="
   symbolFields = [
@@ -35,7 +35,9 @@ class DataManager {
   constructor(){
   }
 
-  getSymbols(){
+  //-----------------------------------------------------------------------------------------
+
+  get symbols(){
     let symbols = []
     Object.values(contextList).forEach(item => {
       let symbol = Utils.getProp(item, "settings.symbol", false);
@@ -48,45 +50,73 @@ class DataManager {
     return symbols
   }
 
-  startPolling() {
-    console.log('Polling - Start');
-    this.fetchSymbolData();
-    this.symbolTimer = setInterval(this.fetchSymbolData.bind(this), globalSettings.interval * 1000);
+  //-----------------------------------------------------------------------------------------
+
+  get symbolString(){
+    return '&symbols=' + this.symbols.join()
   }
 
-  // Public function to stop polling
-  stopPolling() {
-    console.log('Polling - Stop');
-    clearInterval(this.symbolTimer);
-    this.symbolTimer = null;
+  //-----------------------------------------------------------------------------------------
+
+  startPolling() {
+    console.log('Polling - Start')
+    this.fetchData()
+    this.dataTimer = setInterval(this.fetchData.bind(this), globalSettings.interval * 1000)
   }
+
+  //-----------------------------------------------------------------------------------------
+  
+  stopPolling() {
+    console.log('Polling - Stop')
+    clearInterval(this.dataTimer)
+    this.dataTimer = null
+  }
+
+  //-----------------------------------------------------------------------------------------
+
+  fetchData(){
+    this.fetchSymbolData()
+    this.fetchChartData()
+  }
+
+  //-----------------------------------------------------------------------------------------
 
   fetchSymbolData(){
-    var url = this.symbolURL
-    url += this.symbolFields.join()
-    url += '&symbols=' + this.getSymbols().join()
+    if(this.symbols.length == 0) return 
+
+    var url = this.symbolURL + this.symbolFields.join() + this.symbolString
     console.log("fetchSymbolData:", url)
     
-    // Double check that we have symbols added to the URL
-    if(this.getSymbols().length == 0) return 
-
     this.requestData(url, 
       (response, event) => this.handleResponse(response, 'didReceiveSymbolData'), 
       (response, event) => this.handleError(response, 'didReceiveSymbolError'))
   }
+  
+  //-----------------------------------------------------------------------------------------
 
-  fetchChartData(chartType){
-    var url = this.chartURL + "range="+ chartType.range +"&interval="+ chartType.interval
-    url +=  '&symbols=' + this.getSymbols().join()
-    
-    // Double check that we have symbols added to the URL
-    if(this.getSymbols().length == 0) return 
+  fetchChartData(){
+    let types = {}
+    if(this.symbols.length == 0) return 
 
-    this.requestData(url, 
-      (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
-      (response, event) => this.handleError(response, 'didReceiveChartError'),
-      chartType)
+    Object.values(contextList).forEach(item => {
+      let chart = Utils.getProp(item, "chartType", false);
+      
+      if(!chart) return
+      types[chart.type] = chart
+    })
+
+    console.log("Chart Types to Fetch", types)
+    for (const [key, value] of Object.entries(types)) {
+      var url = this.chartURL + "range="+ value.range +"&interval="+ value.interval + this.symbolString
+
+      this.requestData(url, 
+        (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
+        (response, event) => this.handleError(response, 'didReceiveChartError'),
+        value)
+    }
   }
+
+  //-----------------------------------------------------------------------------------------
 
   handleError(response, event){
     Object.values(contextList).forEach(item => {
@@ -94,6 +124,8 @@ class DataManager {
       $SD.emit(item.action + '.' + event, item)
     })
   }
+
+  //-----------------------------------------------------------------------------------------
 
   handleResponse(response, event){
     var data = {}
@@ -114,6 +146,8 @@ class DataManager {
       $SD.emit(item.action + '.' + event, {context:item.context, payload:data[symbol]})
     })
   }
+
+  //-----------------------------------------------------------------------------------------
 
   requestData(url, callback, errorCallback, userInfo={}) {
     const fetchPromise = fetch(url);

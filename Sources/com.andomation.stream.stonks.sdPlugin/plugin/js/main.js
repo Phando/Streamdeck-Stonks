@@ -25,12 +25,12 @@ $SD = StreamDeck.getInstance();
 
 $SD.on('connected', (jsn) => { 
   _canvas = document.createElement("canvas")
-  _canvas.width = CANVAS_WIDTH
+  _canvas.width  = CANVAS_WIDTH
   _canvas.height = CANVAS_HEIGHT
-  _drawingCtx = _canvas.getContext("2d");
+  _drawingCtx    = _canvas.getContext("2d")
 
   actions.forEach(function(item){
-    item.onConnected(jsn);
+    item.onConnected(jsn)
   }); 
 });
 

@@ -1,8 +1,10 @@
 const FooterType = Object.freeze({
     CHANGE  : 'change',
-    HIGHLO  : 'hilo',
-    HIGHLOP : 'hiloprc',
-    SLIDER  : 'slider'
+    SLIDER  : 'slider',
+    RANGE   : 'range',
+    RANGE_PERC : 'rangePerc',
+    RANGE_PLUS : 'rangePlus',
+    RANGE_PLUS_PERC : 'rangePlusPerc'
 });
 
 const MarketStateType = Object.freeze({
@@ -59,14 +61,6 @@ class SimpleAction extends Action {
         this.settings.decimals = value
     }
 
-    get foreground(){
-        return this.settings.foreground
-    }
-
-    set foreground(value){
-        this.settings.foreground = value
-    }
-
     get background(){
         return this.settings.background
     }
@@ -75,6 +69,15 @@ class SimpleAction extends Action {
         this.settings.background = value
     }
 
+    get foreground(){
+        return this.settings.foreground
+    }
+
+    set foreground(value){
+        this.settings.foreground = value
+    }
+
+    
     get footerMode(){
         return this.settings.footerMode
     }
@@ -89,6 +92,18 @@ class SimpleAction extends Action {
 
     set showTrend(value){
         this.settings.showTrend = value
+    }
+
+    get isChart() {
+        return this.currentView.includes('Chart')
+    }
+
+    get zoomCharts(){
+        return this.settings.zoomCharts
+    }
+
+    set zoomCharts(value){
+        this.settings.zoomCharts = value
     }
 
     // Streamdeck Event Handlers
@@ -118,9 +133,10 @@ class SimpleAction extends Action {
         this.decimals   = this.decimals || 2
         this.foreground = this.foreground || '#D8D8D8'
         this.background = this.background || '#1D1E1F'
+        this.showTrend  = this.showTrend  || 'disabled'
+        this.zoomCharts = this.zoomCharts || 'disabled'
         this.footerMode = this.footerMode || FooterType.CHANGE
-        this.showTrend  = this.showTrend || 'disabled'
-
+        
         this.prepViewList()
         this.chartManager.onDidReceiveSettings(jsn)
         this.limitManager.onDidReceiveSettings(jsn)
@@ -152,12 +168,13 @@ class SimpleAction extends Action {
         if(this.clickCount >= this.viewList.length)
             this.clickCount = 0
 
-        if(this.currentView.includes('Chart')){
+        if(this.isChart){
             this.chartManager.onKeyUp(jsn)
-            dataManager.fetchChartData(this.chartManager.type)
+            dataManager.fetchChartData()
             return
         }
-
+        
+        this.context.chartType = null
         this.updateDisplay(jsn)
     }
 
@@ -251,12 +268,12 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveChartData(jsn) {
-        //console.log("SimpleAction - onDidReceiveChartData: ", jsn)
         this.uuid = jsn.context
-        this.chartManager.onDidReceiveData(jsn)
         
-        if(Object.keys(this.chartManager.data).length > 0)
+        if(this.isChart && this.chartManager.dataMatch(jsn)){
+            this.chartManager.onDidReceiveData(jsn)
             this.updateDisplay(jsn)
+        }
     }
 
     //-----------------------------------------------------------------------------------------
@@ -304,6 +321,7 @@ class SimpleAction extends Action {
         payload.symbol = symbol.symbol.split('-')[0]
 
         payload.price       = symbol.regularMarketPrice
+        payload.priceMarket = symbol.regularMarketPrice
         payload.open        = symbol.regularMarketOpen
         payload.close       = symbol.regularMarketPreviousClose
         payload.prevClose   = symbol.regularMarketPreviousClose
@@ -372,13 +390,12 @@ class SimpleAction extends Action {
         switch(this.currentView){    
             case ViewType.DEFAULT:
                 this.drawHeader(jsn)
-                this.drawVolume()
                 this.drawFooter()
                 break
             case ViewType.DAY_DEC :
             case ViewType.DAY_PERC :
-                this.drawHeader(jsn)
-                this.updateDayView()
+                this.drawSymbol()
+                this.drawRange()
                 break
             default:
                 this.limitManager.updateLimitView(jsn)
@@ -389,28 +406,7 @@ class SimpleAction extends Action {
 
         $SD.api.setImage(this.uuid, this.canvas.toDataURL());
     }
-    
-    //-----------------------------------------------------------------------------------------
 
-    updateDayView(){
-        var close  = this.prepPrice(this.data.close)
-        var high = this.prepPrice(this.data.high)
-        var low = this.prepPrice(this.data.low)
-
-        if(this.currentView == ViewType.DAY_PERC){
-            high = this.data.highPerc + '%'
-            low = this.data.lowPerc + '%'
-        }
-
-        var img = document.getElementById('closedIcon')
-        this.drawingCtx.drawImage(img, 10, 87, 22, 22)
-
-        this.drawPair('', high, '#00FF00', 81)
-        this.drawPair('', close, this.settings.foreground, 103)
-        this.drawPair('', low, '#FF0000', 126)
-    }
-
-    // Rendering Functions (little to no logic)
     //-----------------------------------------------------------------------------------------
     
     drawHeader(jsn){
@@ -430,28 +426,39 @@ class SimpleAction extends Action {
 
         switch(this.footerMode){
             case FooterType.CHANGE:
-                this.drawFooterChange()
-                break
-            case FooterType.HIGHLO:
-            case FooterType.HIGHLOP:
-                this.drawFooterHighLow()
+                this.drawVolume()
+                this.drawChange()
                 break
             case FooterType.SLIDER:
-                this.drawFooterSlider()
+                this.drawSlider()
                 break
+            case FooterType.RANGE:
+            case FooterType.RANGE_PERC:
+                this.drawVolume()
+            default:
+                this.drawRange()
         }
     }
 
+    // Rendering Functions (little to no logic)
     //-----------------------------------------------------------------------------------------
 
-    drawSymbol(){
-        this.drawingCtx.fillStyle =  this.foreground
-        this.drawingCtx.font = 600 + " " + 24 + "px Arial";
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(this.symbol, 136, 8);
-    }
+    drawChange(){
+        let change = this.data.change || 0
+        let percent = this.data.percent || 0
+        let color = '#00FF00'
 
+        if(change < 0){
+            color = '#FF0000'
+            change = Math.abs(change)
+            percent = Math.abs(percent)
+        }
+        
+        change = this.prepPrice(change)
+        percent = percent.toFixed(2)
+        this.drawSmartPair('$ ', change, color, '%', percent, color)
+    }
+    
     //-----------------------------------------------------------------------------------------
 
     drawMarketState(state, xPos=9, yPos=3){
@@ -465,12 +472,64 @@ class SimpleAction extends Action {
         value = this.prepPrice(value)
 
         // Render Price
-        // this.drawingCtx.fillStyle = this.price >= this.data.prevClose ? '#00FF00' : '#FF0000'
         this.drawingCtx.fillStyle = this.data.foreground
         Utils.setFontFor(value, 600, 40, CANVAS_WIDTH - 20)
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
         this.drawingCtx.fillText(value, 138, 32);
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    drawRange(){
+        var price  = this.prepPrice(this.data.priceMarket)
+        var high = this.prepPrice(this.data.high)
+        var low = this.prepPrice(this.data.low)
+
+        var isFooter = this.currentView == ViewType.DEFAULT
+        var font = isFooter ? 22 : 26
+        var yPos = isFooter ? [81,103,126,87] : [52,89,126,74]
+
+        if( this.currentView == ViewType.DAY_PERC ||
+            ( this.footerMode == FooterType.RANGE_PERC || this.footerMode == FooterType.RANGE_PLUS_PERC )){
+            high = this.data.highPerc + '%'
+            low = this.data.lowPerc + '%'
+        }
+
+        if( isFooter && (this.footerMode == FooterType.RANGE || this.footerMode == FooterType.RANGE_PERC)){
+            this.drawSmartPair("Hi", high, '#00FF00', "Lo", low, '#FF0000')
+            return
+        }
+
+        if(this.data.state != MarketStateType.REG){
+            var img = document.getElementById('closedIcon')
+            this.drawingCtx.drawImage(img, 10, yPos[3], 22, 22)
+            price = this.prepPrice(this.data.close)
+        }
+
+        this.drawPair('', high, '#00FF00', yPos[0], font)
+        this.drawPair('', price, this.settings.foreground, yPos[1], font)
+        this.drawPair('', low, '#FF0000', yPos[2], font)
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    drawSlider(){
+        // Range Percent
+        this.drawingCtx.fillStyle = '#FFFF00'
+        this.drawingCtx.textAlign = 'center'
+        this.drawingCtx.fillText('Not Yet', CHART_WIDTH/2, 94);
+        this.drawingCtx.fillText('Implemented', CHART_WIDTH/2, 114);
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    drawSymbol(){
+        this.drawingCtx.fillStyle =  this.foreground
+        this.drawingCtx.font = 600 + " " + 24 + "px Arial";
+        this.drawingCtx.textAlign = "right"
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillText(this.symbol, 136, 8);
     }
 
     //-----------------------------------------------------------------------------------------
@@ -486,76 +545,4 @@ class SimpleAction extends Action {
         this.drawingCtx.font = 500 + " " + 24 + "px Arial"
         this.drawingCtx.fillText(volume, 138, 68)
     }
-
-    //-----------------------------------------------------------------------------------------
-
-    drawFooterChange(){
-        let change = this.data.change || 0
-        let percent = this.data.percent || 0
-        let color = '#00FF00'
-
-        if(change < 0){
-            color = '#FF0000'
-            change = Math.abs(change)
-            percent = Math.abs(percent)
-        }
-        
-        change = this.prepPrice(change)
-        percent = percent.toFixed(2)
-        this.drawSmartPair('$ ', change, color, '%', percent, color)
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    drawFooterHighLow(){
-        var high = this.prepPrice(this.data.high)
-        var low = this.prepPrice(this.data.low)
-
-        if(this.currentView == ViewType.DAY_PERC){
-            high = this.data.highPerc + '%'
-            low = this.data.lowPerc + '%'
-        }
-        
-        this.drawSmartPair("Hi", high, '#00FF00', "Lo", low, '#FF0000')
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    drawFooterSlider(){
-        // Range Percent
-        this.drawingCtx.fillStyle = '#FFFF00'
-        this.drawingCtx.textAlign = 'center'
-        this.drawingCtx.fillText('Not Yet', CHART_WIDTH/2, 94);
-        this.drawingCtx.fillText('Implemented', CHART_WIDTH/2, 114);
-    }
-
-    // Error Handler
-    //-----------------------------------------------------------------------------------------
-
-    renderError(jsn) {
-        //console.log('SimpleAction - renderError', jsn)
-        this.uuid = jsn.context
-        this.drawingCtx.fillStyle = this.background
-        this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-
-        this.drawingCtx.fillStyle =  '#FFFF00'
-        this.drawingCtx.font = 600 + " " + 26 + "px Arial";
-        this.drawingCtx.textAlign = "center"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText("Error", CANVAS_WIDTH/2, 6);
-
-        // Render Message
-        this.drawingCtx.fillStyle = this.foreground
-        this.drawingCtx.font = 600 + " " + 19 + "px Arial";
-        this.drawingCtx.fillText(jsn.error.message, CANVAS_WIDTH/2, 40);
-
-        if(jsn.error.hasOwnProperty('message1'))
-            this.drawingCtx.fillText(jsn.error.message1, CANVAS_WIDTH/2, 70);
-
-        if(jsn.error.hasOwnProperty('message2'))
-            this.drawingCtx.fillText(jsn.error.message2, CANVAS_WIDTH/2, 100);
-
-        $SD.api.setImage(this.uuid, canvas.toDataURL());
-    }
-
 }

@@ -101,9 +101,25 @@ $SD.on("piDataChanged", (returnValue) => {
   );
   console.log("Return Value", returnValue);
 
-  // NOTE: If opening a window do it here
-  saveValue(returnValue);
-  sendValueToPlugin(returnValue, "sdpi_collection");
+  if (returnValue.key != 'external') {
+    saveValue(returnValue);
+    sendValueToPlugin(returnValue, "sdpi_collection")
+    return
+  }
+
+  // Open New Window
+  postMessage = (w) => {
+    w.postMessage(
+        Object.assign({}, $SD.applicationInfo.application, {action: $SD.actionInfo.action})
+        ,'*');
+  }
+
+  if (!window.xtWindow || window.xtWindow.closed) {
+      window.xtWindow  = window.open('../externalWindow.html', 'External Window');
+      setTimeout(() => postMessage(window.xtWindow), 200);
+  } else {
+    postMessage(window.xtWindow);
+  }
 });
 
 /**
