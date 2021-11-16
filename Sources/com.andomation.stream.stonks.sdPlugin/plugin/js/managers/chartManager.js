@@ -87,9 +87,20 @@ class ChartManager extends Manager {
         let tickWidth = this.type.tail ? 4 : 1
         let cells = Math.floor(CHART_WIDTH/tickWidth)
         
-        if(this.type.tail)
-            scratch = scratch.slice(-cells)
-        else
+        switch(this.type){
+            case ChartType.CHART_MIN_1 :
+            case ChartType.CHART_MIN_2 :
+                scratch = scratch.slice(-cells)
+                break
+            case ChartType.CHART_MONTH_1 :
+                scratch = scratch.slice(-scratch.length/3)
+                break
+            case ChartType.CHART_MONTH_6 :
+                scratch = scratch.slice(-scratch.length/2)
+                break
+        }
+
+        if(!this.type.tail)
             interval = Math.max(1, scratch.length/CHART_WIDTH)
 
         this.chart.data = []
@@ -102,7 +113,6 @@ class ChartManager extends Manager {
         this.chart.min = Math.min(...rangeSource)
         this.chart.max = Math.max(...rangeSource)
 
-        console.log("ISUP", this.data.prevClose, this.chart.data[this.chart.data.length-1], this.data.prevClose < this.chart.data[this.chart.data.length-1])
         if(this.isDay)
             this.chart.isUp = this.data.prevClose < this.chart.data[this.chart.data.length-1]
         else
@@ -154,8 +164,6 @@ class ChartManager extends Manager {
         let scale = 0
         let fillColor = this.chart.isUp ? '#007700' : '#770000'
         let tipColor = this.chart.isUp ? '#00FF00' : '#FF0000'
-
-        console.log("RANGE", this.uuid, this.showRaw, this.chart.min, this.chart.max)
 
         this.chart.data.forEach((item, index) => {
             scale = Utils.rangeToPercent(item, this.chart.min, this.chart.max)

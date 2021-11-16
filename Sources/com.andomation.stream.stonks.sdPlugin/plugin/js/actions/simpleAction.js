@@ -8,10 +8,10 @@ const FooterType = Object.freeze({
 });
 
 const MarketStateType = Object.freeze({
-    PRE     : 'marketPre',
+    PRE     : 'premarket',
     REG     : 'marketReg',
-    POST    : 'marketPost',
-    CLOSED  : 'marketClosed'
+    POST    : 'postmarket',
+    CLOSED  : 'postmarket'
 });
 
 const ViewType = Object.freeze({
@@ -356,14 +356,15 @@ class SimpleAction extends Action {
         payload.lowPerc = (Math.abs(payload.low/payload.close)).toFixed(2)
         payload.highPerc = (Math.abs(payload.high/payload.close)).toFixed(2)
 
+        this.data = payload
+        this.limitManager.prepData(jsn)
+
         // Show Trend
-        if(this.showTrend == 'enabled'){
+        if(this.showTrend == 'enabled' && this.limitManager.limitState == 0){
             var color = payload.price > payload.close ? "#00FF00" : payload.foreground
             payload.foreground = payload.price < payload.close ? "#FF0000" : color
         }
 
-        this.data = payload
-        this.limitManager.prepData(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -461,9 +462,17 @@ class SimpleAction extends Action {
     
     //-----------------------------------------------------------------------------------------
 
-    drawMarketState(state, xPos=9, yPos=3){
+    drawMarketState(state, xPos=0, yPos=0){
+        if(state == MarketStateType.REG) return
+
         var img = document.getElementById(state)
-        this.drawingCtx.drawImage(img, xPos, yPos, 22, 22)
+        this.drawingCtx.drawImage(img, xPos, yPos, 35, 35)
+
+        // let limitState = this.limitManager.limitState
+        // if(limitState != 0){
+        //     img = document.getElementById(limitState > 0 ? 'upperLimit' : 'lowerLimit')
+        //     this.drawingCtx.drawImage(img, xPos, yPos, 50, 45)
+        // }
     }
     
     //-----------------------------------------------------------------------------------------

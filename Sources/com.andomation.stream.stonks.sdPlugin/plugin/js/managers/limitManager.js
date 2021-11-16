@@ -8,13 +8,13 @@ const LimitType = Object.freeze({
 
 const LimitViewType = Object.freeze({
     PRE_INFO    : 'preInfo',
+    UPPER_ENABLED : 'upperEnabled',
     UPPER_INC   : 'upperInc',
     UPPER_DEC   : 'upperDec',
+    LOWER_ENABLED : 'lowerEnabled',
     LOWER_DEC   : 'lowerDec',
     LOWER_INC   : 'lowerInc',
     POST_INFO   : 'postInfo',
-    UPPER_ENABLED : 'upperEnabled',
-    LOWER_ENABLED : 'lowerEnabled',
     EXIT_LIMITS : 'exitLimits',
     LOWER_INFO  : 'lowerInfo',
     UPPER_INFO  : 'upperInfo'   
@@ -120,17 +120,25 @@ class LimitManager extends Manager{
         if(this.type == LimitType.PERCENT)
             price = Math.abs(this.data.percent)    
         
-        if(this.upperEnabled == 'enabled')
+        if(this.isUpperEnabled)
             result = price >= this.upperLimit ? 1 : 0
 
-        if(this.lowerEnabled == 'enabled')
+        if(this.isLowerEnabled)
             result = price <= this.lowerLimit ? -1 : result
 
         return result
     }
 
+    get isUpperEnabled(){
+        return this.upperEnabled == 'enabled'
+    }
+
+    get isLowerEnabled(){
+        return this.lowerEnabled == 'enabled'
+    }
+
     get limitsEnabled(){
-        return this.upperEnabled == 'enabled' || this.lowerEnabled == 'enabled'
+        return this.isUpperEnabled || this.isLowerEnabled
     }
 
     get isEnabledView(){
@@ -343,10 +351,16 @@ class LimitManager extends Manager{
         this.countdown = this.frameTime
 
         // Show the next screen
-        if(this.currentView == LimitViewType.UPPER_ENABLED && this.upperEnabled == 'disabled'){
-            this.clickCount = this.viewList.findIndex(item => item == LimitViewType.LOWER_ENABLED)
+        if(this.currentView == LimitViewType.PRE_INFO && this.isUpperEnabled){
+            this.clickCount = this.viewList.findIndex(item => item == LimitViewType.UPPER_INC)
         } 
-        else if(this.currentView == LimitViewType.LOWER_ENABLED && this.lowerEnabled == 'disabled'){
+        else if(this.currentView == LimitViewType.UPPER_ENABLED && !this.isUpperEnabled){
+            if(this.isLowerEnabled)
+                this.clickCount = this.viewList.findIndex(item => item == LimitViewType.LOWER_DEC)
+            else 
+                this.clickCount = this.viewList.findIndex(item => item == LimitViewType.LOWER_ENABLED)
+        } 
+        else if(this.currentView == LimitViewType.LOWER_ENABLED && !this.isLowerEnabled){
             this.clickCount = this.viewList.findIndex(item => item == LimitViewType.POST_INFO)
         }
         else {
@@ -433,7 +447,7 @@ class LimitManager extends Manager{
         var lower = this.lowerLimit
         var price = this.data.price
         var market = this.data.state
-
+       
         if(this.type == LimitType.PERCENT){
             upper += '%'
             lower += '%'
@@ -446,18 +460,13 @@ class LimitManager extends Manager{
         }
 
         price = this.prepPrice(price)
+        // var img = document.getElementById(market)
+        // this.drawingCtx.drawImage(img, 4, 74, 22, 22)
         
         this.drawHeader('Limits')
-        this.drawPair('', upper, '#00FF00', 45)
-        
-        this.drawingCtx.font = 600 + " " + 22 + "px Arial"
-        this.drawingCtx.fillStyle = this.settings.foreground
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.fillText(price, 136, 79)
-
-        var img = document.getElementById(market)
-        this.drawingCtx.drawImage(img, 4, 72, 22, 22)
-        this.drawPair('', lower, '#FF0000', 110)
+        this.drawPair('', upper, this.isUpperEnabled ? '#00FF00' : '#636363', 52, 26)
+        this.drawPair('', price, this.settings.foreground, 89, 26)
+        this.drawPair('', lower, this.isLowerEnabled ? '#FF0000' : '#636363', 126, 26)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -512,8 +521,8 @@ class LimitManager extends Manager{
         this.drawingCtx.font = 500 + " " + 25 + "px Arial";
         this.drawingCtx.fillText(limit, 138, 80);
 
-        var img = document.getElementById(market)
-        this.drawingCtx.drawImage(img, 4, 108, 22, 22)
+        // var img = document.getElementById(market)
+        // this.drawingCtx.drawImage(img, 4, 108, 22, 22)
 
         // Render VALUE
         Utils.setFontFor(price, 600, 26, CANVAS_WIDTH-20)
