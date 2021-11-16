@@ -558,6 +558,7 @@ class SimpleAction extends Action {
         this.drawingCtx.fill()
 
         this.drawingCtx.beginPath()
+        this.drawingCtx.lineWidth = 4
         this.drawingCtx.strokeStyle = this.settings.foreground
         this.drawingCtx.moveTo(centerX, centerY)
         this.drawingCtx.lineTo(centerX + (radius+4) * Math.cos(scale), centerY + (radius+4) * Math.sin(scale))
