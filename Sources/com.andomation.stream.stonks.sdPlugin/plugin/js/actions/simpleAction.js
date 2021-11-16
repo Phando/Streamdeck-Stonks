@@ -520,11 +520,20 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSlider(){
-        // Range Percent
-        this.drawingCtx.fillStyle = '#FFFF00'
-        this.drawingCtx.textAlign = 'center'
-        this.drawingCtx.fillText('Not Yet', CHART_WIDTH/2, 94);
-        this.drawingCtx.fillText('Implemented', CHART_WIDTH/2, 114);
+        var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
+
+        this.drawingCtx.fillStyle = '#00FF00'
+        this.drawingCtx.fillRect(0, 124, 144, 10);
+
+        this.drawingCtx.fillStyle = '#FF0000'
+        this.drawingCtx.fillRect(0, 124, scale, 10);
+
+        this.drawingCtx.fillStyle = this.settings.foreground
+        this.drawingCtx.fillRect(scale-3, 118, 6, 26);
+
+        this.drawingCtx.textAlign = "center"
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillText(this.prepPrice(this.data.priceMarket), CANVAS_WIDTH/2, 90);
     }
 
     //-----------------------------------------------------------------------------------------
