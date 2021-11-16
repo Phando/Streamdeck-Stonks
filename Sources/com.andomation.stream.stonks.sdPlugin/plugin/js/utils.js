@@ -81,7 +81,7 @@ Utils.percentToRange = function (percent, min, max) {
 //-----------------------------------------------------------------------------------------
 
 Utils.abbreviateNumber = function(value, precision=2) {
-    if(value < 10000)
+    if(value > 0.001 && value < 10000 )
         return value.toFixed(precision)
 
     if(value > 0.001){
@@ -89,7 +89,10 @@ Utils.abbreviateNumber = function(value, precision=2) {
         return new Intl.NumberFormat( 'en-US', { maximumFractionDigits: digits, notation: 'compact', compactDisplay: 'short'}).format(value)
     }
     
-    return  '..' + String(value).replace(/[^1-9]*/,'')
+    // Truncating very small numbers < 0.001
+    value = String(value)
+    value = value.substring(2, Number(precision)+2)
+    return  '..' + value.replace(/^[^1-9]*/,'')
 };
 
 //-----------------------------------------------------------------------------------------
