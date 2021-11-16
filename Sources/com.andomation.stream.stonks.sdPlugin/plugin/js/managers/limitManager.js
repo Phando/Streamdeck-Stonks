@@ -445,23 +445,25 @@ class LimitManager extends Manager{
     updateInfoView(){
         var upper = this.upperLimit
         var lower = this.lowerLimit
-        var price = this.data.price
-        var market = this.data.state
-       
+        var price = this.prepPrice(this.data.priceMarket)
+        var state = this.data.state
+        
         if(this.type == LimitType.PERCENT){
             upper += '%'
             lower += '%'
-            price = this.data.prevClose
-            market = MarketStateType.CLOSED
+            price = this.prepPrice(this.data.prevClose)
+            state = MarketStateType.CLOSED
         }
         else {
             upper = this.prepPrice(upper)
             lower = this.prepPrice(lower)
         }
 
-        price = this.prepPrice(price)
-        // var img = document.getElementById(market)
-        // this.drawingCtx.drawImage(img, 4, 74, 22, 22)
+        if(state != MarketStateType.REG){
+            var img = document.getElementById('closedIcon')
+            this.drawingCtx.drawImage(img, 10, 74, 22, 22)
+        //    price = this.prepPrice(this.data.close)
+        }
         
         this.drawHeader('Limits')
         this.drawPair('', upper, this.isUpperEnabled ? '#00FF00' : '#636363', 52, 26)

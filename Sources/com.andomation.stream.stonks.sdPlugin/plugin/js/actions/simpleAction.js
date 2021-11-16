@@ -359,12 +359,10 @@ class SimpleAction extends Action {
         this.data = payload
         this.limitManager.prepData(jsn)
 
-        // Show Trend
         if(this.showTrend == 'enabled' && this.limitManager.limitState == 0){
             var color = payload.price > payload.close ? "#00FF00" : payload.foreground
             payload.foreground = payload.price < payload.close ? "#FF0000" : color
         }
-
     }
 
     //-----------------------------------------------------------------------------------------
@@ -467,12 +465,6 @@ class SimpleAction extends Action {
 
         var img = document.getElementById(state)
         this.drawingCtx.drawImage(img, xPos, yPos, 35, 35)
-
-        // let limitState = this.limitManager.limitState
-        // if(limitState != 0){
-        //     img = document.getElementById(limitState > 0 ? 'upperLimit' : 'lowerLimit')
-        //     this.drawingCtx.drawImage(img, xPos, yPos, 50, 45)
-        // }
     }
     
     //-----------------------------------------------------------------------------------------
