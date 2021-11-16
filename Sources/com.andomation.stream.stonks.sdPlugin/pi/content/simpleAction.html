@@ -27,20 +27,6 @@
     </div>
 </div>
 
-<div type="radio" class="sdpi-item" id="zoom_charts">
-    <div class="sdpi-item-label">Zoom Charts</div>
-    <div class="sdpi-item-value ">
-        <div class="sdpi-item-child">
-            <input id="zoomCharts-radio1" type="radio" value="enabled" name="zoomCharts">
-            <label for="zoomCharts-radio1" class="sdpi-item-label"><span></span>True</label>
-        </div>
-        <div class="sdpi-item-child">
-            <input id="zoomCharts-radio2" type="radio" value="disabled" name="zoomCharts">
-            <label for="zoomCharts-radio2" class="sdpi-item-label"><span></span>False</label>
-        </div>
-    </div>
-</div>
-
 <div class="sdpi-heading">Footer</div>
 <div type="radio" class="sdpi-item" id="footer_mode">
     <div class="sdpi-item-label">Mode</div>
@@ -50,24 +36,28 @@
             <label for="footerMode-radio1" class="sdpi-item-label"><span></span>Change</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio2" type="radio" value="slider" name="footerMode">
-            <label for="footerMode-radio2" class="sdpi-item-label"><span></span>Slider</label>
+            <input id="footerMode-radio2" type="radio" value="meter" name="footerMode">
+            <label for="footerMode-radio2" class="sdpi-item-label"><span></span>Meter</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio3" type="radio" value="range" name="footerMode">
-            <label for="footerMode-radio3" class="sdpi-item-label"><span></span>Range</label>
+            <input id="footerMode-radio3" type="radio" value="slider" name="footerMode">
+            <label for="footerMode-radio3" class="sdpi-item-label"><span></span>Slider</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio4" type="radio" value="rangePerc" name="footerMode">
-            <label for="footerMode-radio4" class="sdpi-item-label"><span></span>Range%</label>
+            <input id="footerMode-radio4" type="radio" value="range" name="footerMode">
+            <label for="footerMode-radio4" class="sdpi-item-label"><span></span>Range</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio5" type="radio" value="rangePlus" name="footerMode">
-            <label for="footerMode-radio5" class="sdpi-item-label"><span></span>Range Mkt</label>
+            <input id="footerMode-radio5" type="radio" value="rangePerc" name="footerMode">
+            <label for="footerMode-radio5" class="sdpi-item-label"><span></span>Range%</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio6" type="radio" value="rangePlusPerc" name="footerMode">
-            <label for="footerMode-radio6" class="sdpi-item-label"><span></span>Range Mkt%</label>
+            <input id="footerMode-radio6" type="radio" value="rangePlus" name="footerMode">
+            <label for="footerMode-radio6" class="sdpi-item-label"><span></span>Range Mkt</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="footerMode-radio7" type="radio" value="rangePlusPerc" name="footerMode">
+            <label for="footerMode-radio7" class="sdpi-item-label"><span></span>Range Mkt%</label>
         </div>
     </div>
 </div>
@@ -145,10 +135,11 @@
     <input id="lowerLimitBackground" type="color" class="sdpi-item-value">
 </div> -->
 
-<div class="sdpi-heading">Alternate Views</div>
-</div>
+<div class="sdpi-heading">Click Views</div>
+
 <div type="checkbox" class="sdpi-item" id="summary-views">
-    <div class="sdpi-item-value min120">
+    <div class="sdpi-item-label">Info</div>
+    <div class="sdpi-item-value min100">
         <div class="sdpi-item-child">
             <input id="showDayDecimal" type="checkbox" value="enabled">
             <label for="showDayDecimal" class="sdpi-item-label"><span></span>Day Numeric</label>
@@ -157,37 +148,47 @@
             <input id="showDayPercent" type="checkbox" value="enabled">
             <label for="showDayPercent" class="sdpi-item-label"><span></span>Day Percent</label>
         </div>
+    </div>
+</div>
+<p>
+<div type="checkbox" class="sdpi-item" id="chart-views">
+    <div class="sdpi-item-label">Charts</div>
+    <div class="sdpi-item-value min100">
         <div class="sdpi-item-child">
-            <input id="show1minChart" type="checkbox" value="enabled">
-            <label for="show1minChart" class="sdpi-item-label"><span></span>1min Chart</label>
+            <input id="show30MinChart" type="checkbox" value="enabled">
+            <label for="show30MinChart" class="sdpi-item-label"><span></span>30 Min</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show2minChart" type="checkbox" value="enabled">
-            <label for="show2minChart" class="sdpi-item-label"><span></span>2min Chart</label>
+            <input id="show1HourChart" type="checkbox" value="enabled">
+            <label for="show1HourChart" class="sdpi-item-label"><span></span>1 Hour</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="show2HourChart" type="checkbox" value="enabled">
+            <label for="show2HourChart" class="sdpi-item-label"><span></span>2 Hour</label>
         </div>
         <div class="sdpi-item-child">
             <input id="show1DayChart" type="checkbox" value="enabled">
-            <label for="show1DayChart" class="sdpi-item-label"><span></span>1 Day Chart</label>
+            <label for="show1DayChart" class="sdpi-item-label"><span></span>1 Day</label>
         </div>
         <div class="sdpi-item-child">
             <input id="show5DayChart" type="checkbox" value="enabled">
-            <label for="show5DayChart" class="sdpi-item-label"><span></span>5 Day Chart</label>
+            <label for="show5DayChart" class="sdpi-item-label"><span></span>5 Day</label>
         </div>
         <div class="sdpi-item-child">
             <input id="show1MonthChart" type="checkbox" value="enabled">
-            <label for="show1MonthChart" class="sdpi-item-label"><span></span>1 Month Chart</label>
+            <label for="show1MonthChart" class="sdpi-item-label"><span></span>1 Month</label>
         </div>
         <div class="sdpi-item-child">
             <input id="show3MonthChart" type="checkbox" value="enabled">
-            <label for="show3MonthChart" class="sdpi-item-label"><span></span>3 Month Chart</label>
+            <label for="show3MonthChart" class="sdpi-item-label"><span></span>3 Month</label>
         </div>
         <div class="sdpi-item-child">
             <input id="show6MonthChart" type="checkbox" value="enabled">
-            <label for="show6MonthChart" class="sdpi-item-label"><span></span>6 Month Chart</label>
+            <label for="show6MonthChart" class="sdpi-item-label"><span></span>6 Month</label>
         </div>
         <div class="sdpi-item-child">
             <input id="show12MonthChart" type="checkbox" value="enabled">
-            <label for="show12MonthChart" class="sdpi-item-label"><span></span>12 Month Chart</label>
+            <label for="show12MonthChart" class="sdpi-item-label"><span></span>12 Month</label>
         </div>
     </div>
 </div>

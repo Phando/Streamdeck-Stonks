@@ -8,14 +8,15 @@ const ChartType = Object.freeze({
     
     // NOTE : The ranges below were chosen to optimize API polling.
     // Unfortunately they make for more complicated rendering.
-    CHART_MIN_1     : {range:'1d', interval:'1m', label:'1m', type:'range1', tail:true},
-    CHART_MIN_2     : {range:'1d', interval:'2m', label:'2m', type:'range2', tail:true},
-    CHART_DAY_1     : {range:'1d', interval:'2m', label:'1d', type:'range2', tail:false},
-    CHART_DAY_5     : {range:'5d', interval:'15m', label:'5d', type:'range3', tail:false},
-    CHART_MONTH_1   : {range:'3mo', interval:'60m', label:'1M', type:'range4', tail:false},
-    CHART_MONTH_3   : {range:'3mo', interval:'60m', label:'3M', type:'range4', tail:false},
-    CHART_MONTH_6   : {range:'1y', interval:'1d', label:'6M', type:'range5', tail:false},
-    CHART_MONTH_12  : {range:'1y', interval:'1d', label:'1y', type:'range5', tail:false},
+    CHART_MIN_30    : {range:'1d',  interval:'1m',  label:'30m', type:'range1'},
+    CHART_HR_1      : {range:'1d',  interval:'1m',  label:'1hr', type:'range1'},
+    CHART_HR_2      : {range:'1d',  interval:'1m',  label:'2hr', type:'range1'},
+    CHART_DAY_1     : {range:'1d',  interval:'2m',  label:'1d',  type:'range2'},
+    CHART_DAY_5     : {range:'5d',  interval:'15m', label:'5d',  type:'range3'},
+    CHART_MONTH_1   : {range:'3mo', interval:'60m', label:'1M',  type:'range4'},
+    CHART_MONTH_3   : {range:'3mo', interval:'60m', label:'3M',  type:'range4'},
+    CHART_MONTH_6   : {range:'1y',  interval:'1d',  label:'6M',  type:'range5'},
+    CHART_MONTH_12  : {range:'1y',  interval:'1d',  label:'1y',  type:'range5'},
 });
 
 class ChartManager extends Manager {
@@ -32,14 +33,6 @@ class ChartManager extends Manager {
         this.context.chartData = value
     }
 
-    get shouldZoom(){
-        return this.type.tail && this.settings.zoomCharts == 'enabled'
-    }
-
-    get showRaw(){
-        return this.type.tail && this.settings.zoomCharts == 'disabled'
-    }
-    
     get type(){
         return this.context.chartType
     }
@@ -50,6 +43,10 @@ class ChartManager extends Manager {
 
     get isDay(){
         return this.type.range == '1d'
+    }
+
+    get isTail(){
+        return this.type.type == 'range1'
     }
     
     //-----------------------------------------------------------------------------------------
@@ -85,13 +82,19 @@ class ChartManager extends Manager {
         let slice = 0
         let interval = 1
         let scratch = this.chart.raw
-        let tickWidth = this.type.tail ? 4 : 1
-        let cells = Math.floor(CHART_WIDTH/tickWidth)
+        let tickWidth = 1
         
         switch(this.type){
-            case ChartType.CHART_MIN_1 :
-            case ChartType.CHART_MIN_2 :
-                slice = cells
+            case ChartType.CHART_MIN_30 :
+                tickWidth = 4
+                slice = Math.floor(CHART_WIDTH/tickWidth)
+                break
+            case ChartType.CHART_HR_1 :
+                tickWidth = 2
+                slice = Math.floor(CHART_WIDTH/tickWidth)
+                break
+            case ChartType.CHART_HR_2 :
+                slice = Math.max(140,scratch.length)
                 break
             case ChartType.CHART_MONTH_1 :
                 slice = Math.max(140,scratch.length/3)
@@ -101,6 +104,7 @@ class ChartManager extends Manager {
                 break
         }
 
+        console.log("TICK", tickWidth)
         scratch = scratch.slice(-slice)
         if(!this.type.tail)
             interval = Math.max(1, scratch.length/CHART_WIDTH)
@@ -111,12 +115,12 @@ class ChartManager extends Manager {
                 this.chart.data.push(scratch[index])
         }
         
-        let rangeSource = this.showRaw ? this.chart.raw : this.chart.data
+        let rangeSource = this.chart.data //this.showRaw ? this.chart.raw : this.chart.data
         this.chart.min = Math.min(...rangeSource)
         this.chart.max = Math.max(...rangeSource)
 
         if(this.isDay)
-            this.chart.isUp = this.data.prevClose < this.chart.data[this.chart.data.length-1]
+            this.chart.isUp = this.data.close < this.chart.data[this.chart.data.length-1]
         else
             this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1]    
     }

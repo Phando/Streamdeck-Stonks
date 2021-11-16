@@ -1,5 +1,6 @@
 const FooterType = Object.freeze({
     CHANGE  : 'change',
+    METER   : 'meter',
     SLIDER  : 'slider',
     RANGE   : 'range',
     RANGE_PERC : 'rangePerc',
@@ -18,8 +19,9 @@ const ViewType = Object.freeze({
     DEFAULT         : 'defaultView',
     DAY_DEC         : 'showDayDecimal',
     DAY_PERC        : 'showDayPercent',
-    CHART_MIN_1     : 'show1minChart',
-    CHART_MIN_2     : 'show2minChart',
+    CHART_MIN_30    : 'show30MinChart',
+    CHART_HR_1      : 'show1HourChart',
+    CHART_HR_2      : 'show2HourChart',
     CHART_DAY_1     : 'show1DayChart',
     CHART_DAY_5     : 'show5DayChart',
     CHART_MONTH_1   : 'show1MonthChart',
@@ -292,8 +294,8 @@ class SimpleAction extends Action {
             this.settings.hasViews = true
             this.settings[ViewType.DEFAULT]        = 'enabled'
             this.settings[ViewType.DAY_DEC]        = 'enabled'
-            this.settings[ViewType.CHART_MIN_1]    = 'enabled'
-            this.settings[ViewType.CHART_MIN_2]    = 'enabled'
+            this.settings[ViewType.CHART_MIN_30]   = 'enabled'
+            this.settings[ViewType.CHART_HR_2]     = 'enabled'
             this.settings[ViewType.CHART_DAY_1]    = 'enabled'
             this.settings[ViewType.CHART_DAY_5]    = 'enabled'
             this.settings[ViewType.CHART_MONTH_1]  = 'enabled'
@@ -318,7 +320,7 @@ class SimpleAction extends Action {
         var payload = {}
         
         // Symbol remove currency conversion for Crypto
-        payload.symbol = symbol.symbol.split('-')[0]
+        payload.symbol = symbol.symbol//.split('-')[0]
 
         payload.price       = symbol.regularMarketPrice
         payload.priceMarket = symbol.regularMarketPrice
@@ -356,13 +358,13 @@ class SimpleAction extends Action {
         payload.lowPerc = (Math.abs(payload.low/payload.close)).toFixed(2)
         payload.highPerc = (Math.abs(payload.high/payload.close)).toFixed(2)
 
-        this.data = payload
-        this.limitManager.prepData(jsn)
-
-        if(this.showTrend == 'enabled' && this.limitManager.limitState == 0){
+        if(this.showTrend == 'enabled'){
             var color = payload.price > payload.close ? "#00FF00" : payload.foreground
             payload.foreground = payload.price < payload.close ? "#FF0000" : color
         }
+
+        this.data = payload
+        this.limitManager.prepData(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -431,6 +433,9 @@ class SimpleAction extends Action {
             case FooterType.CHANGE:
                 this.drawVolume()
                 this.drawChange()
+                break
+            case FooterType.METER:
+                this.drawMeter()
                 break
             case FooterType.SLIDER:
                 this.drawSlider()
@@ -519,31 +524,75 @@ class SimpleAction extends Action {
 
     //-----------------------------------------------------------------------------------------
 
+    drawMeter(){
+        let centerX = CANVAS_WIDTH/2
+        let centerY = CANVAS_HEIGHT+80
+        let radius  = 130
+        let width  = 14
+        let start = deg2rad(-180)
+        let end = deg2rad(0)
+        let scale = Utils.rangeToPercent(this.data.price, this.data.low, this.data.high)
+        scale = deg2rad(-55 -(70*scale)) // 125 55 = 70
+
+        this.drawingCtx.beginPath()
+        this.drawingCtx.arc(centerX, centerY, radius, start, end)
+        this.drawingCtx.fillStyle = '#00BB00'
+        this.drawingCtx.fill()
+    
+        this.drawingCtx.beginPath()
+        this.drawingCtx.arc(centerX, centerY, radius, start, scale)
+        this.drawingCtx.lineTo(centerX, centerY)
+        this.drawingCtx.lineTo(centerX-radius, centerY)
+        this.drawingCtx.fillStyle = '#BB0000'
+        this.drawingCtx.fill()
+
+        this.drawingCtx.beginPath()
+        this.drawingCtx.arc(centerX, centerY, radius-width, start, end)
+        this.drawingCtx.fillStyle = this.settings.background
+        this.drawingCtx.fill()
+
+        this.drawingCtx.beginPath()
+        this.drawingCtx.lineWidth = 3
+        this.drawingCtx.strokeStyle = this.settings.foreground
+        this.drawingCtx.arc(centerX, centerY, radius-width, start, end)
+        this.drawingCtx.moveTo(centerX, centerY)
+        this.drawingCtx.lineTo(centerX + (radius+4) * Math.cos(scale), centerY + (radius+4) * Math.sin(scale))
+        this.drawingCtx.stroke()
+
+        this.drawingCtx.beginPath()
+        this.drawingCtx.arc(centerX, centerY, radius-width-8, start, end)
+        this.drawingCtx.fillStyle = this.settings.background
+        this.drawingCtx.fill()
+    }
+
+    //-----------------------------------------------------------------------------------------
+
     drawSlider(){
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
 
-        this.drawingCtx.fillStyle = '#00AA00'
-        this.drawingCtx.fillRect(0, 124, 144, 10);
+        this.drawingCtx.fillStyle = '#00BB00'
+        this.drawingCtx.fillRect(0, 106, 144, 14);
 
-        this.drawingCtx.fillStyle = '#AA0000'
-        this.drawingCtx.fillRect(0, 124, scale, 10);
+        this.drawingCtx.fillStyle = '#BB0000'
+        this.drawingCtx.fillRect(0, 106, scale, 14);
 
         this.drawingCtx.fillStyle = this.settings.foreground
-        this.drawingCtx.fillRect(scale-3, 118, 6, 26);
+        this.drawingCtx.fillRect(Utils.minmax(scale-3, 6, 134), 100, 4, 26);
 
-        this.drawingCtx.textAlign = "center"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(this.prepPrice(this.data.priceMarket), CANVAS_WIDTH/2, 90);
+        // this.drawingCtx.textAlign = "center"
+        // this.drawingCtx.textBaseline = "top"
+        // this.drawingCtx.fillText(this.prepPrice(this.data.priceMarket), CANVAS_WIDTH/2, 90);
     }
 
     //-----------------------------------------------------------------------------------------
 
     drawSymbol(){
+        let symbol = this.symbol.split('-')[0]
         this.drawingCtx.fillStyle =  this.foreground
         this.drawingCtx.font = 600 + " " + 24 + "px Arial";
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(this.symbol, 136, 8);
+        this.drawingCtx.fillText(symbol, 136, 8);
     }
 
     //-----------------------------------------------------------------------------------------

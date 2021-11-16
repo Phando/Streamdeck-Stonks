@@ -1,3 +1,5 @@
+const deg2rad = deg => (deg * Math.PI) / 180.0;
+
 var Utils = {
     sleep: function (milliseconds) {
         return new Promise(resolve => setTimeout(resolve, milliseconds));

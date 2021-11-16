@@ -347,9 +347,9 @@ class LimitManager extends Manager{
             this.updateDisplay(jsn)
             return
         }
-        
-        this.countdown = this.frameTime
 
+        this.stopTimer(jsn)
+        
         // Show the next screen
         if(this.currentView == LimitViewType.PRE_INFO && this.isUpperEnabled){
             this.clickCount = this.viewList.findIndex(item => item == LimitViewType.UPPER_INC)
@@ -373,6 +373,7 @@ class LimitManager extends Manager{
             return
         }
 
+        this.startTimer(jsn)
         this.updateDisplay(jsn)
     }
 
