@@ -21,9 +21,7 @@ let contextList = {}
 
 function Context(jsn){
     this.clickCount  = 0
-    //this.canvas      = null
     this.downtimer   = null
-    //this.drawingCtx  = null
     this.isLongPress = false
     this.stateName   = STATE_DEFAULT
     this.action      = Utils.getProp(jsn, 'action', '')

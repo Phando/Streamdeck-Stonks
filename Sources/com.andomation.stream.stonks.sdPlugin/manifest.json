@@ -5,7 +5,7 @@
       "Name": "Stonks - Simple",
       "States": [
         {
-          "Image": "images/actions/simpleAction"
+          "Image": "images/actions/action"
         }
       ],
       "Tooltip": "Keep track of ticker and crypto prices.",
@@ -22,7 +22,7 @@
   "Name": "Stonks", 
   "Icon": "images/actions/action", 
   "URL": "https://github.com/Phando/Streamdeck-Stonks", 
-  "Version": "1.0.4", 
+  "Version": "1.1.0", 
   "OS": [
     {
         "Platform": "mac", 

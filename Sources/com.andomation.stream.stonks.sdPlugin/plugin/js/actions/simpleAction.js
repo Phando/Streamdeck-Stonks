@@ -386,6 +386,10 @@ class SimpleAction extends Action {
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = this.foreground
         
+        // Background for screenshot
+        // var img = document.getElementById('action')
+        // this.drawingCtx.drawImage(img, 7, 6, 130, 130)
+
         switch(this.currentView){    
             case ViewType.DEFAULT:
                 this.drawHeader(jsn)
