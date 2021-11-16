@@ -81,7 +81,8 @@ class ChartManager extends Manager {
         
         this.chart = Object.assign({}, jsn.payload.response[0].meta)
         this.chart.raw = jsn.payload.response[0].indicators.quote[0].close.filter(Number)
-
+        
+        let slice = 0
         let interval = 1
         let scratch = this.chart.raw
         let tickWidth = this.type.tail ? 4 : 1
@@ -90,16 +91,17 @@ class ChartManager extends Manager {
         switch(this.type){
             case ChartType.CHART_MIN_1 :
             case ChartType.CHART_MIN_2 :
-                scratch = scratch.slice(-cells)
+                slice = cells
                 break
             case ChartType.CHART_MONTH_1 :
-                scratch = scratch.slice(-scratch.length/3)
+                slice = Math.max(140,scratch.length/3)
                 break
             case ChartType.CHART_MONTH_6 :
-                scratch = scratch.slice(-scratch.length/2)
+                slice = Math.max(140,scratch.length/2)
                 break
         }
 
+        scratch = scratch.slice(-slice)
         if(!this.type.tail)
             interval = Math.max(1, scratch.length/CHART_WIDTH)
 
@@ -162,7 +164,7 @@ class ChartManager extends Manager {
     drawChartData(){
         let xPos = 2
         let scale = 0
-        let fillColor = this.chart.isUp ? '#007700' : '#770000'
+        let fillColor = this.chart.isUp ? '#00770077' : '#77000077'
         let tipColor = this.chart.isUp ? '#00FF00' : '#FF0000'
 
         this.chart.data.forEach((item, index) => {

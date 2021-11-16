@@ -522,10 +522,10 @@ class SimpleAction extends Action {
     drawSlider(){
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
 
-        this.drawingCtx.fillStyle = '#00FF00'
+        this.drawingCtx.fillStyle = '#00AA00'
         this.drawingCtx.fillRect(0, 124, 144, 10);
 
-        this.drawingCtx.fillStyle = '#FF0000'
+        this.drawingCtx.fillStyle = '#AA0000'
         this.drawingCtx.fillRect(0, 124, scale, 10);
 
         this.drawingCtx.fillStyle = this.settings.foreground
