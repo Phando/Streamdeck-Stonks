@@ -459,7 +459,7 @@ class SimpleAction extends Action {
         
         change = this.prepPrice(change)
         percent = percent.toFixed(2)
-        this.drawSmartPair('$ ', change, color, '%', percent, color)
+        this.drawSmartPair('', percent+'%', color, '', change, color)
     }
     
     //-----------------------------------------------------------------------------------------
