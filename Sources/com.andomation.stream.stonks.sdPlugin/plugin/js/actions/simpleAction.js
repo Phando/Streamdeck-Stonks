@@ -534,27 +534,31 @@ class SimpleAction extends Action {
         let scale = Utils.rangeToPercent(this.data.price, this.data.low, this.data.high)
         scale = deg2rad(-55 -(70*scale)) // 125 55 = 70
 
+        this.drawingCtx.lineWidth = 3
+        this.drawingCtx.fillStyle = '#008800'
+        this.drawingCtx.strokeStyle = '#00FF00'
         this.drawingCtx.beginPath()
         this.drawingCtx.arc(centerX, centerY, radius, start, end)
-        this.drawingCtx.fillStyle = '#00BB00'
+        this.drawingCtx.arc(centerX, centerY, radius-width, start, end)
         this.drawingCtx.fill()
+        this.drawingCtx.stroke()
     
+        this.drawingCtx.fillStyle = '#880000'
+        this.drawingCtx.strokeStyle = '#FF0000'
         this.drawingCtx.beginPath()
         this.drawingCtx.arc(centerX, centerY, radius, start, scale)
         this.drawingCtx.lineTo(centerX, centerY)
-        this.drawingCtx.lineTo(centerX-radius, centerY)
-        this.drawingCtx.fillStyle = '#BB0000'
+        this.drawingCtx.arc(centerX, centerY, radius-width, start, scale)
         this.drawingCtx.fill()
+        this.drawingCtx.stroke()
 
         this.drawingCtx.beginPath()
-        this.drawingCtx.arc(centerX, centerY, radius-width, start, end)
+        this.drawingCtx.arc(centerX, centerY, radius-width-1, start, end)
         this.drawingCtx.fillStyle = this.settings.background
         this.drawingCtx.fill()
 
         this.drawingCtx.beginPath()
-        this.drawingCtx.lineWidth = 3
         this.drawingCtx.strokeStyle = this.settings.foreground
-        this.drawingCtx.arc(centerX, centerY, radius-width, start, end)
         this.drawingCtx.moveTo(centerX, centerY)
         this.drawingCtx.lineTo(centerX + (radius+4) * Math.cos(scale), centerY + (radius+4) * Math.sin(scale))
         this.drawingCtx.stroke()
@@ -569,12 +573,17 @@ class SimpleAction extends Action {
 
     drawSlider(){
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
+        
+        this.drawingCtx.lineWidth = 2
+        this.drawingCtx.fillStyle = '#008800'
+        this.drawingCtx.strokeStyle = '#00FF00'
+        this.drawingCtx.fillRect(0, 106, 144, 14)
+        this.drawingCtx.strokeRect(0, 106, 144, 14)
 
-        this.drawingCtx.fillStyle = '#00BB00'
-        this.drawingCtx.fillRect(0, 106, 144, 14);
-
-        this.drawingCtx.fillStyle = '#BB0000'
-        this.drawingCtx.fillRect(0, 106, scale, 14);
+        this.drawingCtx.fillStyle = '#880000'
+        this.drawingCtx.strokeStyle = '#FF0000'
+        this.drawingCtx.fillRect(0, 106, scale, 14)
+        this.drawingCtx.strokeRect(0, 106, scale, 14)
 
         this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.fillRect(Utils.minmax(scale-3, 6, 134), 100, 4, 26);
