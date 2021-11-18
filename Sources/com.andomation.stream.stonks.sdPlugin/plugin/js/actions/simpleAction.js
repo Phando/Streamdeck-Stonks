@@ -64,23 +64,6 @@ class SimpleAction extends Action {
     set decimals(value){
         this.settings.decimals = value
     }
-
-    get background(){
-        return this.settings.background
-    }
-
-    set background(value){
-        this.settings.background = value
-    }
-
-    get foreground(){
-        return this.settings.foreground
-    }
-
-    set foreground(value){
-        this.settings.foreground = value
-    }
-
     
     get footerMode(){
         return this.settings.footerMode
@@ -135,8 +118,6 @@ class SimpleAction extends Action {
         console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
         this.symbol     = this.symbol || 'GME'
         this.decimals   = this.decimals || 2
-        this.foreground = this.foreground || '#D8D8D8'
-        this.background = this.background || '#1D1E1F'
         this.showTrend  = this.showTrend  || 'disabled'
         this.zoomCharts = this.zoomCharts || 'disabled'
         this.footerMode = this.footerMode || FooterType.CHANGE
@@ -330,8 +311,8 @@ class SimpleAction extends Action {
         payload.close       = symbol.regularMarketPreviousClose
         payload.prevClose   = symbol.regularMarketPreviousClose
         payload.volume      = symbol.regularMarketVolume
-        payload.foreground  = this.settings.foreground
-        payload.background  = this.settings.background
+        payload.foreground  = COLOR_FOREGROUND
+        payload.background  = COLOR_BACKGROUND
         
         // Range
         payload.state   = MarketStateType.REG
@@ -361,8 +342,8 @@ class SimpleAction extends Action {
         payload.highPerc = (Math.abs(payload.high/payload.close)).toFixed(2)
 
         if(this.showTrend == 'enabled'){
-            var color = payload.price > payload.close ? "#00FF00" : payload.foreground
-            payload.foreground = payload.price < payload.close ? "#FF0000" : color
+            var color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
+            payload.foreground = payload.price < payload.close ? COLOR_RED : color
         }
 
         this.data = payload
@@ -386,19 +367,13 @@ class SimpleAction extends Action {
             return
         }
 
-        this.drawingCtx.fillStyle = this.background
+        this.drawingCtx.fillStyle = COLOR_BACKGROUND
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-        this.drawingCtx.fillStyle = this.foreground
+        this.drawingCtx.fillStyle = COLOR_FOREGROUND
         
         // Background for screenshot
         // var img = document.getElementById('action')
         // this.drawingCtx.drawImage(img, 7, 6, 130, 130)
-
-        // if(this.currentView == ViewType.LIMITS){
-        //     //this.limitManager.updateInfoView(jsn)
-        //     $SD.api.setImage(this.uuid, this.canvas.toDataURL())
-        //     return
-        // }
 
         switch(this.currentView){    
             case ViewType.TICKER:
@@ -407,10 +382,8 @@ class SimpleAction extends Action {
                 break
             case ViewType.LIMITS:
                 this.drawSymbol(jsn);
-                this.drawingCtx.textAlign = "left"
-                this.drawingCtx.fillText('lmt', 14, 8)
+                this.drawLeft('lmt',COLOR_FOREGROUND, 20, 22, 600, 2)
                 this.limitManager.updateInfoView(jsn, false)
-                
                 break
             case ViewType.DAY_DEC :
             case ViewType.DAY_PERC :
@@ -469,10 +442,10 @@ class SimpleAction extends Action {
     drawChange(){
         let change = this.data.change || 0
         let percent = this.data.percent || 0
-        let color = '#00FF00'
+        let color = COLOR_GREEN
 
         if(change < 0){
-            color = '#FF0000'
+            color = COLOR_RED
             change = Math.abs(change)
             percent = Math.abs(percent)
         }
@@ -493,15 +466,23 @@ class SimpleAction extends Action {
     
     //-----------------------------------------------------------------------------------------
 
+    drawSymbol(){
+        let symbol = this.symbol.split('-')[0]
+        this.drawRight(symbol, COLOR_FOREGROUND, 18, 24, 600, 2)
+    }
+
+    //-----------------------------------------------------------------------------------------
+
     drawPrice(value){
         value = this.prepPrice(value)
+        this.drawRight(value, this.data.foreground, 50, 40)
+    }
 
-        // Render Price
-        this.drawingCtx.fillStyle = this.data.foreground
-        Utils.setFontFor(value, 600, 40, CANVAS_WIDTH - 20)
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(value, 138, 32);
+    //-----------------------------------------------------------------------------------------
+
+    drawVolume(){
+        let volume = Utils.abbreviateNumber(this.data.volume)
+        this.drawRight(volume, COLOR_FOREGROUND, 78, 24)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -512,7 +493,7 @@ class SimpleAction extends Action {
         var low = this.prepPrice(this.data.low)
 
         var isFooter = this.currentView == ViewType.TICKER
-        var font = isFooter ? 22 : 26
+        var font = isFooter ? 23 : 26
         var yPos = isFooter ? [81,103,126,87] : [52,89,126,74]
 
         if( this.currentView == ViewType.DAY_PERC ||
@@ -522,7 +503,7 @@ class SimpleAction extends Action {
         }
 
         if( isFooter && (this.footerMode == FooterType.RANGE || this.footerMode == FooterType.RANGE_PERC)){
-            this.drawSmartPair("Hi", high, '#00FF00', "Lo", low, '#FF0000')
+            this.drawSmartPair("Lo", low, COLOR_RED, "Hi", high, COLOR_GREEN)
             return
         }
 
@@ -532,9 +513,9 @@ class SimpleAction extends Action {
             price = this.prepPrice(this.data.close)
         }
 
-        this.drawPair('', high, '#00FF00', yPos[0], font)
-        this.drawPair('', price, this.settings.foreground, yPos[1], font)
-        this.drawPair('', low, '#FF0000', yPos[2], font)
+        this.drawPair('', COLOR_FOREGROUND, high, COLOR_GREEN, yPos[0], font)
+        this.drawPair('', COLOR_FOREGROUND, price, COLOR_FOREGROUND, yPos[1], font)
+        this.drawPair('', COLOR_FOREGROUND, low, COLOR_RED, yPos[2], font)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -550,16 +531,16 @@ class SimpleAction extends Action {
         scale = deg2rad(-55 -(70*scale)) // 125 55 = 70
 
         this.drawingCtx.lineWidth = 3
-        this.drawingCtx.fillStyle = '#008800'
-        this.drawingCtx.strokeStyle = '#00FF00'
+        this.drawingCtx.fillStyle = COLOR_GREEN_LT
+        this.drawingCtx.strokeStyle = COLOR_GREEN
         this.drawingCtx.beginPath()
         this.drawingCtx.arc(centerX, centerY, radius, start, end)
         this.drawingCtx.arc(centerX, centerY, radius-width, start, end)
         this.drawingCtx.fill()
         this.drawingCtx.stroke()
     
-        this.drawingCtx.fillStyle = '#880000'
-        this.drawingCtx.strokeStyle = '#FF0000'
+        this.drawingCtx.fillStyle = COLOR_RED_LT
+        this.drawingCtx.strokeStyle = COLOR_RED
         this.drawingCtx.beginPath()
         this.drawingCtx.arc(centerX, centerY, radius, start, scale)
         this.drawingCtx.lineTo(centerX, centerY)
@@ -569,19 +550,19 @@ class SimpleAction extends Action {
 
         this.drawingCtx.beginPath()
         this.drawingCtx.arc(centerX, centerY, radius-width-1, start, end)
-        this.drawingCtx.fillStyle = this.settings.background
+        this.drawingCtx.fillStyle = COLOR_BACKGROUND
         this.drawingCtx.fill()
 
         this.drawingCtx.beginPath()
         this.drawingCtx.lineWidth = 4
-        this.drawingCtx.strokeStyle = this.settings.foreground
+        this.drawingCtx.strokeStyle = COLOR_FOREGROUND
         this.drawingCtx.moveTo(centerX, centerY)
         this.drawingCtx.lineTo(centerX + (radius+4) * Math.cos(scale), centerY + (radius+4) * Math.sin(scale))
         this.drawingCtx.stroke()
 
         this.drawingCtx.beginPath()
         this.drawingCtx.arc(centerX, centerY, radius-width-8, start, end)
-        this.drawingCtx.fillStyle = this.settings.background
+        this.drawingCtx.fillStyle = COLOR_BACKGROUND
         this.drawingCtx.fill()
     }
 
@@ -590,47 +571,23 @@ class SimpleAction extends Action {
     drawSlider(){
         var high = this.prepPrice(this.data.high)
         var low = this.prepPrice(this.data.low)
-        this.drawPair(low, high, this.settings.foreground, 95, 23, true)
+        this.drawPair(low, COLOR_RED, high, COLOR_GREEN, 98, 23, true)
        
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
         
         this.drawingCtx.lineWidth = 2
-        this.drawingCtx.fillStyle = '#008800'
-        this.drawingCtx.strokeStyle = '#00FF00'
+        this.drawingCtx.fillStyle = COLOR_GREEN_LT
+        this.drawingCtx.strokeStyle = COLOR_GREEN
         this.drawingCtx.fillRect(0, 116, 144, 14)
         this.drawingCtx.strokeRect(0, 116, 144, 14)
 
-        this.drawingCtx.fillStyle = '#880000'
-        this.drawingCtx.strokeStyle = '#FF0000'
+        this.drawingCtx.fillStyle = COLOR_RED_LT
+        this.drawingCtx.strokeStyle = COLOR_RED
         this.drawingCtx.fillRect(0, 116, scale, 14)
         this.drawingCtx.strokeRect(0, 116, scale, 14)
 
-        this.drawingCtx.fillStyle = this.settings.foreground
+        this.drawingCtx.fillStyle = COLOR_FOREGROUND
         this.drawingCtx.fillRect(Utils.minmax(scale-3, 6, 134), 110, 4, 26)
     }
 
-    //-----------------------------------------------------------------------------------------
-
-    drawSymbol(){
-        let symbol = this.symbol.split('-')[0]
-        this.drawingCtx.fillStyle =  this.foreground
-        this.drawingCtx.font = 600 + " " + 24 + "px Arial";
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(symbol, 136, 8);
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    drawVolume(){
-        if(Utils.isUndefined(this.data))
-            return
-
-        let volume = Utils.abbreviateNumber(this.data.volume)
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillStyle = this.foreground
-        this.drawingCtx.font = 500 + " " + 24 + "px Arial"
-        this.drawingCtx.fillText(volume, 138, 68)
-    }
 }

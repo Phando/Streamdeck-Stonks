@@ -6,6 +6,17 @@ const MARGIN_LEFT = 10
 const MARGIN_RIGHT = 138
 const STATE_DEFAULT = 'default'
 
+const COLOR_DISABLED = '#707070'
+const COLOR_ERROR    = '#FFFF00'
+const COLOR_FOREGROUND = '#D8D8D8'
+const COLOR_BACKGROUND = '#1D1E1F'
+const COLOR_GREEN    = '#00FF00'
+const COLOR_GREEN_CL = '#00770077'
+const COLOR_GREEN_LT = '#008800'
+const COLOR_RED      = '#FF0000'
+const COLOR_RED_CL   = '#77000077'
+const COLOR_RED_LT   = '#880000'
+
 // Global Variables
 // TODO : Maybe rename all these to _varName
 //-----------------------------------------------------------------------------------------
@@ -209,22 +220,42 @@ class StreamDeckClient {
 
     //-----------------------------------------------------------------------------------------
     
-    drawPair(label, value, color, yPos, fontSize = 22, equalFont = false){
+    drawItem(value, valueColor, yPos, fontSize, fontWeight, pad, isLeft=true){
+        this.drawingCtx.textAlign = isLeft ? 'left' : 'right'
         this.drawingCtx.textBaseline = 'middle'
-        this.drawingCtx.font = 500 + " " + Number(fontSize-1) + "px Arial"
-        this.drawingCtx.fillStyle = this.settings.foreground
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText(label, MARGIN_LEFT, yPos)
-
-        this.drawingCtx.font = equalFont ? 500 : 600 + " " + fontSize + "px Arial"
-        this.drawingCtx.fillStyle = color
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.fillText(value, MARGIN_RIGHT, yPos)
+        this.drawingCtx.fillStyle = valueColor
+        
+        if(valueColor == COLOR_GREEN)
+            fontWeight -= 100
+        
+        this.drawingCtx.font = fontWeight + " " + fontSize + "px Arial"
+        this.drawingCtx.fillText(value, isLeft ? MARGIN_LEFT+pad : MARGIN_RIGHT-pad, yPos)
     }
 
     //-----------------------------------------------------------------------------------------
     
-    drawSmartPair(label1, value1, color1, label2, value2, color2, yPos = 116, maxFont = 23, maxWidth = CANVAS_WIDTH-20){
+    drawLeft(value, valueColor, yPos, fontSize=23, fontWeight=600, pad=0){
+        this.drawItem(value, valueColor, yPos, fontSize, fontWeight, pad)
+    }
+
+    //-----------------------------------------------------------------------------------------
+    
+    drawRight(value, valueColor, yPos, fontSize=23, fontWeight=600, pad=0){
+        this.drawItem(value, valueColor, yPos, fontSize, fontWeight, pad, false)
+    }
+
+    //-----------------------------------------------------------------------------------------
+    
+    drawPair(label, labelColor, value, valueColor, yPos, fontSize=23){
+        this.drawLeft(label, labelColor, yPos, fontSize)
+        this.drawRight(value, valueColor, yPos, fontSize)
+    }
+
+    //-----------------------------------------------------------------------------------------
+    
+    drawSmartPair(label1, value1, color1, label2, value2, color2, yPos=116, maxFont=23, maxWidth=CANVAS_WIDTH-20){
+        var yPos1 = 103
+        var yPos2 = 126
         var test1 = this.getIntegratedValue(label1, value1)
         var test2 = this.getIntegratedValue(label2, value2)
 
@@ -234,25 +265,22 @@ class StreamDeckClient {
         var width = this.drawingCtx.measureText(content).width
         
         if( font < WRAP_FONT || width > maxWidth - 1){
-            Utils.setFontFor(value1, 600, maxFont, CANVAS_WIDTH * 0.75)
+            Utils.setFontFor(value1, 600, maxFont, CANVAS_WIDTH * 0.8)
             font = Number(this.drawingCtx.font.replace(/[^0-9.]/g,''))
 
-            Utils.setFontFor(value2, 600, maxFont, CANVAS_WIDTH * 0.75)
-            font = Math.min(font, this.drawingCtx.font.replace(/[^0-9.]/g,''))
+            Utils.setFontFor(value2, 600, maxFont, CANVAS_WIDTH * 0.8)
+            font = Math.min(font, Number(this.drawingCtx.font.replace(/[^0-9.]/g,'')))
 
-            this.drawPair(label1, value1, color1, 103, font)
-            this.drawPair(label2, value2, color2, 126, font)
+            if(label2.toLowerCase() == 'hi')
+                [yPos1, yPos2] = [yPos2, yPos1];
+
+            this.drawPair(label1, COLOR_FOREGROUND, value1, color1, yPos1, font)
+            this.drawPair(label2, COLOR_FOREGROUND, value2, color2, yPos2, font)
             return
         }
 
-        this.drawingCtx.textBaseline = 'middle'
-        this.drawingCtx.textAlign = 'left'
-        this.drawingCtx.fillStyle = color1
-        this.drawingCtx.fillText(test1, MARGIN_LEFT, yPos);
-
-        this.drawingCtx.textAlign = 'right'
-        this.drawingCtx.fillStyle = color2
-        this.drawingCtx.fillText(test2, MARGIN_RIGHT, yPos);
+        this.drawLeft(test1, color1, yPos, font)
+        this.drawRight(test2, color2, yPos, font)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -262,6 +290,36 @@ class StreamDeckClient {
         var post = label == '%' ? label : ''
         return pre + value + post
     }
+
+    // Error Handler
+    //-----------------------------------------------------------------------------------------
+
+    renderError(jsn) {
+        //console.log('SimpleAction - renderError', jsn)
+        this.uuid = jsn.context
+        this.drawingCtx.fillStyle = COLOR_BACKGROUND
+        this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+
+        this.drawingCtx.fillStyle =  COLOR_ERROR
+        this.drawingCtx.font = 600 + " " + 26 + "px Arial";
+        this.drawingCtx.textAlign = "center"
+        this.drawingCtx.textBaseline = "top"
+        this.drawingCtx.fillText("Error", CANVAS_WIDTH/2, 6);
+
+        // Render Message
+        this.drawingCtx.fillStyle = COLOR_FOREGROUND
+        this.drawingCtx.font = 600 + " " + 19 + "px Arial";
+        this.drawingCtx.fillText(jsn.error.message, CANVAS_WIDTH/2, 40);
+
+        if(jsn.error.hasOwnProperty('message1'))
+            this.drawingCtx.fillText(jsn.error.message1, CANVAS_WIDTH/2, 70);
+
+        if(jsn.error.hasOwnProperty('message2'))
+            this.drawingCtx.fillText(jsn.error.message2, CANVAS_WIDTH/2, 100);
+
+        $SD.api.setImage(this.uuid, this.canvas.toDataURL());
+    }
+
 }
 
 //-----------------------------------------------------------------------------------------

@@ -131,12 +131,12 @@ class ChartManager extends Manager {
         super.updateDisplay(jsn)
         this.drawingCtx.textBaseline = "top" 
         this.drawingCtx.font = 600 + " " + 20 + "px Arial"
-        this.drawingCtx.fillStyle = this.settings.foreground
+        this.drawingCtx.fillStyle = COLOR_FOREGROUND
         this.drawCharLabel()
         
         if(!this.chart.hasOwnProperty('data') || this.chart.data.length == 0){
             this.drawingCtx.textAlign = "center"
-            this.drawingCtx.fillStyle = '#FFFF00'
+            this.drawingCtx.fillStyle = COLOR_ERROR
             this.drawingCtx.fillText('Chart Data', CANVAS_WIDTH/2, 85);
             this.drawingCtx.fillText('Not Found', CANVAS_WIDTH/2, 110);
             return
@@ -159,7 +159,7 @@ class ChartManager extends Manager {
 
     drawCharLine(){
         let scale = Utils.rangeToPercent(this.data.prevClose, this.chart.min, this.chart.max)
-        this.drawingCtx.fillStyle = this.settings.foreground
+        this.drawingCtx.fillStyle = COLOR_FOREGROUND
         this.drawingCtx.fillRect(0, 144 - (CHART_BASE + CHART_SCALE * scale), 144, 2);
     }
 
@@ -168,8 +168,8 @@ class ChartManager extends Manager {
     drawChartData(){
         let xPos = 2
         let scale = 0
-        let fillColor = this.chart.isUp ? '#00770077' : '#77000077'
-        let tipColor = this.chart.isUp ? '#00FF00' : '#FF0000'
+        let fillColor = this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL
+        let tipColor = this.chart.isUp ? COLOR_GREEN : COLOR_RED
 
         this.chart.data.forEach((item, index) => {
             scale = Utils.rangeToPercent(item, this.chart.min, this.chart.max)

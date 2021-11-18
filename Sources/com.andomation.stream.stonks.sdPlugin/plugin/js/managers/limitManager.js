@@ -69,14 +69,6 @@ class LimitManager extends Manager{
         this.settings.lowerLimit = value
     }
 
-    get lowerBackground(){
-        return this.settings.lowerLimitBackground
-    }
-
-    set lowerBackground(value){
-        this.settings.lowerLimitBackground = value
-    }
-
     get type(){
         return this.settings.limitType
     }
@@ -99,14 +91,6 @@ class LimitManager extends Manager{
 
     set upperLimit(value){
         this.settings.upperLimit = value
-    }
-
-    get upperBackground(){
-        return this.settings.upperLimitBackground
-    }
-
-    set upperBackground(value){
-        this.settings.upperLimitBackground = value
     }
     
     // Runtime Variables
@@ -201,11 +185,9 @@ class LimitManager extends Manager{
 
         this.upperLimit = this.upperLimit || 0
         this.upperEnabled   = this.upperEnabled || 'disabled'
-        this.upperBackground = this.upperBackground || '#00AA00'
 
         this.lowerLimit = this.lowerLimit || 0
         this.lowerEnabled   = this.lowerEnabled || 'disabled'
-        this.lowerBackground = this.lowerBackground || '#AA0000'
     } 
 
     //-----------------------------------------------------------------------------------------
@@ -298,11 +280,11 @@ class LimitManager extends Manager{
 
     prepData(jsn){
         super.prepData(jsn)
-        this.data.limitBackground = this.settings.background
+        this.data.limitBackground = COLOR_BACKGROUND
 
         if(this.limitState == 0) return
-        this.data.foreground = this.settings.foreground
-        this.data.limitBackground = this.limitState == 1 ? this.upperBackground : this.lowerBackground
+        this.data.foreground = COLOR_FOREGROUND
+        this.data.limitBackground = this.limitState == 1 ? COLOR_GREEN_LT : COLOR_RED_LT
     }
 
     //-----------------------------------------------------------------------------------------
@@ -396,12 +378,9 @@ class LimitManager extends Manager{
     updateDisplay(jsn){
         super.updateDisplay(jsn)
         console.log('LimitManager updateDisplay', jsn, this.currentView)
-        this.drawingCtx.fillStyle = this.settings.background
+        this.drawingCtx.fillStyle = COLOR_BACKGROUND
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillStyle = this.settings.foreground
-
         switch(this.currentView){    
             case LimitViewType.POST_INFO :
                 this.updateInfoView(jsn)
@@ -433,7 +412,7 @@ class LimitManager extends Manager{
 
         var grd = this.drawingCtx.createLinearGradient(0, 20, 0, 70)
         grd.addColorStop(0, this.data.limitBackground)
-        grd.addColorStop(1, this.settings.background)
+        grd.addColorStop(1, COLOR_BACKGROUND)
         this.drawingCtx.fillStyle = grd
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
     } 
@@ -467,9 +446,9 @@ class LimitManager extends Manager{
         if(standalone)
             this.drawHeader('Limits')
         
-        this.drawPair('', upper, this.isUpperEnabled ? '#00FF00' : '#636363', 52, 26)
-        this.drawPair('', price, this.settings.foreground, 89, 26)
-        this.drawPair('', lower, this.isLowerEnabled ? '#FF0000' : '#636363', 126, 26)
+        this.drawRight(upper, this.isUpperEnabled ? COLOR_GREEN : COLOR_DISABLED, 52, 26)
+        this.drawRight(price, COLOR_FOREGROUND, 89, 26)
+        this.drawRight(lower, this.isLowerEnabled ? COLOR_RED : '#636363', 126, 26)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -479,12 +458,7 @@ class LimitManager extends Manager{
         enabled = enabled == 'enabled'
         
         this.drawHeader(this.isUpper ? 'Upper' : 'Lower')
-
-        this.drawingCtx.fillStyle =  this.settings.foreground 
-        this.drawingCtx.font = 600 + " " + 22 + "px Arial";
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText('Limit', 136, 36);
+        this.drawRight('Limit', COLOR_FOREGROUND, 48, 22)
 
         var img = document.getElementById(enabled ? 'limitEnabledImg' : 'limitDisabledImg')
         this.drawingCtx.drawImage(img, 35, 66)
@@ -512,61 +486,31 @@ class LimitManager extends Manager{
         price = this.prepPrice(price)
         
         var arrow = document.getElementById(this.isInc ? 'arrowUp' : 'arrowDown')
-        this.drawingCtx.drawImage(arrow, 33, 7)
+        this.drawingCtx.drawImage(arrow, 38, 8)
 
         this.drawHeader(this.isUpper ? 'Upper' : 'Lower')
         this.drawLimit(adjusted)
-
-        // Adjustment
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillStyle =  this.settings.foreground
-        this.drawingCtx.font = 500 + " " + 25 + "px Arial";
-        this.drawingCtx.fillText(limit, 138, 80);
-
-        // var img = document.getElementById(market)
-        // this.drawingCtx.drawImage(img, 4, 108, 22, 22)
-
-        // Render VALUE
-        Utils.setFontFor(price, 600, 26, CANVAS_WIDTH-20)
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.fillText(price, 136, 115)
-
+        this.drawRight(limit, COLOR_FOREGROUND, 85, 25)
+        this.drawRight(price, COLOR_FOREGROUND, 120, 25)
     }
 
     //-----------------------------------------------------------------------------------------
 
     updateDetailView(){
-        this.drawingCtx.textAlign = "center"
-        this.drawingCtx.font = 600 + " " + 24 + "px Arial";
-        this.drawingCtx.fillText((this.isUpper?'Upper':'Lower') + ' Limit', CANVAS_WIDTH/2, 8);
+        this.drawRight('Not Implemented', COLOR_RED, 20)
     }
 
     //-----------------------------------------------------------------------------------------
 
     drawLimit(value){
-        // Render Price
-        this.drawingCtx.fillStyle = this.isUpper ? '#00FF00' : '#FF0000'
-        // this.drawingCtx.fillStyle = this.settings.foreground
-        Utils.setFontFor(value, 600, 40, CANVAS_WIDTH - 20)
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(value, 140, 38);
+        this.drawRight(value, this.isUpper ? COLOR_GREEN : COLOR_RED, 50, 28)
     }
 
     //-----------------------------------------------------------------------------------------
 
     drawHeader(value){
-        this.drawingCtx.fillStyle =  this.settings.foreground
-        this.drawingCtx.font = 600 + " " + 25 + "px Arial";
-        this.drawingCtx.textAlign = "right"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(value, 136, 8)
-
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.textBaseline = "top"
-        this.drawingCtx.fillText(this.countdown, 12, 8)
-        
+        this.drawRight(value, COLOR_FOREGROUND, 20)
+        this.drawLeft(this.countdown, COLOR_FOREGROUND, 20, 22, 600, 4)
     }
 
 }
