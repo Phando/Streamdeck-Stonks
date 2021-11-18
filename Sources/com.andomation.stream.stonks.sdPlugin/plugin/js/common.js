@@ -209,14 +209,14 @@ class StreamDeckClient {
 
     //-----------------------------------------------------------------------------------------
     
-    drawPair(label, value, color, yPos, fontSize = 22){
+    drawPair(label, value, color, yPos, fontSize = 22, equalFont = false){
         this.drawingCtx.textBaseline = 'middle'
         this.drawingCtx.font = 500 + " " + Number(fontSize-1) + "px Arial"
         this.drawingCtx.fillStyle = this.settings.foreground
         this.drawingCtx.textAlign = "left"
         this.drawingCtx.fillText(label, MARGIN_LEFT, yPos)
 
-        this.drawingCtx.font = 600 + " " + fontSize + "px Arial"
+        this.drawingCtx.font = equalFont ? 500 : 600 + " " + fontSize + "px Arial"
         this.drawingCtx.fillStyle = color
         this.drawingCtx.textAlign = "right"
         this.drawingCtx.fillText(value, MARGIN_RIGHT, yPos)

@@ -16,9 +16,11 @@ const MarketStateType = Object.freeze({
 });
 
 const ViewType = Object.freeze({
-    DEFAULT         : 'defaultView',
+    TICKER          : 'defaultView',
+    //TICKER          : 'showView',
     DAY_DEC         : 'showDayDecimal',
     DAY_PERC        : 'showDayPercent',
+    LIMITS          : 'showLimits',
     CHART_MIN_30    : 'show30MinChart',
     CHART_HR_1      : 'show1HourChart',
     CHART_HR_2      : 'show2HourChart',
@@ -292,18 +294,18 @@ class SimpleAction extends Action {
         
         if(this.settings.hasViews == false){
             this.settings.hasViews = true
-            this.settings[ViewType.DEFAULT]        = 'enabled'
-            this.settings[ViewType.DAY_DEC]        = 'enabled'
-            this.settings[ViewType.CHART_MIN_30]   = 'enabled'
-            this.settings[ViewType.CHART_HR_2]     = 'enabled'
-            this.settings[ViewType.CHART_DAY_1]    = 'enabled'
-            this.settings[ViewType.CHART_DAY_5]    = 'enabled'
-            this.settings[ViewType.CHART_MONTH_1]  = 'enabled'
+            this.settings[ViewType.TICKER]        = 'enabled'
+            this.settings[ViewType.DAY_DEC]       = 'enabled'
+            this.settings[ViewType.CHART_MIN_30]  = 'enabled'
+            this.settings[ViewType.CHART_HR_2]    = 'enabled'
+            this.settings[ViewType.CHART_DAY_1]   = 'enabled'
+            this.settings[ViewType.CHART_DAY_5]   = 'enabled'
+            this.settings[ViewType.CHART_MONTH_1] = 'enabled'
         }
 
         this.viewList = this.viewList || []
         this.viewList.length = 0
-        this.viewList.push(ViewType.DEFAULT)
+        this.viewList.push(ViewType.TICKER)
         
         for (const [key, value] of Object.entries(ViewType)) {
             if(typeof value == 'function') continue
@@ -392,10 +394,23 @@ class SimpleAction extends Action {
         // var img = document.getElementById('action')
         // this.drawingCtx.drawImage(img, 7, 6, 130, 130)
 
+        // if(this.currentView == ViewType.LIMITS){
+        //     //this.limitManager.updateInfoView(jsn)
+        //     $SD.api.setImage(this.uuid, this.canvas.toDataURL())
+        //     return
+        // }
+
         switch(this.currentView){    
-            case ViewType.DEFAULT:
+            case ViewType.TICKER:
                 this.drawHeader(jsn)
                 this.drawFooter()
+                break
+            case ViewType.LIMITS:
+                this.drawSymbol(jsn);
+                this.drawingCtx.textAlign = "left"
+                this.drawingCtx.fillText('lmt', 14, 8)
+                this.limitManager.updateInfoView(jsn, false)
+                
                 break
             case ViewType.DAY_DEC :
             case ViewType.DAY_PERC :
@@ -409,7 +424,7 @@ class SimpleAction extends Action {
                 this.chartManager.updateDisplay(jsn)
         }
 
-        $SD.api.setImage(this.uuid, this.canvas.toDataURL());
+        $SD.api.setImage(this.uuid, this.canvas.toDataURL())
     }
 
     //-----------------------------------------------------------------------------------------
@@ -473,7 +488,7 @@ class SimpleAction extends Action {
         if(state == MarketStateType.REG) return
 
         var img = document.getElementById(state)
-        this.drawingCtx.drawImage(img, xPos, yPos, 35, 35)
+        this.drawingCtx.drawImage(img, xPos, yPos, 40, 35)
     }
     
     //-----------------------------------------------------------------------------------------
@@ -496,7 +511,7 @@ class SimpleAction extends Action {
         var high = this.prepPrice(this.data.high)
         var low = this.prepPrice(this.data.low)
 
-        var isFooter = this.currentView == ViewType.DEFAULT
+        var isFooter = this.currentView == ViewType.TICKER
         var font = isFooter ? 22 : 26
         var yPos = isFooter ? [81,103,126,87] : [52,89,126,74]
 
@@ -573,25 +588,25 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSlider(){
+        var high = this.prepPrice(this.data.high)
+        var low = this.prepPrice(this.data.low)
+        this.drawPair(low, high, this.settings.foreground, 95, 23, true)
+       
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
         
         this.drawingCtx.lineWidth = 2
         this.drawingCtx.fillStyle = '#008800'
         this.drawingCtx.strokeStyle = '#00FF00'
-        this.drawingCtx.fillRect(0, 106, 144, 14)
-        this.drawingCtx.strokeRect(0, 106, 144, 14)
+        this.drawingCtx.fillRect(0, 116, 144, 14)
+        this.drawingCtx.strokeRect(0, 116, 144, 14)
 
         this.drawingCtx.fillStyle = '#880000'
         this.drawingCtx.strokeStyle = '#FF0000'
-        this.drawingCtx.fillRect(0, 106, scale, 14)
-        this.drawingCtx.strokeRect(0, 106, scale, 14)
+        this.drawingCtx.fillRect(0, 116, scale, 14)
+        this.drawingCtx.strokeRect(0, 116, scale, 14)
 
         this.drawingCtx.fillStyle = this.settings.foreground
-        this.drawingCtx.fillRect(Utils.minmax(scale-3, 6, 134), 100, 4, 26);
-
-        // this.drawingCtx.textAlign = "center"
-        // this.drawingCtx.textBaseline = "top"
-        // this.drawingCtx.fillText(this.prepPrice(this.data.priceMarket), CANVAS_WIDTH/2, 90);
+        this.drawingCtx.fillRect(Utils.minmax(scale-3, 6, 134), 110, 4, 26)
     }
 
     //-----------------------------------------------------------------------------------------

@@ -7,7 +7,6 @@ const LimitType = Object.freeze({
 });
 
 const LimitViewType = Object.freeze({
-    PRE_INFO    : 'preInfo',
     UPPER_ENABLED : 'upperEnabled',
     UPPER_INC   : 'upperInc',
     UPPER_DEC   : 'upperDec',
@@ -146,7 +145,7 @@ class LimitManager extends Manager{
     }
 
     get isInfoView(){
-        return this.currentView == LimitViewType.PRE_INFO || this.currentView == LimitViewType.POST_INFO
+        return this.currentView == LimitViewType.POST_INFO
     }
 
     get isUpper(){
@@ -198,7 +197,7 @@ class LimitManager extends Manager{
 
         this.increment = this.increment || 1
         this.frameTime = this.frameTime || 4
-        this.type      = this.type || LimitType.PERCENT
+        this.type      = this.type || LimitType.NUMERIC
 
         this.upperLimit = this.upperLimit || 0
         this.upperEnabled   = this.upperEnabled || 'disabled'
@@ -251,8 +250,10 @@ class LimitManager extends Manager{
     onLongPress(jsn){
         super.onLongPress(jsn)
         
-        if(!this.limitsEnabled)
-            this.clickCount = this.viewList.findIndex(item => item == LimitViewType.UPPER_ENABLED)
+        this.clickCount = this.viewList.findIndex(item => item == LimitViewType.UPPER_ENABLED)
+        
+        if(this.isUpperEnabled) 
+            this.clickCount = this.viewList.findIndex(item => item == LimitViewType.UPPER_INC)
         
         this.updateDisplay(jsn)
     }
@@ -351,10 +352,7 @@ class LimitManager extends Manager{
         this.stopTimer(jsn)
         
         // Show the next screen
-        if(this.currentView == LimitViewType.PRE_INFO && this.isUpperEnabled){
-            this.clickCount = this.viewList.findIndex(item => item == LimitViewType.UPPER_INC)
-        } 
-        else if(this.currentView == LimitViewType.UPPER_ENABLED && !this.isUpperEnabled){
+        if(this.currentView == LimitViewType.UPPER_ENABLED && !this.isUpperEnabled){
             if(this.isLowerEnabled)
                 this.clickCount = this.viewList.findIndex(item => item == LimitViewType.LOWER_DEC)
             else 
@@ -405,9 +403,8 @@ class LimitManager extends Manager{
         this.drawingCtx.fillStyle = this.settings.foreground
 
         switch(this.currentView){    
-            case LimitViewType.PRE_INFO :
             case LimitViewType.POST_INFO :
-                this.updateInfoView()
+                this.updateInfoView(jsn)
                 break
             case LimitViewType.UPPER_ENABLED :
             case LimitViewType.LOWER_ENABLED :
@@ -443,15 +440,16 @@ class LimitManager extends Manager{
 
     //-----------------------------------------------------------------------------------------
 
-    updateInfoView(){
+    updateInfoView(jsn, standalone = true){
+        this.uuid = jsn.context
         var upper = this.upperLimit
         var lower = this.lowerLimit
         var price = this.prepPrice(this.data.priceMarket)
         var state = this.data.state
         
         if(this.type == LimitType.PERCENT){
-            upper += '%'
-            lower += '%'
+            upper = '+' + upper + '%'
+            lower = '-' + lower + '%'
             price = this.prepPrice(this.data.prevClose)
             state = MarketStateType.CLOSED
         }
@@ -466,7 +464,9 @@ class LimitManager extends Manager{
         //    price = this.prepPrice(this.data.close)
         }
         
-        this.drawHeader('Limits')
+        if(standalone)
+            this.drawHeader('Limits')
+        
         this.drawPair('', upper, this.isUpperEnabled ? '#00FF00' : '#636363', 52, 26)
         this.drawPair('', price, this.settings.foreground, 89, 26)
         this.drawPair('', lower, this.isLowerEnabled ? '#FF0000' : '#636363', 126, 26)
@@ -502,7 +502,7 @@ class LimitManager extends Manager{
             price = this.data.prevClose
             adjusted = price + (price * (this.isUpper ? limit/100 : -limit/100))
             market = MarketStateType.CLOSED
-            limit +='%'
+            limit = (this.isInc ? '+' : '-') + limit + '%'
         }
         else {
             limit = this.prepPrice(limit - price)
