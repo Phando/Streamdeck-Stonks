@@ -256,7 +256,7 @@ class LimitManager extends Manager{
 
     handleAdjustment(jsn){
         this.uuid = jsn.context
-        var increment = Number(this.increment) * this.isInc ? 1 : -1 
+        var increment = Number(this.increment) * (this.isInc ? 1 : -1) 
         
         // NOTE: Special case to keep percentages positive
         if(this.type == LimitType.PERCENT && !this.isUpper)
@@ -283,8 +283,7 @@ class LimitManager extends Manager{
         this.data.limitBackground = COLOR_BACKGROUND
 
         if(this.limitState == 0) return
-        this.data.foreground = COLOR_FOREGROUND
-        this.data.limitBackground = this.limitState == 1 ? COLOR_GREEN_LT : COLOR_RED_LT
+        this.data.limitBackground = this.limitState == 1 ? '#00AA00' : '#AA0000'
     }
 
     //-----------------------------------------------------------------------------------------
@@ -410,10 +409,12 @@ class LimitManager extends Manager{
         this.uuid = jsn.context
         if(this.limitState == 0) return
 
-        var grd = this.drawingCtx.createLinearGradient(0, 20, 0, 70)
-        grd.addColorStop(0, this.data.limitBackground)
-        grd.addColorStop(1, COLOR_BACKGROUND)
-        this.drawingCtx.fillStyle = grd
+        var grad = this.drawingCtx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT)
+        grad.addColorStop(0.0, this.data.limitBackground)
+        grad.addColorStop(0.3, COLOR_BACKGROUND)
+        grad.addColorStop(0.9, COLOR_BACKGROUND)
+        grad.addColorStop(1.0, this.data.limitBackground)
+        this.drawingCtx.fillStyle = grad
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
     } 
 
@@ -448,7 +449,7 @@ class LimitManager extends Manager{
         
         this.drawRight(upper, this.isUpperEnabled ? COLOR_GREEN : COLOR_DISABLED, 52, 26)
         this.drawRight(price, COLOR_FOREGROUND, 89, 26)
-        this.drawRight(lower, this.isLowerEnabled ? COLOR_RED : '#636363', 126, 26)
+        this.drawRight(lower, this.isLowerEnabled ? COLOR_RED : COLOR_DISABLED, 126, 26)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -476,12 +477,13 @@ class LimitManager extends Manager{
             price = this.data.prevClose
             adjusted = price + (price * (this.isUpper ? limit/100 : -limit/100))
             market = MarketStateType.CLOSED
-            limit = (this.isInc ? '+' : '-') + limit + '%'
+            limit = limit + '%'
         }
         else {
             limit = this.prepPrice(limit - price)
         }
 
+        limit = (this.isUpper ? '+' : '-') + limit
         adjusted = this.prepPrice(adjusted)
         price = this.prepPrice(price)
         

@@ -493,7 +493,7 @@ class SimpleAction extends Action {
         var low = this.prepPrice(this.data.low)
 
         var isFooter = this.currentView == ViewType.TICKER
-        var font = isFooter ? 23 : 26
+        var font = isFooter ? 22 : 26
         var yPos = isFooter ? [81,103,126,87] : [52,89,126,74]
 
         if( this.currentView == ViewType.DAY_PERC ||
@@ -571,7 +571,7 @@ class SimpleAction extends Action {
     drawSlider(){
         var high = this.prepPrice(this.data.high)
         var low = this.prepPrice(this.data.low)
-        this.drawPair(low, COLOR_RED, high, COLOR_GREEN, 98, 23, true)
+        this.drawPair(low, COLOR_RED, high, COLOR_GREEN, 98)
        
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
         
