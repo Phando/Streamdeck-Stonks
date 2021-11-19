@@ -260,8 +260,8 @@ class StreamDeckClient {
 
     //-----------------------------------------------------------------------------------------
     
-    drawScaledPair(label, labelColor, value, valueColor, yPos, maxFont=MAX_FONT,){
-        var content = label + value
+    drawScaledPair(label, labelColor, value, valueColor, yPos, maxFont=MAX_FONT){
+        var content = label.toString() + value.toString()
         var font = Utils.calculateFont(content, CANVAS_WIDTH-14, 18, maxFont)
         this.drawPair(label, labelColor, value, valueColor, yPos, font)
     }
@@ -274,12 +274,10 @@ class StreamDeckClient {
         var test1 = this.getIntegratedValue(label1, value1)
         var test2 = this.getIntegratedValue(label2, value2)
 
-        var content = test1 + test2
+        var content = test1.toString() + test2.toString()
         var font = Utils.calculateFont(content, maxWidth, MIN_FONT, maxFont)
         var width = _drawingCtx.measureText(content).width
         
-        console.log('drawSmartPair', content, font, width)
-        //font > WRAP_FONT && 
         if( _drawingCtx.measureText(content).width <= maxWidth){
             this.drawLeft(test1, color1, yPos, font)
             this.drawRight(test2, color2, yPos, font)

@@ -51,6 +51,11 @@ var Utils = {
             return sign * MAX_INTEGER;
         }
         return value === value ? value : 0;
+    },
+    toFixed(value, precision){
+        var regexp = new RegExp(`^[0-9]*\.?[0-9]{0,${precision}}`, 'g');
+        var result = value.toString().match(regexp)
+        return result.length == 0 ? value : Number(result[0])
     }
 };
 
@@ -84,7 +89,7 @@ Utils.percentToRange = function (percent, min, max) {
 
 Utils.abbreviateNumber = function(value, precision=2, delta=0) {
     if(value == 0 || (value > 0.001 && value < 10000))
-        return value.toFixed(precision)
+        return Utils.toFixed(value,precision)
 
     if(value > 0.001){
         let digits = value % 3 == 0 ? 0 : 1
@@ -93,7 +98,7 @@ Utils.abbreviateNumber = function(value, precision=2, delta=0) {
     
     // Small number truncation
     let pad = delta==0 ? '`0' : '`0' + Array(delta).fill(0).join('')
-    value = String(value).substring(2, Number(precision)+2)
+    value = value.toString().substring(2, Number(precision)+2)
     return  pad + value.replace(/^[^1-9]*/,'')
 };
 

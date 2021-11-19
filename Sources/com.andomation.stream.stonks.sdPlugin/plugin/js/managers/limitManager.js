@@ -232,6 +232,41 @@ class LimitManager extends Manager{
         this.updateDisplay(jsn)
     }
 
+    //-----------------------------------------------------------------------------------------
+
+    prepData(jsn){
+        super.prepData(jsn)
+        this.data.limitBackground = COLOR_BACKGROUND
+
+        if(this.limitState == 0) return
+        this.data.limitBackground = this.limitState == 1 ? '#00AA00' : '#CC0000'
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onSendToPlugin(jsn) {
+        super.onSendToPlugin(jsn)
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        
+        if(sdpi_collection.key == 'limitType'){
+            this.lowerLimit = this.type == LimitType.NUMERIC ? this.data.price - this.increment : 1
+            this.upperLimit = this.type == LimitType.NUMERIC ? this.data.price + this.increment : 1
+            $SD.api.setSettings(this.uuid, this.settings); 
+        }
+
+        this.updateDisplay(jsn)
+    } 
+
+    //-----------------------------------------------------------------------------------------
+
+    exitlLimits(jsn){
+        this.uuid = jsn.context
+        
+        this.stopTimer(jsn)
+        this.countdown = this.frameTime
+        this.incrementOnClick = true
+        $SD.emit(jsn.action + '.exitLimits', this.context)
+    }
 
     //-----------------------------------------------------------------------------------------
 
@@ -257,51 +292,15 @@ class LimitManager extends Manager{
         if(this.isUpper) {
             this.upperLimit += increment
             this.upperLimit = this.type == LimitType.PERCENT ? 
-                Math.max(0, this.upperLimit) : 
-                Math.max(this.data.price, this.upperLimit)  
+                Math.max(1, this.upperLimit) : 
+                Math.max(this.data.price + increment, this.upperLimit)  
         }
         else {
             this.lowerLimit += increment
             this.lowerLimit = this.type == LimitType.PERCENT ? 
-                Math.max(0, this.lowerLimit) :
-                Math.min(this.data.price, this.lowerLimit)
+                Math.max(1, this.lowerLimit) :
+                Math.min(this.data.price + increment, this.lowerLimit)
         }
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    prepData(jsn){
-        super.prepData(jsn)
-        this.data.limitBackground = COLOR_BACKGROUND
-
-        if(this.limitState == 0) return
-        this.data.limitBackground = this.limitState == 1 ? '#00AA00' : '#CC0000'
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    onSendToPlugin(jsn) {
-        super.onSendToPlugin(jsn)
-        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
-        
-        if(sdpi_collection.key == 'limitType'){
-            this.lowerLimit = this.type == LimitType.NUMERIC ? this.data.price : 0
-            this.upperLimit = this.type == LimitType.NUMERIC ? this.data.price : 0
-            $SD.api.setSettings(this.uuid, this.settings); 
-        }
-
-        this.updateDisplay(jsn)
-    } 
-
-    //-----------------------------------------------------------------------------------------
-
-    exitlLimits(jsn){
-        this.uuid = jsn.context
-        
-        this.stopTimer(jsn)
-        this.countdown = this.frameTime
-        this.incrementOnClick = true
-        $SD.emit(jsn.action + '.exitLimits', this.context)
     }
 
     //-----------------------------------------------------------------------------------------

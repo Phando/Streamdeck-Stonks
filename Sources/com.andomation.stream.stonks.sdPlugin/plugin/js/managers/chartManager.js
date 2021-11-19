@@ -104,7 +104,6 @@ class ChartManager extends Manager {
                 break
         }
 
-        console.log("TICK", tickWidth)
         scratch = scratch.slice(-slice)
         if(!this.type.tail)
             interval = Math.max(1, scratch.length/CHART_WIDTH)
@@ -129,10 +128,7 @@ class ChartManager extends Manager {
 
     updateDisplay(jsn){
         super.updateDisplay(jsn)
-        this.drawingCtx.textBaseline = "top" 
-        this.drawingCtx.font = 600 + " " + 20 + "px Arial"
-        this.drawingCtx.fillStyle = COLOR_FOREGROUND
-        this.drawCharLabel()
+        this.drawLeft(this.type.label,COLOR_FOREGROUND, 16, 21, 600, 6)
         
         if(!this.chart.hasOwnProperty('data') || this.chart.data.length == 0){
             this.drawingCtx.textAlign = "center"
@@ -146,13 +142,6 @@ class ChartManager extends Manager {
         
         if(this.isDay == true)
             this.drawCharLine()
-    }
-    
-    //-----------------------------------------------------------------------------------------
-
-    drawCharLabel(){
-        this.drawingCtx.textAlign = "left"
-        this.drawingCtx.fillText(this.type.label, 3, 10);
     }
 
     //-----------------------------------------------------------------------------------------

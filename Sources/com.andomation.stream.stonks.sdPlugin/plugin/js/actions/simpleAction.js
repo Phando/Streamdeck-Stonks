@@ -338,8 +338,8 @@ class SimpleAction extends Action {
             }
         }
 
-        payload.lowPerc = (Math.abs(payload.low/payload.close)).toFixed(2)
-        payload.highPerc = (Math.abs(payload.high/payload.close)).toFixed(2)
+        payload.lowPerc = Utils.toFixed(Math.abs(payload.low/payload.close), 2)
+        payload.highPerc = Utils.toFixed(Math.abs(payload.high/payload.close), 2)
 
         if(this.showTrend == 'enabled'){
             var color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
@@ -446,7 +446,7 @@ class SimpleAction extends Action {
         }
         
         change = this.prepPrice(change, precision)
-        percent = percent.toFixed(2)
+        percent = Utils.toFixed(percent, 2)
         this.drawSmartPair('', percent+'%', color, '', change, color,)
     }
     
@@ -509,6 +509,7 @@ class SimpleAction extends Action {
             price = this.prepPrice(this.data.close)
         }
 
+        this.drawLeft('range',COLOR_FOREGROUND, 16, 21, 600, 6)
         this.drawPair('', COLOR_FOREGROUND, high, COLOR_GREEN, yPos[0], font)
         this.drawPair('', COLOR_FOREGROUND, price, COLOR_FOREGROUND, yPos[1], font)
         this.drawPair('', COLOR_FOREGROUND, low, COLOR_RED, yPos[2], font)
@@ -572,13 +573,13 @@ class SimpleAction extends Action {
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
         
         this.drawingCtx.lineWidth = 2
-        this.drawingCtx.fillStyle = COLOR_RED_LT
-        this.drawingCtx.strokeStyle = COLOR_RED
+        this.drawingCtx.fillStyle = COLOR_GREEN_LT
+        this.drawingCtx.strokeStyle = COLOR_GREEN
         this.drawingCtx.fillRect(0, 116, 144, 14)
         this.drawingCtx.strokeRect(0, 116, 144, 14)
         
-        this.drawingCtx.fillStyle = COLOR_GREEN_LT
-        this.drawingCtx.strokeStyle = COLOR_GREEN
+        this.drawingCtx.fillStyle = COLOR_RED_LT
+        this.drawingCtx.strokeStyle = COLOR_RED
         this.drawingCtx.fillRect(0, 116, scale, 14)
         this.drawingCtx.strokeRect(0, 116, scale, 14)
 
