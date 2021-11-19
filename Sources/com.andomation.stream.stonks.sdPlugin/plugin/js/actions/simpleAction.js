@@ -1,18 +1,20 @@
 const FooterType = Object.freeze({
-    CHANGE  : 'change',
-    METER   : 'meter',
-    SLIDER  : 'slider',
-    RANGE   : 'range',
-    RANGE_PERC : 'rangePerc',
-    RANGE_PLUS : 'rangePlus',
+    NONE        : 'none',
+    CHANGE      : 'change',
+    METER       : 'meter',
+    SLIDER1     : 'slider1',
+    SLIDER2     : 'slider2',
+    RANGE       : 'range',
+    RANGE_PERC  : 'rangePerc',
+    RANGE_PLUS  : 'rangePlus',
     RANGE_PLUS_PERC : 'rangePlusPerc'
 });
 
 const MarketStateType = Object.freeze({
-    PRE     : 'premarket',
+    PRE     : 'marketPre',
     REG     : 'marketReg',
-    POST    : 'postmarket',
-    CLOSED  : 'postmarket'
+    POST    : 'marketPost',
+    CLOSED  : 'marketClosed'
 });
 
 const ViewType = Object.freeze({
@@ -412,6 +414,9 @@ class SimpleAction extends Action {
             return
 
         switch(this.footerMode){
+            case FooterType.NONE:
+                this.drawVolume()
+                break
             case FooterType.CHANGE:
                 this.drawVolume()
                 this.drawChange()
@@ -419,7 +424,8 @@ class SimpleAction extends Action {
             case FooterType.METER:
                 this.drawMeter()
                 break
-            case FooterType.SLIDER:
+            case FooterType.SLIDER1:
+            case FooterType.SLIDER2:
                 this.drawSlider()
                 break
             case FooterType.RANGE:
@@ -452,11 +458,11 @@ class SimpleAction extends Action {
     
     //-----------------------------------------------------------------------------------------
 
-    drawMarketState(state, xPos=0, yPos=0){
+    drawMarketState(state, xPos=-8, yPos=35){
         if(state == MarketStateType.REG) return
 
         var img = document.getElementById(state)
-        this.drawingCtx.drawImage(img, xPos, yPos, 40, 35)
+        this.drawingCtx.drawImage(img, xPos, yPos, 25, 25)
     }
     
     //-----------------------------------------------------------------------------------------
@@ -517,55 +523,8 @@ class SimpleAction extends Action {
 
     //-----------------------------------------------------------------------------------------
 
-    drawMeter(){
-        let centerX = CANVAS_WIDTH/2
-        let centerY = CANVAS_HEIGHT+80
-        let radius  = 130
-        let width  = 14
-        let start = deg2rad(-180)
-        let end = deg2rad(0)
-        let scale = Utils.rangeToPercent(this.data.price, this.data.low, this.data.high)
-        scale = deg2rad(-55 -(70*scale)) // 125 55 = 70
-
-        this.drawingCtx.lineWidth = 3
-        this.drawingCtx.fillStyle = COLOR_GREEN_LT
-        this.drawingCtx.strokeStyle = COLOR_GREEN
-        this.drawingCtx.beginPath()
-        this.drawingCtx.arc(centerX, centerY, radius, start, end)
-        this.drawingCtx.arc(centerX, centerY, radius-width, start, end)
-        this.drawingCtx.fill()
-        this.drawingCtx.stroke()
-    
-        this.drawingCtx.fillStyle = COLOR_RED_LT
-        this.drawingCtx.strokeStyle = COLOR_RED
-        this.drawingCtx.beginPath()
-        this.drawingCtx.arc(centerX, centerY, radius, start, scale)
-        this.drawingCtx.lineTo(centerX, centerY)
-        this.drawingCtx.arc(centerX, centerY, radius-width, start, scale)
-        this.drawingCtx.fill()
-        this.drawingCtx.stroke()
-
-        this.drawingCtx.beginPath()
-        this.drawingCtx.arc(centerX, centerY, radius-width-1, start, end)
-        this.drawingCtx.fillStyle = COLOR_BACKGROUND
-        this.drawingCtx.fill()
-
-        this.drawingCtx.beginPath()
-        this.drawingCtx.lineWidth = 4
-        this.drawingCtx.strokeStyle = COLOR_FOREGROUND
-        this.drawingCtx.moveTo(centerX, centerY)
-        this.drawingCtx.lineTo(centerX + (radius+4) * Math.cos(scale), centerY + (radius+4) * Math.sin(scale))
-        this.drawingCtx.stroke()
-
-        this.drawingCtx.beginPath()
-        this.drawingCtx.arc(centerX, centerY, radius-width-8, start, end)
-        this.drawingCtx.fillStyle = COLOR_BACKGROUND
-        this.drawingCtx.fill()
-    }
-
-    //-----------------------------------------------------------------------------------------
-
     drawSlider(){
+        var isInv = this.footerMode == FooterType.SLIDER2
         var high = this.prepPrice(this.data.high)
         var low = this.prepPrice(this.data.low)
         this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 98)
@@ -573,13 +532,13 @@ class SimpleAction extends Action {
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
         
         this.drawingCtx.lineWidth = 2
-        this.drawingCtx.fillStyle = COLOR_GREEN_LT
-        this.drawingCtx.strokeStyle = COLOR_GREEN
+        this.drawingCtx.fillStyle = isInv ? COLOR_GREEN_LT : COLOR_RED_LT
+        this.drawingCtx.strokeStyle = isInv ? COLOR_GREEN : COLOR_RED
         this.drawingCtx.fillRect(0, 116, 144, 14)
         this.drawingCtx.strokeRect(0, 116, 144, 14)
         
-        this.drawingCtx.fillStyle = COLOR_RED_LT
-        this.drawingCtx.strokeStyle = COLOR_RED
+        this.drawingCtx.fillStyle = isInv ? COLOR_RED_LT : COLOR_GREEN_LT
+        this.drawingCtx.strokeStyle = isInv ? COLOR_RED : COLOR_GREEN
         this.drawingCtx.fillRect(0, 116, scale, 14)
         this.drawingCtx.strokeRect(0, 116, scale, 14)
 

@@ -1,5 +1,10 @@
 const deg2rad = deg => (deg * Math.PI) / 180.0;
 
+Number.prototype.countDecimals = function () {
+    if(Math.floor(this.valueOf()) === this.valueOf()) return 0;
+    return this.toString().split(".")[1].length || 0; 
+}
+
 var Utils = {
     sleep: function (milliseconds) {
         return new Promise(resolve => setTimeout(resolve, milliseconds));
@@ -53,9 +58,22 @@ var Utils = {
         return value === value ? value : 0;
     },
     toFixed(value, precision){
+        var dec = value.countDecimals()
         var regexp = new RegExp(`^[0-9]*\.?[0-9]{0,${precision}}`, 'g');
         var result = value.toString().match(regexp)
-        return result.length == 0 ? value : Number(result[0])
+        result = result.length == 0 ? value : result[0]
+        result = result.endsWith('.') ? result.slice(0, -1) : result
+
+        // Adding back any insignificant zeros
+        if(precision > 0 && dec < precision){
+            console.log(precision, dec)
+            if(dec == 0)
+                result += '.'
+            
+            if(dec != precision)
+                result += Array(precision-dec).fill(0).join('')
+        }
+        return result
     }
 };
 
@@ -88,8 +106,9 @@ Utils.percentToRange = function (percent, min, max) {
 //-----------------------------------------------------------------------------------------
 
 Utils.abbreviateNumber = function(value, precision=2, delta=0) {
-    if(value == 0 || (value > 0.001 && value < 10000))
+    if(value == 0 || (value > 0.001 && value < 10000)){
         return Utils.toFixed(value,precision)
+    }
 
     if(value > 0.001){
         let digits = value % 3 == 0 ? 0 : 1

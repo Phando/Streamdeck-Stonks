@@ -420,8 +420,8 @@ class LimitManager extends Manager{
         }
 
         if(state != MarketStateType.REG){
-            var img = document.getElementById('closedIcon')
-            this.drawingCtx.drawImage(img, 10, 74, 22, 22)
+            var img = document.getElementById(state)
+            this.drawingCtx.drawImage(img, -8, 74, 25, 25)
         }
         
         if(editable)

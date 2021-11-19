@@ -222,6 +222,7 @@ class StreamDeckClient {
     //-----------------------------------------------------------------------------------------
 
     prepPrice(value, decimals=this.settings.decimals){
+        console.log(decimals)
         return Utils.abbreviateNumber(value, decimals, Math.abs(decimals - this.settings.decimals))
     }
 
