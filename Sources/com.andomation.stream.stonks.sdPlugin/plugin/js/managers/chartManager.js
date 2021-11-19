@@ -1,5 +1,6 @@
-const CHART_BASE = 10
+
 const CHART_SCALE = 50
+const CHART_BASE = 130
 const CHART_WIDTH = 140
 
 const ChartType = Object.freeze({
@@ -12,7 +13,7 @@ const ChartType = Object.freeze({
     CHART_HR_1      : {range:'1d',  interval:'1m',  label:'1hr', type:'range1'},
     CHART_HR_2      : {range:'1d',  interval:'1m',  label:'2hr', type:'range1'},
     CHART_DAY_1     : {range:'1d',  interval:'2m',  label:'1d',  type:'range2'},
-    CHART_DAY_5     : {range:'5d',  interval:'15m', label:'5d',  type:'range3'},
+    CHART_DAY_5     : {range:'5d',  interval:'5m',  label:'5d',  type:'range3'},
     CHART_MONTH_1   : {range:'3mo', interval:'60m', label:'1M',  type:'range4'},
     CHART_MONTH_3   : {range:'3mo', interval:'60m', label:'3M',  type:'range4'},
     CHART_MONTH_6   : {range:'1y',  interval:'1d',  label:'6M',  type:'range5'},
@@ -109,12 +110,15 @@ class ChartManager extends Manager {
             interval = Math.max(1, scratch.length/CHART_WIDTH)
 
         this.chart.data = []
-        for(var index = 0; index < scratch.length; index += Math.round(interval)){
-            for(let t=0; t<tickWidth; t++)
-                this.chart.data.push(scratch[index])
+
+        for(var index = 0; index < scratch.length; index += interval){
+            for(let t=0; t<tickWidth; t++){
+                if(Math.round(index) < scratch.length)
+                    this.chart.data.push(scratch[Math.round(index)])
+            }
         }
         
-        let rangeSource = this.chart.data //this.showRaw ? this.chart.raw : this.chart.data
+        let rangeSource = this.chart.data
         this.chart.min = Math.min(...rangeSource)
         this.chart.max = Math.max(...rangeSource)
 
@@ -122,6 +126,11 @@ class ChartManager extends Manager {
             this.chart.isUp = this.data.close < this.chart.data[this.chart.data.length-1]
         else
             this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1]    
+
+        console.log("Chart", this.chart.data.length)
+        if(this.chart.data.length == 141){
+            console.log("Chart Data", this.chart.data)
+        }
     }
 
     //-----------------------------------------------------------------------------------------
@@ -148,8 +157,12 @@ class ChartManager extends Manager {
 
     drawCharLine(){
         let scale = Utils.rangeToPercent(this.data.prevClose, this.chart.min, this.chart.max)
-        this.drawingCtx.fillStyle = COLOR_FOREGROUND
-        this.drawingCtx.fillRect(0, 144 - (CHART_BASE + CHART_SCALE * scale), 144, 2);
+        this.drawingCtx.lineWidth = 2
+        this.drawingCtx.strokeStyle = COLOR_FOREGROUND
+        this.drawingCtx.beginPath()
+        this.drawingCtx.moveTo(0, CHART_BASE - (CHART_SCALE * scale))
+        this.drawingCtx.lineTo(CHART_WIDTH, CHART_BASE - (CHART_SCALE * scale))
+        this.drawingCtx.stroke()
     }
 
     //-----------------------------------------------------------------------------------------
@@ -157,20 +170,30 @@ class ChartManager extends Manager {
     drawChartData(){
         let xPos = 2
         let scale = 0
-        let fillColor = this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL
-        let tipColor = this.chart.isUp ? COLOR_GREEN : COLOR_RED
+        this.drawingCtx.lineWidth = 1
+        this.drawingCtx.strokeStyle = this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL
+        this.drawingCtx.beginPath()
 
         this.chart.data.forEach((item, index) => {
             scale = Utils.rangeToPercent(item, this.chart.min, this.chart.max)
-            this.drawingCtx.fillStyle = fillColor
-            this.drawingCtx.fillRect(xPos, 144, 1, -(CHART_BASE + CHART_SCALE * scale));
-            this.drawingCtx.fillStyle = tipColor
-            this.drawingCtx.fillRect(xPos, 144-(CHART_BASE + CHART_SCALE * scale), 1, 3);
+            this.drawingCtx.moveTo(xPos,CHART_BASE - (CHART_SCALE * scale))
+            this.drawingCtx.lineTo(xPos,144)
             xPos++
         });
 
-        if(this.shouldZoom){
-        }
+        xPos = 2
+        this.drawingCtx.stroke()
+        this.drawingCtx.strokeStyle = this.chart.isUp ? COLOR_GREEN : COLOR_RED
+        this.drawingCtx.beginPath()
+
+        this.chart.data.forEach((item, index) => {
+            scale = Utils.rangeToPercent(item, this.chart.min, this.chart.max)
+            this.drawingCtx.moveTo(xPos, CHART_BASE - (CHART_SCALE * scale))
+            this.drawingCtx.lineTo(xPos, 3 + CHART_BASE - (CHART_SCALE * scale))
+            xPos++
+        });
+        
+        this.drawingCtx.stroke()
     }
 
 }
