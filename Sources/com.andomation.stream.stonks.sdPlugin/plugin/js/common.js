@@ -2,7 +2,7 @@ const WRAP_FONT = 20
 const WRAP_SIZE = 122.5
 const CANVAS_WIDTH  = 144
 const CANVAS_HEIGHT = 144
-const MARGIN_LEFT = 10
+const MARGIN_LEFT = 2
 const MARGIN_RIGHT = 138
 const STATE_DEFAULT = 'default'
 
@@ -240,26 +240,26 @@ class StreamDeckClient {
 
     //-----------------------------------------------------------------------------------------
     
-    drawLeft(value, valueColor, yPos, fontSize=23, fontWeight=600, pad=0){
+    drawLeft(value, valueColor, yPos, fontSize=22, fontWeight=600, pad=0){
         this.drawItem(value, valueColor, yPos, fontSize, fontWeight, pad)
     }
 
     //-----------------------------------------------------------------------------------------
     
-    drawRight(value, valueColor, yPos, fontSize=23, fontWeight=600, pad=0){
+    drawRight(value, valueColor, yPos, fontSize=22, fontWeight=600, pad=0){
         this.drawItem(value, valueColor, yPos, fontSize, fontWeight, pad, false)
     }
 
     //-----------------------------------------------------------------------------------------
     
-    drawPair(label, labelColor, value, valueColor, yPos, fontSize=23){
+    drawPair(label, labelColor, value, valueColor, yPos, fontSize=22){
         this.drawLeft(label, labelColor, yPos, fontSize)
         this.drawRight(value, valueColor, yPos, fontSize)
     }
 
     //-----------------------------------------------------------------------------------------
     
-    drawSmartPair(label1, value1, color1, label2, value2, color2, yPos=116, maxFont=23, maxWidth=CANVAS_WIDTH-20){
+    drawSmartPair(label1, value1, color1, label2, value2, color2, yPos=116, maxFont=22, maxWidth=CANVAS_WIDTH-20){
         var yPos1 = 103
         var yPos2 = 126
         var test1 = this.getIntegratedValue(label1, value1)

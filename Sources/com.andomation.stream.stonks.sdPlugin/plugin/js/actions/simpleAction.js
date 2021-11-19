@@ -491,6 +491,7 @@ class SimpleAction extends Action {
         var font = isFooter ? 22 : 26
         var yPos = isFooter ? [81,103,126,87] : [52,89,126,74]
 
+        console.log(this.currentView)
         if( this.currentView == ViewType.DAY_PERC ||
             ( this.footerMode == FooterType.RANGE_PERC || this.footerMode == FooterType.RANGE_PLUS_PERC )){
             high = this.data.highPerc + '%'
@@ -566,8 +567,12 @@ class SimpleAction extends Action {
     drawSlider(){
         var high = this.prepPrice(this.data.high)
         var low = this.prepPrice(this.data.low)
-        this.drawPair(low, COLOR_RED, high, COLOR_GREEN, 98)
-       
+    
+        var content = low +'.'+ high
+        Utils.setFontFor(content, 600, 23, CANVAS_WIDTH-10)
+        var font = Number(this.drawingCtx.font.replace(/[^0-9.]/g,''))
+        this.drawPair(low, COLOR_RED, high, COLOR_GREEN, 98, font)
+        
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
         
         this.drawingCtx.lineWidth = 2
