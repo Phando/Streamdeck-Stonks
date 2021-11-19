@@ -3,7 +3,7 @@ const MAX_FONT = 24
 const WRAP_SIZE = 122.5
 const CANVAS_WIDTH  = 144
 const CANVAS_HEIGHT = 144
-const MARGIN_LEFT = 2
+const MARGIN_LEFT = 6
 const MARGIN_RIGHT = 138
 const STATE_DEFAULT = 'default'
 
