@@ -1,4 +1,5 @@
-const WRAP_FONT = 20
+const MIN_FONT = 18
+const MAX_FONT = 24
 const WRAP_SIZE = 122.5
 const CANVAS_WIDTH  = 144
 const CANVAS_HEIGHT = 144
@@ -231,8 +232,8 @@ class StreamDeckClient {
         this.drawingCtx.textBaseline = 'middle'
         this.drawingCtx.fillStyle = valueColor
         
-        if(valueColor == COLOR_GREEN)
-            fontWeight -= 100
+        // if(valueColor == COLOR_GREEN)
+        //     fontWeight -= 100
         
         this.drawingCtx.font = fontWeight + " " + fontSize + "px Arial"
         this.drawingCtx.fillText(value, isLeft ? MARGIN_LEFT+pad : MARGIN_RIGHT-pad, yPos)
@@ -240,53 +241,62 @@ class StreamDeckClient {
 
     //-----------------------------------------------------------------------------------------
     
-    drawLeft(value, valueColor, yPos, fontSize=22, fontWeight=600, pad=0){
+    drawLeft(value, valueColor, yPos, fontSize=MAX_FONT, fontWeight=600, pad=0){
         this.drawItem(value, valueColor, yPos, fontSize, fontWeight, pad)
     }
 
     //-----------------------------------------------------------------------------------------
     
-    drawRight(value, valueColor, yPos, fontSize=22, fontWeight=600, pad=0){
+    drawRight(value, valueColor, yPos, fontSize=MAX_FONT, fontWeight=600, pad=0){
         this.drawItem(value, valueColor, yPos, fontSize, fontWeight, pad, false)
     }
 
     //-----------------------------------------------------------------------------------------
     
-    drawPair(label, labelColor, value, valueColor, yPos, fontSize=22){
+    drawPair(label, labelColor, value, valueColor, yPos, fontSize=MAX_FONT){
         this.drawLeft(label, labelColor, yPos, fontSize)
         this.drawRight(value, valueColor, yPos, fontSize)
     }
 
     //-----------------------------------------------------------------------------------------
     
-    drawSmartPair(label1, value1, color1, label2, value2, color2, yPos=116, maxFont=22, maxWidth=CANVAS_WIDTH-20){
+    drawScaledPair(label, labelColor, value, valueColor, yPos, maxFont=MAX_FONT,){
+        var content = label + value
+        var font = Utils.calculateFont(content, CANVAS_WIDTH-14, 18, maxFont)
+        this.drawPair(label, labelColor, value, valueColor, yPos, font)
+    }
+
+    //-----------------------------------------------------------------------------------------
+    
+    drawSmartPair(label1, value1, color1, label2, value2, color2, yPos=116, maxFont=MAX_FONT, maxWidth=CANVAS_WIDTH-14){
         var yPos1 = 103
         var yPos2 = 126
         var test1 = this.getIntegratedValue(label1, value1)
         var test2 = this.getIntegratedValue(label2, value2)
 
         var content = test1 + test2
-        Utils.setFontFor(content, 600, maxFont, maxWidth)
-        var font = Number(this.drawingCtx.font.replace(/[^0-9.]/g,''))
-        var width = this.drawingCtx.measureText(content).width
+        var font = Utils.calculateFont(content, maxWidth, MIN_FONT, maxFont)
+        var width = _drawingCtx.measureText(content).width
         
-        if( font < WRAP_FONT || width > maxWidth - 1){
-            Utils.setFontFor(value1, 600, maxFont, CANVAS_WIDTH * 0.8)
-            font = Number(this.drawingCtx.font.replace(/[^0-9.]/g,''))
-
-            Utils.setFontFor(value2, 600, maxFont, CANVAS_WIDTH * 0.8)
-            font = Math.min(font, Number(this.drawingCtx.font.replace(/[^0-9.]/g,'')))
-
-            if(label2.toLowerCase() == 'hi')
-                [yPos1, yPos2] = [yPos2, yPos1];
-
-            this.drawPair(label1, COLOR_FOREGROUND, value1, color1, yPos1, font)
-            this.drawPair(label2, COLOR_FOREGROUND, value2, color2, yPos2, font)
+        console.log('drawSmartPair', content, font, width)
+        //font > WRAP_FONT && 
+        if( _drawingCtx.measureText(content).width <= maxWidth){
+            this.drawLeft(test1, color1, yPos, font)
+            this.drawRight(test2, color2, yPos, font)
             return
         }
 
-        this.drawLeft(test1, color1, yPos, font)
-        this.drawRight(test2, color2, yPos, font)
+        // Wrap the values on two lines (the 'smart' part)
+        let pSize = CANVAS_WIDTH * 0.8
+        font = Math.min(
+            Utils.calculateFont(value1, pSize, MIN_FONT, maxFont), 
+            Utils.calculateFont(value2, pSize, MIN_FONT, maxFont))  
+
+        if(label2.toLowerCase() == 'hi')
+            [yPos1, yPos2] = [yPos2, yPos1];
+
+        this.drawPair(label1, COLOR_FOREGROUND, value1, color1, yPos1, font)
+        this.drawPair(label2, COLOR_FOREGROUND, value2, color2, yPos2, font)
     }
 
     //-----------------------------------------------------------------------------------------

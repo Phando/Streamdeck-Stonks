@@ -376,7 +376,7 @@ class SimpleAction extends Action {
                 break
             case ViewType.LIMITS:
                 this.drawSymbol(jsn);
-                this.drawLeft('lmt',COLOR_FOREGROUND, 20, 22, 600, 2)
+                this.drawLeft('limit',COLOR_FOREGROUND, 16, 21, 600, 6)
                 this.limitManager.updateInfoView(jsn)
                 break
             case ViewType.DAY_DEC :
@@ -436,6 +436,7 @@ class SimpleAction extends Action {
     drawChange(){
         let change = this.data.change || 0
         let percent = this.data.percent || 0
+        let precision = this.decimals < 3 ? this.decimals : Number(this.decimals)+1
         let color = COLOR_GREEN
 
         if(change < 0){
@@ -444,10 +445,9 @@ class SimpleAction extends Action {
             percent = Math.abs(percent)
         }
         
-        console.log("Change", change, this.data.price)
-        change = this.prepPrice(change, Number(this.decimals)+1)
+        change = this.prepPrice(change, precision)
         percent = percent.toFixed(2)
-        this.drawSmartPair('', percent+'%', color, '', change, color)
+        this.drawSmartPair('', percent+'%', color, '', change, color,)
     }
     
     //-----------------------------------------------------------------------------------------
@@ -488,7 +488,7 @@ class SimpleAction extends Action {
         var low = this.prepPrice(this.data.low)
 
         var isFooter = this.currentView == ViewType.TICKER
-        var font = isFooter ? 22 : 26
+        var font = isFooter ? 23 : 26
         var yPos = isFooter ? [81,103,126,87] : [52,89,126,74]
 
         console.log(this.currentView)
@@ -567,11 +567,7 @@ class SimpleAction extends Action {
     drawSlider(){
         var high = this.prepPrice(this.data.high)
         var low = this.prepPrice(this.data.low)
-    
-        var content = low +'.'+ high
-        Utils.setFontFor(content, 600, 23, CANVAS_WIDTH-10)
-        var font = Number(this.drawingCtx.font.replace(/[^0-9.]/g,''))
-        this.drawPair(low, COLOR_RED, high, COLOR_GREEN, 98, font)
+        this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 98)
         
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
         

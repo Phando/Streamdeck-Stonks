@@ -99,26 +99,19 @@ Utils.abbreviateNumber = function(value, precision=2, delta=0) {
 
 //-----------------------------------------------------------------------------------------
 
-Utils.setFontFor = function(text, weight, maxFont, maxWidth) {
-    return Utils.calculateFont(text, weight, 4, maxFont, maxWidth);
-};
-
-//-----------------------------------------------------------------------------------------
-
-Utils.calculateFont = function(text, weight, min, max, desiredWidth) {
-    if (max - min < 1) {
-        _drawingCtx.font = weight + " " + min + "px Arial";
-        return
+Utils.calculateFont = function(text, width=CANVAS_WIDTH, min=10, max=50, weight=600) {
+    if (max - min < 1){
+        _drawingCtx.font = weight + " " + min + "px Arial"
+        return min
     }
 
-    var test = min + (max - min) / 2; //Find half interval
-    _drawingCtx.font = weight + " " + test + "px Arial";
+    var test = min + (max - min) / 2 //Find half interval
+    _drawingCtx.font = weight + " " + test + "px Arial"
     
-    if( _drawingCtx.measureText(text).width > desiredWidth) {
-        return Utils.calculateFont(text, weight, min, test, desiredWidth);
-    }   
+    if( _drawingCtx.measureText(text).width > width) 
+        return Utils.calculateFont(text, width, min, test, weight)
     
-    return Utils.calculateFont(text, weight, test, max, desiredWidth);
+    return Utils.calculateFont(text, width, test, max, weight)
 };
 
 //-----------------------------------------------------------------------------------------
