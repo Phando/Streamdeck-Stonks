@@ -44,7 +44,5 @@ $SD.on('didReceiveGlobalSettings', (jsn) => {
     $SD.api.setGlobalSettings($SD.uuid, globalSettings)
   }
 
-  // TODO : Move polling to the Action and out of the DataManager
-  // This change is needed to optimize queries to the API
   dataManager.startPolling()
 });

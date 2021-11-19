@@ -219,6 +219,12 @@ class StreamDeckClient {
     }
 
     //-----------------------------------------------------------------------------------------
+
+    prepPrice(value, decimals=this.settings.decimals){
+        return Utils.abbreviateNumber(value, decimals, Math.abs(decimals - this.settings.decimals))
+    }
+
+    //-----------------------------------------------------------------------------------------
     
     drawItem(value, valueColor, yPos, fontSize, fontWeight, pad, isLeft=true){
         this.drawingCtx.textAlign = isLeft ? 'left' : 'right'

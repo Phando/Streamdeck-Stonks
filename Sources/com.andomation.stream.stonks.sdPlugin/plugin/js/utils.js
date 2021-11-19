@@ -82,8 +82,8 @@ Utils.percentToRange = function (percent, min, max) {
 
 //-----------------------------------------------------------------------------------------
 
-Utils.abbreviateNumber = function(value, precision=2) {
-    if(value > 0.001 && value < 10000 )
+Utils.abbreviateNumber = function(value, precision=2, delta=0) {
+    if(value == 0 || (value > 0.001 && value < 10000))
         return value.toFixed(precision)
 
     if(value > 0.001){
@@ -91,10 +91,10 @@ Utils.abbreviateNumber = function(value, precision=2) {
         return new Intl.NumberFormat( 'en-US', { maximumFractionDigits: digits, notation: 'compact', compactDisplay: 'short'}).format(value)
     }
     
-    // Truncating very small numbers < 0.001
-    value = String(value)
-    value = value.substring(2, Number(precision)+2)
-    return  '..' + value.replace(/^[^1-9]*/,'')
+    // Small number truncation
+    let pad = delta==0 ? '`0' : '`0' + Array(delta).fill(0).join('')
+    value = String(value).substring(2, Number(precision)+2)
+    return  pad + value.replace(/^[^1-9]*/,'')
 };
 
 //-----------------------------------------------------------------------------------------
@@ -106,11 +106,6 @@ Utils.setFontFor = function(text, weight, maxFont, maxWidth) {
 //-----------------------------------------------------------------------------------------
 
 Utils.calculateFont = function(text, weight, min, max, desiredWidth) {
-    // const canvas = document.getElementById('contentLoaded') ? Utils.calculateFont.canvas : document.createElement('canvas')
-    // canvas.width = CANVAS_WIDTH
-    // canvas.height = CANVAS_HEIGHT
-    // let drawingCtx = canvas.getContext("2d");
-
     if (max - min < 1) {
         _drawingCtx.font = weight + " " + min + "px Arial";
         return

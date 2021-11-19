@@ -208,7 +208,7 @@ class SimpleAction extends Action {
 
         if(sdpi_collection.key == 'symbol')
             this.symbol = this.symbol.toUpperCase()
-            
+
         this.prepViewList()
         this.limitManager.onSendToPlugin(jsn)
         dataManager.fetchSymbolData()
@@ -350,12 +350,6 @@ class SimpleAction extends Action {
         this.limitManager.prepData(jsn)
     }
 
-    //-----------------------------------------------------------------------------------------
-
-    prepPrice(value){
-        return Utils.abbreviateNumber(value, this.decimals)
-    }
-
     // Display Handlers
     //-----------------------------------------------------------------------------------------
 
@@ -383,14 +377,14 @@ class SimpleAction extends Action {
             case ViewType.LIMITS:
                 this.drawSymbol(jsn);
                 this.drawLeft('lmt',COLOR_FOREGROUND, 20, 22, 600, 2)
-                this.limitManager.updateInfoView(jsn, false)
+                this.limitManager.updateInfoView(jsn)
                 break
             case ViewType.DAY_DEC :
             case ViewType.DAY_PERC :
                 this.drawSymbol()
                 this.drawRange()
                 break
-            default:
+            default: 
                 this.limitManager.updateLimitView(jsn)
                 this.drawSymbol()
                 this.drawPrice(this.data.price)
@@ -450,7 +444,8 @@ class SimpleAction extends Action {
             percent = Math.abs(percent)
         }
         
-        change = this.prepPrice(change)
+        console.log("Change", change, this.data.price)
+        change = this.prepPrice(change, Number(this.decimals)+1)
         percent = percent.toFixed(2)
         this.drawSmartPair('', percent+'%', color, '', change, color)
     }
@@ -576,13 +571,13 @@ class SimpleAction extends Action {
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
         
         this.drawingCtx.lineWidth = 2
-        this.drawingCtx.fillStyle = COLOR_GREEN_LT
-        this.drawingCtx.strokeStyle = COLOR_GREEN
-        this.drawingCtx.fillRect(0, 116, 144, 14)
-        this.drawingCtx.strokeRect(0, 116, 144, 14)
-
         this.drawingCtx.fillStyle = COLOR_RED_LT
         this.drawingCtx.strokeStyle = COLOR_RED
+        this.drawingCtx.fillRect(0, 116, 144, 14)
+        this.drawingCtx.strokeRect(0, 116, 144, 14)
+        
+        this.drawingCtx.fillStyle = COLOR_GREEN_LT
+        this.drawingCtx.strokeStyle = COLOR_GREEN
         this.drawingCtx.fillRect(0, 116, scale, 14)
         this.drawingCtx.strokeRect(0, 116, scale, 14)
 
