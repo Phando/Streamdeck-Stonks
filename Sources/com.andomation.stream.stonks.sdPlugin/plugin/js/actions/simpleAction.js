@@ -468,21 +468,16 @@ class SimpleAction extends Action {
     drawMarketState(state, xPos=-8, yPos=35){
         if(state == MarketStateType.REG) return
 
-        // pre f8981d
-        // post 26aae1
-        // Grey 6d6e70
-        this.drawingCtx.fillStyle = state == MarketStateType.PRE ? '#F8981D' : COLOR_DISABLED
+        const COLOR_PRE = '#F8981D'
+        const COLOR_POST = '#26AAE1'
+        
+        this.drawingCtx.lineWidth = 1
+        this.drawingCtx.strokeStyle = COLOR_FOREGROUND
+        this.drawingCtx.strokeRect(0, 31, 7, 32)
+        this.drawingCtx.fillStyle = state == MarketStateType.PRE ? COLOR_PRE : COLOR_DISABLED
         this.drawingCtx.fillRect(0, 32, 6, 15)
-        this.drawingCtx.fillStyle = state == MarketStateType.POST ? '#26AAE1' : COLOR_DISABLED
+        this.drawingCtx.fillStyle = state == MarketStateType.POST ? COLOR_POST : COLOR_DISABLED
         this.drawingCtx.fillRect(0, 47, 6, 15)
-
-        // var img = document.getElementById(state)
-        // this.drawingCtx.drawImage(img, xPos, yPos, 25, 25)
-        // this.drawingCtx.lineWidth = 2
-        // this.drawingCtx.fillStyle = isAlt ? COLOR_GREEN_LT : COLOR_RED_LT
-        // this.drawingCtx.strokeStyle = isAlt ? COLOR_GREEN : COLOR_RED
-        // this.drawingCtx.fillRect(0, 116, 144, 14)
-        // this.drawingCtx.strokeRect(0, 116, 144, 14)
     }
     
     //-----------------------------------------------------------------------------------------

@@ -11,8 +11,8 @@ const COLOR_DISABLED = '#707070'
 const COLOR_ERROR    = '#FFFF00'
 const COLOR_FOREGROUND = '#D8D8D8'
 const COLOR_BACKGROUND = '#1D1E1F'
-const COLOR_GREEN    = '#00FF00'
-const COLOR_GREEN_CL = '#00770077'
+const COLOR_GREEN    = '#00FF00' //'#9867c5'
+const COLOR_GREEN_CL = '#00770077' // '#9867c5aa'
 const COLOR_GREEN_LT = '#008800'
 const COLOR_RED      = '#FF0000'
 const COLOR_RED_CL   = '#77000077'
@@ -222,7 +222,6 @@ class StreamDeckClient {
     //-----------------------------------------------------------------------------------------
 
     prepPrice(value, decimals=this.settings.decimals){
-        console.log(decimals)
         return Utils.abbreviateNumber(value, decimals, Math.abs(decimals - this.settings.decimals))
     }
 

@@ -170,6 +170,7 @@ class ChartManager extends Manager {
     drawChartData(){
         let xPos = 2
         let scale = 0
+
         this.drawingCtx.lineWidth = 1
         this.drawingCtx.strokeStyle = this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL
         this.drawingCtx.beginPath()
@@ -192,7 +193,7 @@ class ChartManager extends Manager {
             this.drawingCtx.lineTo(xPos, 3 + CHART_BASE - (CHART_SCALE * scale))
             xPos++
         });
-        
+
         this.drawingCtx.stroke()
     }
 
