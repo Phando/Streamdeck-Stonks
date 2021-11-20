@@ -524,21 +524,26 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSlider(){
-        var isInv = this.footerMode == FooterType.SLIDER2
+        var isAlt = this.footerMode == FooterType.SLIDER2
         var high = this.prepPrice(this.data.high)
         var low = this.prepPrice(this.data.low)
-        this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 98)
-        
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
         
+        if(isAlt){
+            high = this.data.highPerc + '%'
+            low = this.data.lowPerc + '%'
+        }
+        
+        this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 98)
+        
         this.drawingCtx.lineWidth = 2
-        this.drawingCtx.fillStyle = isInv ? COLOR_GREEN_LT : COLOR_RED_LT
-        this.drawingCtx.strokeStyle = isInv ? COLOR_GREEN : COLOR_RED
+        this.drawingCtx.fillStyle = isAlt ? COLOR_GREEN_LT : COLOR_RED_LT
+        this.drawingCtx.strokeStyle = isAlt ? COLOR_GREEN : COLOR_RED
         this.drawingCtx.fillRect(0, 116, 144, 14)
         this.drawingCtx.strokeRect(0, 116, 144, 14)
         
-        this.drawingCtx.fillStyle = isInv ? COLOR_RED_LT : COLOR_GREEN_LT
-        this.drawingCtx.strokeStyle = isInv ? COLOR_RED : COLOR_GREEN
+        this.drawingCtx.fillStyle = isAlt ? COLOR_RED_LT : COLOR_GREEN_LT
+        this.drawingCtx.strokeStyle = isAlt ? COLOR_RED : COLOR_GREEN
         this.drawingCtx.fillRect(0, 116, scale, 14)
         this.drawingCtx.strokeRect(0, 116, scale, 14)
 

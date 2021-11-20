@@ -60,13 +60,11 @@ var Utils = {
     toFixed(value, precision){
         var dec = value.countDecimals()
         var regexp = new RegExp(`^[0-9]*\.?[0-9]{0,${precision}}`, 'g');
-        var result = value.toString().match(regexp)
-        result = result.length == 0 ? value : result[0]
+        var result = value.toString().match(regexp)[0]
         result = result.endsWith('.') ? result.slice(0, -1) : result
-
+        
         // Adding back any insignificant zeros
-        if(precision > 0 && dec < precision){
-            console.log(precision, dec)
+        if(precision > 0 && dec < precision){    
             if(dec == 0)
                 result += '.'
             
