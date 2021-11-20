@@ -320,6 +320,8 @@ class SimpleAction extends Action {
         payload.state   = MarketStateType.REG
         payload.low     = symbol.regularMarketDayLow
         payload.high    = symbol.regularMarketDayHigh
+        payload.dayLow  = symbol.regularMarketDayLow
+        payload.dayHigh = symbol.regularMarketDayHigh
         payload.change  = symbol.regularMarketChange
         payload.percent = symbol.regularMarketChangePercent
 
@@ -329,7 +331,7 @@ class SimpleAction extends Action {
                 payload.close = symbol.regularMarketPrice
                 payload.state = symbol.marketState == "POSTPOST" ? MarketStateType.CLOSED : MarketStateType.POST
                 payload.price = symbol.postMarketPrice || payload.price
-                payload.change = symbol.postMarketChange || payload.change // 
+                payload.change = symbol.postMarketChange || payload.change
                 payload.percent = symbol.postMarketChangePercent || payload.percent
             }
             else {
@@ -340,6 +342,11 @@ class SimpleAction extends Action {
             }
         }
 
+        payload.dayLowPerc = Utils.toFixed(Math.abs(payload.low/payload.close), 2)
+        payload.dayHighPerc = Utils.toFixed(Math.abs(payload.high/payload.close), 2)
+
+        payload.low     = Math.min(payload.low,payload.price)
+        payload.high    = Math.max(payload.high,payload.price)
         payload.lowPerc = Utils.toFixed(Math.abs(payload.low/payload.close), 2)
         payload.highPerc = Utils.toFixed(Math.abs(payload.high/payload.close), 2)
 
@@ -461,8 +468,21 @@ class SimpleAction extends Action {
     drawMarketState(state, xPos=-8, yPos=35){
         if(state == MarketStateType.REG) return
 
-        var img = document.getElementById(state)
-        this.drawingCtx.drawImage(img, xPos, yPos, 25, 25)
+        // pre f8981d
+        // post 26aae1
+        // Grey 6d6e70
+        this.drawingCtx.fillStyle = state == MarketStateType.PRE ? '#F8981D' : COLOR_DISABLED
+        this.drawingCtx.fillRect(0, 32, 6, 15)
+        this.drawingCtx.fillStyle = state == MarketStateType.POST ? '#26AAE1' : COLOR_DISABLED
+        this.drawingCtx.fillRect(0, 47, 6, 15)
+
+        // var img = document.getElementById(state)
+        // this.drawingCtx.drawImage(img, xPos, yPos, 25, 25)
+        // this.drawingCtx.lineWidth = 2
+        // this.drawingCtx.fillStyle = isAlt ? COLOR_GREEN_LT : COLOR_RED_LT
+        // this.drawingCtx.strokeStyle = isAlt ? COLOR_GREEN : COLOR_RED
+        // this.drawingCtx.fillRect(0, 116, 144, 14)
+        // this.drawingCtx.strokeRect(0, 116, 144, 14)
     }
     
     //-----------------------------------------------------------------------------------------
@@ -490,8 +510,8 @@ class SimpleAction extends Action {
 
     drawRange(){
         var price  = this.prepPrice(this.data.priceMarket)
-        var high = this.prepPrice(this.data.high)
-        var low = this.prepPrice(this.data.low)
+        var high = this.prepPrice(this.data.dayHigh)
+        var low = this.prepPrice(this.data.dayLow)
 
         var isFooter = this.currentView == ViewType.TICKER
         var font = isFooter ? 23 : 26
@@ -500,8 +520,8 @@ class SimpleAction extends Action {
         console.log(this.currentView)
         if( this.currentView == ViewType.DAY_PERC ||
             ( this.footerMode == FooterType.RANGE_PERC || this.footerMode == FooterType.RANGE_PLUS_PERC )){
-            high = this.data.highPerc + '%'
-            low = this.data.lowPerc + '%'
+            high = this.data.dayHighPerc + '%'
+            low = this.data.dayLowPerc + '%'
         }
 
         if( isFooter && (this.footerMode == FooterType.RANGE || this.footerMode == FooterType.RANGE_PERC)){
@@ -534,16 +554,16 @@ class SimpleAction extends Action {
             low = this.data.lowPerc + '%'
         }
         
-        this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 98)
+        this.drawScaledPair(low, COLOR_FOREGROUND, high, COLOR_FOREGROUND, 98)
         
         this.drawingCtx.lineWidth = 2
-        this.drawingCtx.fillStyle = isAlt ? COLOR_GREEN_LT : COLOR_RED_LT
-        this.drawingCtx.strokeStyle = isAlt ? COLOR_GREEN : COLOR_RED
+        this.drawingCtx.fillStyle = COLOR_RED_LT
+        this.drawingCtx.strokeStyle = COLOR_RED
         this.drawingCtx.fillRect(0, 116, 144, 14)
         this.drawingCtx.strokeRect(0, 116, 144, 14)
         
-        this.drawingCtx.fillStyle = isAlt ? COLOR_RED_LT : COLOR_GREEN_LT
-        this.drawingCtx.strokeStyle = isAlt ? COLOR_RED : COLOR_GREEN
+        this.drawingCtx.fillStyle = COLOR_GREEN_LT
+        this.drawingCtx.strokeStyle = COLOR_GREEN
         this.drawingCtx.fillRect(0, 116, scale, 14)
         this.drawingCtx.strokeRect(0, 116, scale, 14)
 

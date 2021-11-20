@@ -392,8 +392,8 @@ class LimitManager extends Manager{
 
         var grad = this.drawingCtx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT)
         grad.addColorStop(0.0, this.data.limitBackground)
-        grad.addColorStop(0.3, COLOR_BACKGROUND)
-        // grad.addColorStop(0.9, COLOR_BACKGROUND)
+        grad.addColorStop(0.25, COLOR_BACKGROUND)
+        grad.addColorStop(0.9, COLOR_BACKGROUND)
         // grad.addColorStop(1.0, this.data.limitBackground)
         this.drawingCtx.fillStyle = grad
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
@@ -458,8 +458,7 @@ class LimitManager extends Manager{
         this.drawingCtx.beginPath()
         this.drawingCtx.rect(-2, linePos, CANVAS_WIDTH+4, 34);
         this.drawingCtx.fill()
-        //this.drawingCtx.stroke()
-
+        
         var img = document.getElementById(imgName)
         this.drawingCtx.drawImage(img, 10, iconPos, 43, 26)
     }
@@ -475,39 +474,6 @@ class LimitManager extends Manager{
         var img = document.getElementById(enabled ? 'limitEnabledImg' : 'limitDisabledImg')
         this.drawingCtx.drawImage(img, 35, 66)
     }
-
-    //-----------------------------------------------------------------------------------------
-
-    // updateAdjustmentView(){
-    //     var limit = this.isUpper ? this.upperLimit : this.lowerLimit
-    //     var price = this.data.price    
-    //     var adjusted = limit
-    //     var market = this.data.state
-
-    //     if(this.type == LimitType.PERCENT){
-    //         price = this.data.prevClose
-    //         adjusted = price + (price * (this.isUpper ? limit/100 : -limit/100))
-    //         console.log(adjusted)
-    //         market = MarketStateType.CLOSED
-    //         limit = limit + '%'
-    //     }
-    //     else {
-    //         limit = this.prepPrice(limit - price, this.settings.decimals+1)
-    //     }
-
-    //     limit = (this.isUpper ? '+' : '-') + limit
-    //     adjusted = this.prepPrice(adjusted)
-    //     console.log(adjusted)
-    //     price = this.prepPrice(price)
-        
-    //     var arrow = document.getElementById(this.isInc ? 'arrowUp' : 'arrowDown')
-    //     this.drawingCtx.drawImage(arrow, 38, 8)
-
-    //     this.drawHeader(this.isUpper ? 'Upper' : 'Lower')
-    //     this.drawLimit(adjusted)
-    //     this.drawRight(limit, COLOR_FOREGROUND, 88, 25)
-    //     this.drawRight(price, COLOR_FOREGROUND, 120, 25)
-    // }
 
     //-----------------------------------------------------------------------------------------
 
