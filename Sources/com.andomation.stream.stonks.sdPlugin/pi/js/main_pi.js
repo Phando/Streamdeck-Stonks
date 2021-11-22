@@ -19,8 +19,7 @@ $SD = StreamDeck.getInstance();
 
 $SD.on("connected", (jsn) => {
   console.log("PI Connected", jsn);
-  //$SD.on('didReceiveGlobalSettings', (jsonObj) => action.onReceiveGlobalSettings(jsonObj));
-
+  
   let actionType = Utils.getProp(jsn, "actionInfo.action", "")
   
   actions.forEach((item) => {
@@ -32,6 +31,7 @@ $SD.on("connected", (jsn) => {
       action = item
     }
   });
+
 });
 
 //-----------------------------------------------------------------//
@@ -63,12 +63,9 @@ $SD.on("sendToPropertyInspector", (jsn) => {
              </details>
          </div>`;
   } else {
-    /**
-     *
-     * Do something with the data sent from the plugin
-     * e.g. update some elements in the Property Inspector's UI.
-     *
-     */
+    if(pl.hasOwnProperty("settings")){
+      updateUI(pl.settings)
+    }
   }
 });
 
@@ -103,15 +100,13 @@ $SD.on("piDataChanged", (returnValue) => {
 
   if (returnValue.key != 'external') {
     saveValue(returnValue);
-    sendValueToPlugin(returnValue, "sdpi_collection")
+    sendValueToPlugin("sdpi_collection", returnValue)
     return
   }
 
   // Open New Window
   postMessage = (w) => {
-    w.postMessage(
-        Object.assign({}, $SD.applicationInfo.application, {action: $SD.actionInfo.action})
-        ,'*');
+    w.postMessage(Object.assign({}, $SD.applicationInfo.application, {action: $SD.actionInfo.action}),'*');
   }
 
   if (!window.xtWindow || window.xtWindow.closed) {
@@ -133,31 +128,50 @@ $SD.on("piDataChanged", (returnValue) => {
  * 'sendToPlugin' events payload.
  *
  */
+//-----------------------------------------------------------------------------------------
 
-function sendValueToPlugin(value, prop) {
-  console.log("sendValueToPlugin", value, prop);
+function sendValueToPlugin(key, value) {
+  console.log("sendValueToPlugin", key, value);
   if ($SD.connection && $SD.connection.readyState == 1) {
     const json = {
       action: $SD.actionInfo["action"],
       event: "sendToPlugin",
       context: $SD.uuid,
       payload: {
-        [prop]: value,
+        [key]: value,
         targetContext: $SD.actionInfo["context"],
       },
     };
     
-    console.log("sendValueToPlugin 2", json);
     $SD.connection.send(JSON.stringify(json));
   }
 }
 
+//-----------------------------------------------------------------------------------------
 
+function restoreDefaults(){
+    let context = contextList[$SD.actionInfo["context"]]
+    
+    let freshy = new Context()
+    freshy.action = context.action
+    freshy.context = context.context
+    freshy.coordinates = context.coordinates
+    freshy.settings = {}
+    contextList[context.context] = freshy
+    sendValueToPlugin("sdpi_collection", {key:'restoreDefaults', value:freshy.settings})
+}
+
+//-----------------------------------------------------------------------------------------
 
 function handleSdpiItemChange(e, idx) {
   /** Following items are containers, so we won't handle clicks on them */
   if (["OL", "UL", "TABLE"].includes(e.tagName)) {
     return;
+  }
+
+  if(e.id == 'restoreDefaults'){
+    restoreDefaults()
+    return
   }
   
   if (e.tagName === "SPAN") {
@@ -269,7 +283,7 @@ function handleSdpiItemChange(e, idx) {
 //------------------------------ DOM Helpers -----------------------------------//
 
 const updateUI = (pl) => {
-
+  console.log("UPADE UI", pl)
   // Insert Radio Values if Needed
   for (const [key, value] of Object.entries(pl)) {
     var fieldList = document.querySelectorAll("[id^="+key+"-radio]") 
@@ -472,7 +486,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 window.addEventListener("beforeunload", function (e) {
   e.preventDefault();
-  sendValueToPlugin("propertyInspectorWillDisappear", "property_inspector");
+  sendValueToPlugin("property_inspector", "propertyInspectorWillDisappear");
   // Don't set a returnValue to the event, otherwise Chromium with throw an error.  // e.returnValue = '';
 });
 

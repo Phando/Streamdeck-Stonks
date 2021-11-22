@@ -19,7 +19,6 @@ const MarketStateType = Object.freeze({
 
 const ViewType = Object.freeze({
     TICKER          : 'defaultView',
-    //TICKER          : 'showView',
     DAY_DEC         : 'showDayDecimal',
     DAY_PERC        : 'showDayPercent',
     LIMITS          : 'showLimits',
@@ -127,7 +126,7 @@ class SimpleAction extends Action {
         this.prepViewList()
         this.chartManager.onDidReceiveSettings(jsn)
         this.limitManager.onDidReceiveSettings(jsn)
-        $SD.api.setSettings(this.uuid, this.settings) 
+        $SD.api.setSettings(this.uuid, this.settings)
     } 
 
     //-----------------------------------------------------------------------------------------
@@ -181,25 +180,9 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onPropertyInspectorDidAppear(jsn) {
+        this.uuid = jsn.context
         super.onPropertyInspectorDidAppear(jsn)
-
-        if(this.state == STATE_DEFAULT)
-            this.limitManager.stopTimer(jsn)
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    updatePIValue(keyName, collection){
-        for (const [key, value] of Object.entries(this.settings)) {
-            if(keyName != key && keyName.includes(key)){
-                delete this.settings[key]
-                return
-            }
-        }
-
-        this.settings[keyName] = collection.value
-        this.settings[collection.key] = collection.value
-        $SD.api.setSettings(this.uuid, this.settings)
+        this.limitManager.stopTimer(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -327,18 +310,18 @@ class SimpleAction extends Action {
 
         // Factor after market pricing
         if (symbol.marketState != "REGULAR") {
-            if(symbol.marketState.includes("POST")){
-                payload.close = symbol.regularMarketPrice
-                payload.state = symbol.marketState == "POSTPOST" ? MarketStateType.CLOSED : MarketStateType.POST
-                payload.price = symbol.postMarketPrice || payload.price
-                payload.change = symbol.postMarketChange || payload.change
-                payload.percent = symbol.postMarketChangePercent || payload.percent
+            if(symbol.marketState.includes("PRE")){
+                payload.price   = symbol.preMarketPrice || payload.price
+                payload.change  = symbol.preMarketChange || payload.change
+                payload.percent = symbol.preMarketChangePercent || payload.percent
+                payload.state   = symbol.marketState == "PRE" ? MarketStateType.PRE : MarketStateType.CLOSED
             }
             else {
-                payload.state = symbol.marketState == "PREPRE" ? MarketStateType.CLOSED : MarketStateType.PRE
-                payload.price = symbol.preMarketPrice || payload.price
-                payload.change = symbol.preMarketChange || payload.change
-                payload.percent = symbol.preMarketChangePercent || payload.percent
+                payload.close   = symbol.regularMarketPrice
+                payload.price   = symbol.postMarketPrice || payload.price
+                payload.change  = symbol.postMarketChange || payload.change
+                payload.percent = symbol.postMarketChangePercent || payload.percent
+                payload.state   = symbol.marketState == "POST" ? MarketStateType.POST : MarketStateType.CLOSED
             }
         }
 
@@ -349,6 +332,8 @@ class SimpleAction extends Action {
         payload.high    = Math.max(payload.high,payload.price)
         payload.lowPerc = Utils.toFixed(Math.abs(payload.low/payload.close), 2)
         payload.highPerc = Utils.toFixed(Math.abs(payload.high/payload.close), 2)
+
+        console.log(payload.low, payload.close, payload.low/payload.close)
 
         if(this.showTrend == 'enabled'){
             var color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
@@ -439,6 +424,7 @@ class SimpleAction extends Action {
             case FooterType.RANGE_PERC:
                 this.drawVolume()
             default:
+                
                 this.drawRange()
         }
     }
@@ -465,19 +451,21 @@ class SimpleAction extends Action {
     
     //-----------------------------------------------------------------------------------------
 
-    drawMarketState(state, xPos=-8, yPos=35){
+    drawMarketState(state, yPos=32){
+        state = MarketStateType.PRE
         if(state == MarketStateType.REG) return
 
-        const COLOR_PRE = '#F8981D'
-        const COLOR_POST = '#26AAE1'
-        
+        let COLOR_PRE = '#F8981D'
+        let COLOR_POST = '#26AAE1'
+        let blockHeight = 15
+
         this.drawingCtx.lineWidth = 1
         this.drawingCtx.strokeStyle = COLOR_FOREGROUND
-        this.drawingCtx.strokeRect(0, 31, 7, 32)
+        this.drawingCtx.strokeRect(0, yPos-1, 7, blockHeight * 2 + 2)
         this.drawingCtx.fillStyle = state == MarketStateType.PRE ? COLOR_PRE : COLOR_DISABLED
-        this.drawingCtx.fillRect(0, 32, 6, 15)
+        this.drawingCtx.fillRect(0, yPos, 6, blockHeight)
         this.drawingCtx.fillStyle = state == MarketStateType.POST ? COLOR_POST : COLOR_DISABLED
-        this.drawingCtx.fillRect(0, 47, 6, 15)
+        this.drawingCtx.fillRect(0, yPos+blockHeight, 6, blockHeight)
     }
     
     //-----------------------------------------------------------------------------------------
@@ -491,7 +479,7 @@ class SimpleAction extends Action {
 
     drawPrice(value){
         value = this.prepPrice(value)
-        this.drawRight(value, this.data.foreground, 50, 40)
+        this.drawScaledRight(value, this.data.foreground, 50, CANVAS_WIDTH-20, 40)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -525,8 +513,9 @@ class SimpleAction extends Action {
         }
 
         if(this.data.state != MarketStateType.REG){
-            var img = document.getElementById('closedIcon')
-            this.drawingCtx.drawImage(img, 10, yPos[3], 22, 22)
+            // var img = document.getElementById('closedIcon')
+            // this.drawingCtx.drawImage(img, 10, yPos[3], 22, 22)
+            //this.drawMarketState('marketClose', yPos[3])
             price = this.prepPrice(this.data.close)
         }
 

@@ -49,6 +49,7 @@ class StreamDeckClient {
     _uuid = 0
 
     get uuid(){    
+        //return $SD.actionInfo["context"]
         return this._uuid
     }
 
@@ -142,7 +143,7 @@ class StreamDeckClient {
         var settings = Utils.getProp(jsn, 'payload.settings', {})
 
         if(settings.version != $pluginVersion){
-            console.log('onWillAppear - new version')
+            console.log('onWillAppear - new instance or version')
             settings = {}
             settings.version = $pluginVersion
             jsn.payload.settings = settings
@@ -155,6 +156,10 @@ class StreamDeckClient {
 
     onPropertyInspectorDidAppear(jsn) {
         this.uuid = jsn.context
+        
+        if(Object.keys(this.settings).length == 0)
+            this.onDidReceiveSettings({context:this.uuid,payload:{settings:{}}})
+
         this.state = STATE_DEFAULT
         this.updateDisplay(jsn)
     }
@@ -170,12 +175,19 @@ class StreamDeckClient {
     
     onSendToPlugin(jsn) {
         this.uuid = jsn.context
-        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
+        const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {})
+
+        if(sdpi_collection.key == 'restoreDefaults'){
+            this.onDidReceiveSettings({context:this.uuid,payload:{settings:{}}})
+            this.updateDisplay(jsn)
+            return
+        }
         
         if (sdpi_collection.value && sdpi_collection.value !== undefined) {
             this.settings[sdpi_collection.key] = sdpi_collection.value;      
             $SD.api.setSettings(this.uuid, this.settings); 
         }
+
         this.updateDisplay(jsn)
     } 
 
@@ -253,6 +265,14 @@ class StreamDeckClient {
 
     //-----------------------------------------------------------------------------------------
     
+    drawScaledRight(label, labelColor, yPos, maxWidth, maxFont=MAX_FONT, fontWeight=600, pad=0){
+        var font = Utils.calculateFont(label, maxWidth, 18, maxFont)
+        this.drawRight(label, labelColor, yPos, font, fontWeight, pad)
+    }
+
+
+    //-----------------------------------------------------------------------------------------
+    
     drawPair(label, labelColor, value, valueColor, yPos, fontSize=MAX_FONT){
         this.drawLeft(label, labelColor, yPos, fontSize)
         this.drawRight(value, valueColor, yPos, fontSize)
@@ -305,7 +325,7 @@ class StreamDeckClient {
         return pre + value + post
     }
 
-    // Error Handler
+    // Generic Error Handler
     //-----------------------------------------------------------------------------------------
 
     renderError(jsn) {

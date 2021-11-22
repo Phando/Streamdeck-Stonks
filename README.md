@@ -1,55 +1,86 @@
 
-# Stream Stonks
+# Stonks
 
-![Hero Imahge](images/Closed.png)
+![Hero Imahge](./images/Closed.png)
 
-The `Stonks` plugin is not mispelled. It is intended for diamond handed investors to keep an eye on their Stocks and Crypto. 
+*Stonks* is not mispelled. This plugin is intended for diamond handed investors to keep an eye on their investments. It is a simple plugin that lets you watch stocks and crypto. It shows the symbol, price, volume, market state, daily ranges, and more... 
 
-It originated from the Elgato Plugin Template more information is available from [Stream Deck](https://developer.elgato.com/documentation/stream-deck/).
-
-`Stonks` requires Stream Deck 4.1 or later.
-
-# Description
-
-`Stonks` is a simple plugin that lets you watch stocks and crypto assets. It shows the symbol, price, volume, market state and daily range. 
-
-### Feedback
 If you find bugs or want to see new features please log at ticket in the [github repo](https://github.com/Phando/Streamdeck-Stonks/issues).
-
 
 ## Features:
 
-- Stock Market Lookups
+- Stock Lookups
 - Crypto Lookups
-- Adjustible Polling Interval
-- Limit features (high and low)
-- Dynamic button press actions
+- Charting
+- Limit notifications
+- On device limit adjustments
+- Multiple layouts
 - Cross-platform (macOS, Windows)
-- Localization support
 
-You can see a [changelog](Changelog.md) as well.
+Alternate locales and currencies will be supported in a future release.
 
-## Quickstart: Start watching your assets
+Check the [changelog](Changelog.md) for the latest updates.
+
+## Quickstart
 
 This short guide will help you get started.
 
 ![Labels](images/Layout.png)
 
-### Pre-requisites
-
-- Download or install the plugin
-
 ### Set the symbol:
 
-For stocks use the stock symbol. GME, TSLA... 
-
-For crypto you will need the coin symbol and the currency you want to display. ETH-USD, BTC_EUR...
+**Stocks** use the stock symbol. AMC, GME, TSLA... 
+**Crypto** uses the symbol and currency.  BTC-EUR, ETH-USD, SHIB-USD...
 
 If the plugin runs into any issues or can not find a symbol, you will see a 'Not Found' error state. If the plugin doesn't recover, restart the Streamdeck app.
 
 ![Error](images/Error.png)
 
-### Polling Interval:
+## Layout
+
+
+
+## Settings Details
+
+Symbol
+Decimals
+Show Trend
+Footer
+
+### Footer:
+NONE        : 'none',
+CHANGE      : 'change',
+METER       : 'meter',
+SLIDER1     : 'slider1',
+SLIDER2     : 'slider2',
+RANGE       : 'range',
+RANGE_PERC  : 'rangePerc',
+RANGE_PLUS  : 'rangePlus',
+RANGE_PLUS_PERC : 'rangePlusPerc'
+
+### Alternate Views:
+
+TICKER          : 'defaultView',
+DAY_DEC         : 'showDayDecimal',
+DAY_PERC        : 'showDayPercent',
+LIMITS          : 'showLimits',
+CHART_MIN_30    : 'show30MinChart',
+CHART_HR_1      : 'show1HourChart',
+CHART_HR_2      : 'show2HourChart',
+CHART_DAY_1     : 'show1DayChart',
+CHART_DAY_5     : 'show5DayChart',
+CHART_MONTH_1   : 'show1MonthChart',
+CHART_MONTH_3   : 'show3MonthChart',
+CHART_MONTH_6   : 'show6MonthChart',
+CHART_MONTH_12  : 'show12MonthChart',
+    
+### Limits:
+
+#### Adjusting
+
+## Technical Details
+
+
 
 You can set how often the plugin fetches new data. The value is in seconds and needs to be between 3 and 300. The default value is 60 for once a minute. The API is limited to 2,000 requests per hour or 48,000 per day. Each instance of the plugin adds to that number. Be sure to choose an interval that will not exceed these limits.
 
@@ -72,3 +103,7 @@ The plugin will change colors if a high or low limit are set. Aditionally, the u
 You can choose what happens when a button is pressed. It will either refresh the stock value or it can open to a url. Depending on your limits settings, the button can have a different action for normal state, upper limit state and lower limit state.
 
 Imagine a use case where refresh is the normal state, the upper state would open your brokers webpage and a low state would open your webmail.
+
+###Requirements
+
+Stream Deck 4.1 or later.
