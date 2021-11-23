@@ -28,7 +28,6 @@ Number.prototype.countDecimalZeros = function () {
 Number.prototype.getPreferredDecimals = function (precision=2, maxLength=MAX_NUMBER_LENGTH) {
     let value = this.valueOf();
     let dig = value.countDigits();
-    let dec = Math.min(precision, Math.max(value.countDecimals(), precision));
     let zed = value.countDecimalZeros();
 
     if (zed > 2) return -zed;
@@ -73,10 +72,10 @@ Number.prototype.abbreviateNumber = function (precision=2, maxLength=MAX_NUMBER_
   let prefix = "`0";
   let value = this.valueOf();
   let dig = value.countDigits();
-  let dec = Math.min(precision, Math.max(value.countDecimals(), precision));
   let zed = value.countDecimalZeros();
 
   if (zed >= 2) {
+    maxLength -= 1  
     if (precision < 0)
       prefix = prefix.padEnd(prefix.length + Math.abs(precision), 0);
     return (

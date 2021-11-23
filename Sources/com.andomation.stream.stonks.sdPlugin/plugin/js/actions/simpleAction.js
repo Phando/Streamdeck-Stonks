@@ -518,8 +518,8 @@ class SimpleAction extends Action {
 
     drawSlider(){
         var isAlt = this.footerMode == FooterType.SLIDER2
-        var high = this.data.high.abbreviateNumber(2,5)
-        var low = this.data.low.abbreviateNumber(2,5)
+        var high = this.data.high.abbreviateNumber()
+        var low = this.data.low.abbreviateNumber()
         var scale = 144 * Utils.rangeToPercent(this.data.close, this.data.low, this.data.high)
         
         if(isAlt){
