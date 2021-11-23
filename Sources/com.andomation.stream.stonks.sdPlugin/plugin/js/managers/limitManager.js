@@ -284,13 +284,13 @@ class LimitManager extends Manager{
         
         if(this.isUpper) {
             this.upperEnabled = this.isUpperEnabled ? 'disabled' : 'enabled'
-            if(this.isUpperEnabled && this.type == LimitType.NUMERIC)
-                this.upperLimit = this.data.price
+            if(this.isUpperEnabled)
+                this.upperLimit = this.type == LimitType.PERCENT ? 0 : this.data.close
         }
         else {
             this.lowerEnabled = this.isLowerEnabled ? 'disabled' : 'enabled'
-            if(this.isLowerEnabled && this.type == LimitType.NUMERIC)
-                this.lowerLimit = this.data.price
+            if(this.isLowerEnabled)
+                this.lowerLimit = this.type == LimitType.PERCENT ? 0 : this.data.close
         }
     }
 
@@ -419,14 +419,13 @@ class LimitManager extends Manager{
         var fillColor = COLOR_BACKGROUND
         var upper = this.upperLimit
         var lower = this.lowerLimit
-        var price = this.data.priceMarket.abbreviateNumber()
+        var price = this.data.close.abbreviateNumber()
         var state = this.data.state
         
         if(this.type == LimitType.PERCENT){
             upper = '+' + upper + '%'
             lower = '-' + lower + '%'
             state = MarketStateType.CLOSED
-            price = this.data.close.abbreviateNumber()
             fillColor = COLOR_DISABLED
         }
         else {

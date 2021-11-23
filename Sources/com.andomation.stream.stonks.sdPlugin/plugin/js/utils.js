@@ -2,6 +2,14 @@ const MAX_NUMBER_LENGTH = 6
 
 const deg2rad = (deg) => (deg * Math.PI) / 180.0;
 
+Number.prototype.minmax = function (min = 0, max = 100) {
+    return Math.min(max, Math.max(min, this.valueOf()));
+};
+
+Number.prototype.percentChange = function (whole) {
+    return ((this.valueOf()-whole)/whole)*100
+};
+
 Number.prototype.countDigits = function () {
   if (Math.abs(this.valueOf()) < 1) return 0;
   return this.toString().split(".")[0].length || 0;
@@ -81,7 +89,6 @@ Number.prototype.abbreviateNumber = function (precision=2, maxLength=MAX_NUMBER_
   }
   if (dig > maxLength) {
     let digits = dig % 3 == 0 ? 0 : 3 - Math.round(dig % 3);
-    console.log("Digits", digits);
     return new Intl.NumberFormat("en-US", {
       maximumFractionDigits: digits,
       notation: "compact",
@@ -144,10 +151,6 @@ var Utils = {
     }
     return value === value ? value : 0;
   },
-};
-
-Utils.minmax = function (v, min = 0, max = 100) {
-  return Math.min(max, Math.max(min, v));
 };
 
 Utils.unique = function (arr) {
