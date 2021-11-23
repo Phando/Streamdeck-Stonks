@@ -177,7 +177,7 @@ class LimitManager extends Manager{
 
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
-
+        
         this.increment = this.increment || 1
         this.frameTime = this.frameTime || 5
         this.type      = this.type || LimitType.NUMERIC
@@ -196,9 +196,8 @@ class LimitManager extends Manager{
     onKeyDown(jsn){
         super.onKeyDown(jsn)
         
-        if(!this.isInteractive){
+        if(!this.isInteractive)
             this.clickCount++
-        }
     }
 
     //-----------------------------------------------------------------------------------------
@@ -285,12 +284,12 @@ class LimitManager extends Manager{
         if(this.isUpper) {
             this.upperEnabled = this.isUpperEnabled ? 'disabled' : 'enabled'
             if(this.isUpperEnabled)
-                this.upperLimit = this.type == LimitType.PERCENT ? 0 : this.data.close
+                this.upperLimit = this.type == LimitType.PERCENT ? 1 : this.data.close + this.increment
         }
         else {
             this.lowerEnabled = this.isLowerEnabled ? 'disabled' : 'enabled'
             if(this.isLowerEnabled)
-                this.lowerLimit = this.type == LimitType.PERCENT ? 0 : this.data.close
+                this.lowerLimit = this.type == LimitType.PERCENT ? 1 : this.data.close - this.increment
         }
     }
 
@@ -416,40 +415,19 @@ class LimitManager extends Manager{
 
     updateInfoView(jsn, editable = false){
         this.uuid = jsn.context
-        var fillColor = COLOR_BACKGROUND
-        var upper = this.upperLimit
-        var lower = this.lowerLimit
+        var upper = this.upperLimit.abbreviateNumber()
+        var lower = this.lowerLimit.abbreviateNumber()
         var price = this.data.close.abbreviateNumber()
-        var state = this.data.state
         
         if(this.type == LimitType.PERCENT){
-            upper = '+' + upper + '%'
-            lower = '-' + lower + '%'
-            state = MarketStateType.CLOSED
-            fillColor = COLOR_DISABLED
-        }
-        else {
-            upper = upper.abbreviateNumber()
-            lower = lower.abbreviateNumber()
-
-            if(state != MarketStateType.REG){
-                switch(this.data.state){
-                    case MarketStateType.PRE:
-                        fillColor = COLOR_PRE
-                        break
-                    case MarketStateType.POST:
-                        fillColor = COLOR_POST
-                        break
-                    default:
-                        fillColor = COLOR_DISABLED
-                }
-            }
-        }
+            upper = '+' + this.upperLimit + '%'
+            lower = '-' + this.lowerLimit + '%'
+       }
         
         if(editable)
             this.drawEditableContent()
         
-        this.drawingCtx.fillStyle = fillColor
+        this.drawingCtx.fillStyle = COLOR_POST
         this.drawingCtx.beginPath()
         this.drawingCtx.moveTo(0, 75)
         this.drawingCtx.lineTo(15, 75+9)
@@ -464,26 +442,23 @@ class LimitManager extends Manager{
     //-----------------------------------------------------------------------------------------
 
     drawEditableContent(){
-        var imgName
-        var enablePos = this.isUpper ? 40 : 114
-        var iconPos = this.isUpper ? 35 : 109
+        var enablePos = this.isUpper ? 50 : 122
+        var iconPos = this.isUpper ? 60 : 133
         var linePos = this.isUpper ? 32 : 106
         var enabled = this.isUpper ? this.isUpperEnabled : this.isLowerEnabled
         
         this.drawHeader('Limits')
         this.drawingCtx.lineWidth = 1
-        this.drawingCtx.fillStyle = '#333333'
-        this.drawingCtx.strokeStyle = '#777777'
+        this.drawingCtx.fillStyle = '#444444'
         this.drawingCtx.fillRect(-2, linePos, CANVAS_WIDTH+4, 34)
 
         switch(this.currentView){    
             case LimitViewType.UPPER_ENABLED :
             case LimitViewType.LOWER_ENABLED :
-                this.drawSwitch(enabled, 3, enablePos)
+                this.drawSwitch(14, enablePos, enabled)
                 break
             default :
-                var img = document.getElementById(this.isInc ? 'arrowUp' : 'arrowDown')
-                this.drawingCtx.drawImage(img, -8, iconPos, 43, 26)
+                this.drawArrow(6, iconPos, this.isInc)    
                 break
         }
     }
@@ -509,12 +484,37 @@ class LimitManager extends Manager{
 
     //-----------------------------------------------------------------------------------------
 
-    drawSwitch(state, xPos, yPos){
-        var width = 10
+    drawArrow(xPos, yPos, state){
+        let width = 20
+        let height = 20
+
+        this.drawingCtx.strokeStyle = COLOR_FOREGROUND
+        this.drawingCtx.fillStyle = state ? COLOR_GREEN : COLOR_RED
+        this.drawingCtx.beginPath();
+        if(state){
+            this.drawingCtx.moveTo(xPos, yPos)
+            this.drawingCtx.lineTo(xPos+(width/2), yPos-height)
+            this.drawingCtx.lineTo(xPos+width, yPos)
+        }
+        else {
+            this.drawingCtx.moveTo(xPos, yPos-height)
+            this.drawingCtx.lineTo(xPos+(width/2), yPos)
+            this.drawingCtx.lineTo(xPos+width, yPos-height)
+        }
+        this.drawingCtx.closePath()
+        this.drawingCtx.fill()
+        this.drawingCtx.stroke()
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    drawSwitch(xPos, yPos, state){
         this.drawingCtx.strokeStyle = COLOR_FOREGROUND
         this.drawingCtx.fillStyle = state ? COLOR_GREEN : COLOR_DISABLED
-        this.drawingCtx.fillRect(xPos, yPos, width, 15)
-        this.drawingCtx.strokeRect(xPos, yPos, width, 15)
+        this.drawingCtx.beginPath();
+        this.drawingCtx.arc(xPos, yPos, 7, 0, 2 * Math.PI, false);
+        this.drawingCtx.fill();
+        this.drawingCtx.stroke();
     }
 
 }

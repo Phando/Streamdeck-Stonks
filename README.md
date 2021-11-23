@@ -1,7 +1,15 @@
 
 # Stonks
 
-![Hero Imahge](./images/Closed.png)
+![Hero Image](./images/appStore.png)
+
+
+1![Error Image](images/error.png)
+
+2![Error Image](/images/error.png)
+
+3![Error Image](./images/error.png)
+
 
 *Stonks* is not mispelled. This plugin is intended for diamond handed investors to keep an eye on their investments. It is a simple plugin that lets you watch stocks and crypto. It shows the symbol, price, volume, market state, daily ranges, and more... 
 
@@ -80,7 +88,7 @@ CHART_MONTH_12  : 'show12MonthChart',
 
 ## Technical Details
 
-
+http://localhost:23654/
 
 You can set how often the plugin fetches new data. The value is in seconds and needs to be between 3 and 300. The default value is 60 for once a minute. The API is limited to 2,000 requests per hour or 48,000 per day. Each instance of the plugin adds to that number. Be sure to choose an interval that will not exceed these limits.
 

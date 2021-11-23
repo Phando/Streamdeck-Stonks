@@ -8,7 +8,6 @@ const ChartType = Object.freeze({
     // intervals [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
     
     // NOTE : The ranges below were chosen to optimize API polling.
-    // Unfortunately they make for more complicated rendering.
     CHART_MIN_30    : {range:'1d',  interval:'1m',  label:'30m', type:'range1'},
     CHART_HR_1      : {range:'1d',  interval:'1m',  label:'1hr', type:'range1'},
     CHART_HR_2      : {range:'1d',  interval:'1m',  label:'2hr', type:'range1'},
@@ -34,6 +33,14 @@ class ChartManager extends Manager {
         this.context.chartData = value
     }
 
+    get fill(){
+        return this.settings.fillCharts
+    }
+
+    set fill(value){
+        this.settings.fillCharts = value
+    }
+
     get type(){
         return this.context.chartType
     }
@@ -56,6 +63,13 @@ class ChartManager extends Manager {
         this.uuid = jsn.context
         return !Utils.isUndefined(this.type) && this.type.type == jsn.payload.userInfo.type
     }
+
+    //-----------------------------------------------------------------------------------------
+
+    onDidReceiveSettings(jsn) {
+        super.onDidReceiveSettings(jsn)
+        this.fill = this.fill || 'enabled'
+    } 
 
     //-----------------------------------------------------------------------------------------
 
@@ -157,6 +171,10 @@ class ChartManager extends Manager {
 
     drawCharLine(){
         let scale = Utils.rangeToPercent(this.data.prevClose, this.chart.min, this.chart.max)
+        
+        // Hiding the line if it is too high
+        if(scale > 1.1) return
+        
         this.drawingCtx.lineWidth = 2
         this.drawingCtx.strokeStyle = COLOR_FOREGROUND
         this.drawingCtx.beginPath()
@@ -169,32 +187,26 @@ class ChartManager extends Manager {
 
     drawChartData(){
         let xPos = 2
-        let scale = 0
+        let scale = Utils.rangeToPercent(this.chart.data[0], this.chart.min, this.chart.max)
 
-        this.drawingCtx.lineWidth = 1
-        this.drawingCtx.strokeStyle = this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL
+        this.drawingCtx.lineWidth = 2
+        this.drawingCtx.strokeStyle = this.chart.isUp ? COLOR_GREEN : COLOR_RED // '#A32CC4'
+        this.drawingCtx.fillStyle = this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL // '#A32CC477'
         this.drawingCtx.beginPath()
-
+        this.drawingCtx.moveTo(-2,146)
+        this.drawingCtx.lineTo(-2,CHART_BASE - (CHART_SCALE * scale))
+        
         this.chart.data.forEach((item, index) => {
             scale = Utils.rangeToPercent(item, this.chart.min, this.chart.max)
-            this.drawingCtx.moveTo(xPos,CHART_BASE - (CHART_SCALE * scale))
-            this.drawingCtx.lineTo(xPos,144)
+            this.drawingCtx.lineTo(xPos,CHART_BASE - (CHART_SCALE * scale))
             xPos++
         });
 
-        xPos = 2
+        this.drawingCtx.lineTo(146,CHART_BASE - (CHART_SCALE * scale))
+        this.drawingCtx.lineTo(146,146)
+        this.drawingCtx.closePath()
         this.drawingCtx.stroke()
-        this.drawingCtx.strokeStyle = this.chart.isUp ? COLOR_GREEN : COLOR_RED
-        this.drawingCtx.beginPath()
-
-        this.chart.data.forEach((item, index) => {
-            scale = Utils.rangeToPercent(item, this.chart.min, this.chart.max)
-            this.drawingCtx.moveTo(xPos, CHART_BASE - (CHART_SCALE * scale))
-            this.drawingCtx.lineTo(xPos, 3 + CHART_BASE - (CHART_SCALE * scale))
-            xPos++
-        });
-
-        this.drawingCtx.stroke()
+        if(this.fill == 'enabled') this.drawingCtx.fill()
     }
-
+    
 }

@@ -66,6 +66,14 @@ class SimpleAction extends Action {
         this.settings.footerMode = value
     }
 
+    get showState(){
+        return this.settings.showState
+    }
+
+    set showState(value){
+        this.settings.showState = value
+    }
+
     get showTrend(){
         return this.settings.showTrend
     }
@@ -111,6 +119,7 @@ class SimpleAction extends Action {
         console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
         this.symbol     = this.symbol || 'GME'
         this.showTrend  = this.showTrend  || 'disabled'
+        this.showState  = this.showState  || 'disabled'
         this.zoomCharts = this.zoomCharts || 'disabled'
         this.footerMode = this.footerMode || FooterType.CHANGE
         
@@ -351,10 +360,6 @@ class SimpleAction extends Action {
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
         
-        // Background for screenshot
-        // var img = document.getElementById('action')
-        // this.drawingCtx.drawImage(img, 7, 6, 130, 130)
-
         switch(this.currentView){    
             case ViewType.TICKER:
                 this.drawHeader(jsn)
@@ -427,7 +432,7 @@ class SimpleAction extends Action {
         let change = this.data.change || 0
         let percent = this.data.percent || 0
         let color = COLOR_GREEN
-
+        
         if(change < 0){
             color = COLOR_RED
             change = Math.abs(change)
@@ -437,7 +442,7 @@ class SimpleAction extends Action {
         let zed1 = this.data.price.countDecimalZeros()
         let zed2 = change.countDecimalZeros()
 
-        change = zed1 < zed2 ? change.abbreviateNumber(zed1-zed2) : change.abbreviateNumber()
+        change = zed1 > 2 && zed1 < zed2 ? change.abbreviateNumber(zed1-zed2) : change.abbreviateNumber()
         percent = percent.toPrecisionPure(2)
         this.drawSmartPair('', percent+'%', color, '', change, color,)
     }
@@ -445,7 +450,7 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawMarketState(state, yPos=32){
-        if(state == MarketStateType.REG) return
+        if(state == MarketStateType.REG || this.showState == 'disabled') return
 
         let blockHeight = 15
         this.drawingCtx.fillStyle = state == MarketStateType.PRE ? COLOR_PRE : COLOR_DISABLED
@@ -541,11 +546,14 @@ class SimpleAction extends Action {
         this.drawingCtx.strokeStyle = COLOR_RED
         this.drawingCtx.fillRect(0, 116, scale, 14)
         this.drawingCtx.strokeRect(0, 116, scale, 14)
-        
+
         this.drawingCtx.fillStyle = COLOR_GREEN_LT
         this.drawingCtx.strokeStyle = COLOR_GREEN
         this.drawingCtx.fillRect(scale, 116, 144, 14)
         this.drawingCtx.strokeRect(scale, 116, 144, 14)
+
+        this.drawingCtx.fillStyle = COLOR_DISABLED
+        this.drawingCtx.fillRect(scale-2, 117, 4, 12)
 
         scale = 144 * Utils.rangeToPercent(this.data.price, this.data.low, this.data.high)
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
