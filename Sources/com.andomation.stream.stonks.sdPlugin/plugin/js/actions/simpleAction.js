@@ -57,14 +57,6 @@ class SimpleAction extends Action {
     set symbol(value){
         this.settings.symbol = value
     }
-
-    get decimals(){
-        return this.settings.decimals
-    }
-
-    set decimals(value){
-        this.settings.decimals = value
-    }
     
     get footerMode(){
         return this.settings.footerMode
@@ -118,7 +110,6 @@ class SimpleAction extends Action {
         
         console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
         this.symbol     = this.symbol || 'GME'
-        this.decimals   = this.decimals || 2
         this.showTrend  = this.showTrend  || 'disabled'
         this.zoomCharts = this.zoomCharts || 'disabled'
         this.footerMode = this.footerMode || FooterType.CHANGE
@@ -183,6 +174,7 @@ class SimpleAction extends Action {
         this.uuid = jsn.context
         super.onPropertyInspectorDidAppear(jsn)
         this.limitManager.stopTimer(jsn)
+        dataManager.fetchSymbolData()
     }
 
     //-----------------------------------------------------------------------------------------
@@ -191,8 +183,11 @@ class SimpleAction extends Action {
         super.onSendToPlugin(jsn)
         const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
 
-        if(sdpi_collection.key == 'symbol')
-            this.symbol = this.symbol.toUpperCase()
+        if(sdpi_collection.key == 'symbol'){
+            //this.symbol = this.symbol.toUpperCase()
+            this.limitManager.resetLimits()
+            $SD.api.setSettings(this.uuid, this.settings)
+        }
 
         this.prepViewList()
         this.limitManager.onSendToPlugin(jsn)
@@ -324,14 +319,14 @@ class SimpleAction extends Action {
                 payload.state   = symbol.marketState == "POST" ? MarketStateType.POST : MarketStateType.CLOSED
             }
         }
-
-        payload.dayLowPerc = Utils.toFixed(Math.abs(payload.low/payload.close), 2)
-        payload.dayHighPerc = Utils.toFixed(Math.abs(payload.high/payload.close), 2)
+        
+        payload.dayLowPerc = Math.abs(payload.low/payload.close).toPrecisionPure(2)
+        payload.dayHighPerc = Math.abs(payload.high/payload.close).toPrecisionPure(2)
 
         payload.low     = Math.min(payload.low,payload.price)
         payload.high    = Math.max(payload.high,payload.price)
-        payload.lowPerc = Utils.toFixed(Math.abs(payload.low/payload.close), 2)
-        payload.highPerc = Utils.toFixed(Math.abs(payload.high/payload.close), 2)
+        payload.lowPerc = Math.abs(payload.low/payload.close).toPrecisionPure(2)
+        payload.highPerc = Math.abs(payload.high/payload.close).toPrecisionPure(2)
 
         console.log(payload.low, payload.close, payload.low/payload.close)
 
@@ -424,7 +419,6 @@ class SimpleAction extends Action {
             case FooterType.RANGE_PERC:
                 this.drawVolume()
             default:
-                
                 this.drawRange()
         }
     }
@@ -435,7 +429,7 @@ class SimpleAction extends Action {
     drawChange(){
         let change = this.data.change || 0
         let percent = this.data.percent || 0
-        let precision = this.decimals < 3 ? this.decimals : Number(this.decimals)+1
+        let pad = change.countDecimalZeros() > 0 ? 1 : 0 
         let color = COLOR_GREEN
 
         if(change < 0){
@@ -444,28 +438,21 @@ class SimpleAction extends Action {
             percent = Math.abs(percent)
         }
         
-        change = this.prepPrice(change, precision)
-        percent = Utils.toFixed(percent, 2)
+        change = change.abbreviateNumber(6, pad)
+        percent = percent.toPrecisionPure(2)
         this.drawSmartPair('', percent+'%', color, '', change, color,)
     }
     
     //-----------------------------------------------------------------------------------------
 
     drawMarketState(state, yPos=32){
-        state = MarketStateType.PRE
         if(state == MarketStateType.REG) return
 
-        let COLOR_PRE = '#F8981D'
-        let COLOR_POST = '#26AAE1'
         let blockHeight = 15
-
-        this.drawingCtx.lineWidth = 1
-        this.drawingCtx.strokeStyle = COLOR_FOREGROUND
-        this.drawingCtx.strokeRect(0, yPos-1, 7, blockHeight * 2 + 2)
         this.drawingCtx.fillStyle = state == MarketStateType.PRE ? COLOR_PRE : COLOR_DISABLED
-        this.drawingCtx.fillRect(0, yPos, 6, blockHeight)
+        this.drawingCtx.fillRect(0, yPos, 7, blockHeight)
         this.drawingCtx.fillStyle = state == MarketStateType.POST ? COLOR_POST : COLOR_DISABLED
-        this.drawingCtx.fillRect(0, yPos+blockHeight, 6, blockHeight)
+        this.drawingCtx.fillRect(0, yPos+blockHeight, 7, blockHeight)
     }
     
     //-----------------------------------------------------------------------------------------
@@ -478,8 +465,7 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawPrice(value){
-        value = this.prepPrice(value)
-        this.drawScaledRight(value, this.data.foreground, 50, CANVAS_WIDTH-20, 40)
+        this.drawScaledRight(value.abbreviateNumber(), this.data.foreground, 50, CANVAS_WIDTH-20, 40)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -492,19 +478,22 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawRange(){
-        var price  = this.prepPrice(this.data.priceMarket)
-        var high = this.prepPrice(this.data.dayHigh)
-        var low = this.prepPrice(this.data.dayLow)
+        var fillColor = COLOR_BACKGROUND
+        var price  = this.data.priceMarket.abbreviateNumber()
+        var high = this.data.dayHigh.abbreviateNumber()
+        var low = this.data.dayLow.abbreviateNumber()
 
         var isFooter = this.currentView == ViewType.TICKER
         var font = isFooter ? 23 : 26
-        var yPos = isFooter ? [81,103,126,87] : [52,89,126,74]
+        var yPos = isFooter ? [81,103,126,86] : [52,89,126,75]
 
         console.log(this.currentView)
         if( this.currentView == ViewType.DAY_PERC ||
             ( this.footerMode == FooterType.RANGE_PERC || this.footerMode == FooterType.RANGE_PLUS_PERC )){
             high = this.data.dayHighPerc + '%'
             low = this.data.dayLowPerc + '%'
+            fillColor = COLOR_DISABLED
+            price = this.data.close.abbreviateNumber()
         }
 
         if( isFooter && (this.footerMode == FooterType.RANGE || this.footerMode == FooterType.RANGE_PERC)){
@@ -512,14 +501,28 @@ class SimpleAction extends Action {
             return
         }
 
-        if(this.data.state != MarketStateType.REG){
-            // var img = document.getElementById('closedIcon')
-            // this.drawingCtx.drawImage(img, 10, yPos[3], 22, 22)
-            //this.drawMarketState('marketClose', yPos[3])
-            price = this.prepPrice(this.data.close)
+        if(fillColor != COLOR_DISABLED && this.data.state != MarketStateType.REG){
+            switch(this.data.state){
+                case MarketStateType.PRE:
+                    fillColor = COLOR_PRE
+                    break
+                case MarketStateType.POST:
+                    fillColor = COLOR_POST
+                    break
+                default:
+                    fillColor = COLOR_DISABLED
+            }
         }
+        
+        this.drawingCtx.fillStyle = fillColor
+        this.drawingCtx.beginPath()
+        this.drawingCtx.moveTo(0, yPos[3])
+        this.drawingCtx.lineTo(15, yPos[3]+9)
+        this.drawingCtx.lineTo(0, yPos[3]+18)
+        this.drawingCtx.fill()
 
-        this.drawLeft('range',COLOR_FOREGROUND, 16, 21, 600, 6)
+        if(this.currentView != ViewType.TICKER)
+            this.drawLeft('range',COLOR_FOREGROUND, 16, 21, 600, 6)
         this.drawPair('', COLOR_FOREGROUND, high, COLOR_GREEN, yPos[0], font)
         this.drawPair('', COLOR_FOREGROUND, price, COLOR_FOREGROUND, yPos[1], font)
         this.drawPair('', COLOR_FOREGROUND, low, COLOR_RED, yPos[2], font)
@@ -529,8 +532,8 @@ class SimpleAction extends Action {
 
     drawSlider(){
         var isAlt = this.footerMode == FooterType.SLIDER2
-        var high = this.prepPrice(this.data.high)
-        var low = this.prepPrice(this.data.low)
+        var high = this.data.high.abbreviateNumber()
+        var low = this.data.low.abbreviateNumber()
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
         
         if(isAlt){

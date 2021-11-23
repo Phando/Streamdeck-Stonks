@@ -7,7 +7,9 @@ const MARGIN_LEFT = 6
 const MARGIN_RIGHT = 138
 const STATE_DEFAULT = 'default'
 
-const COLOR_DISABLED = '#707070'
+const COLOR_PRE      = '#F8981D'
+const COLOR_POST     = '#26AAE1'
+const COLOR_DISABLED = '#909090'
 const COLOR_ERROR    = '#FFFF00'
 const COLOR_FOREGROUND = '#D8D8D8'
 const COLOR_BACKGROUND = '#1D1E1F'
@@ -231,11 +233,12 @@ class StreamDeckClient {
         this.uuid = jsn.context
     }
 
-    //-----------------------------------------------------------------------------------------
+    // //-----------------------------------------------------------------------------------------
 
-    prepPrice(value, decimals=this.settings.decimals){
-        return Utils.abbreviateNumber(value, decimals, Math.abs(decimals - this.settings.decimals))
-    }
+    // prepPrice(value, decimals=this.settings.decimals){
+    //     //return Utils.abbreviateNumber(value, decimals, Math.abs(decimals - this.settings.decimals))
+    //     return value.abbreviateNumber()
+    // }
 
     //-----------------------------------------------------------------------------------------
     

@@ -183,7 +183,7 @@ class LimitManager extends Manager{
         this.type      = this.type || LimitType.NUMERIC
 
         this.upperLimit = this.upperLimit || 0
-        this.upperEnabled   = this.upperEnabled || 'disabled'
+        this.upperEnabled = this.upperEnabled || 'disabled'
 
         this.lowerLimit = this.lowerLimit || 0
         this.lowerEnabled   = this.lowerEnabled || 'disabled'
@@ -259,6 +259,15 @@ class LimitManager extends Manager{
 
     //-----------------------------------------------------------------------------------------
 
+    resetLimits(){
+        this.upperLimit = 0
+        this.upperEnabled = 'disabled'
+        this.lowerLimit = 0
+        this.lowerEnabled = 'disabled'
+    }
+
+    //-----------------------------------------------------------------------------------------
+    
     exitlLimits(jsn){
         this.uuid = jsn.context
         
@@ -273,10 +282,16 @@ class LimitManager extends Manager{
     handleEnabled(jsn){
         this.uuid = jsn.context
         
-        if(this.isUpper)
-            this.upperEnabled = this.upperEnabled == 'enabled' ? 'disabled' : 'enabled'
-        else 
-            this.lowerEnabled = this.lowerEnabled == 'enabled' ? 'disabled' : 'enabled'
+        if(this.isUpper) {
+            this.upperEnabled = this.isUpperEnabled ? 'disabled' : 'enabled'
+            if(this.isUpperEnabled && this.type == LimitType.NUMERIC)
+                this.upperLimit = this.data.price
+        }
+        else {
+            this.lowerEnabled = this.isLowerEnabled ? 'disabled' : 'enabled'
+            if(this.isLowerEnabled && this.type == LimitType.NUMERIC)
+                this.lowerLimit = this.data.price
+        }
     }
 
     //-----------------------------------------------------------------------------------------
@@ -367,8 +382,6 @@ class LimitManager extends Manager{
                 break
             case LimitViewType.UPPER_ENABLED :
             case LimitViewType.LOWER_ENABLED :
-                // this.updateEnabledView()
-                // break
             case LimitViewType.LOWER_INC :
             case LimitViewType.LOWER_DEC :
             case LimitViewType.UPPER_INC :
@@ -403,31 +416,49 @@ class LimitManager extends Manager{
 
     updateInfoView(jsn, editable = false){
         this.uuid = jsn.context
+        var fillColor = COLOR_BACKGROUND
         var upper = this.upperLimit
         var lower = this.lowerLimit
-        var price = this.prepPrice(this.data.priceMarket)
+        var price = this.data.priceMarket.abbreviateNumber()
         var state = this.data.state
         
         if(this.type == LimitType.PERCENT){
             upper = '+' + upper + '%'
             lower = '-' + lower + '%'
-            price = this.prepPrice(this.data.close)
             state = MarketStateType.CLOSED
+            price = this.data.close.abbreviateNumber()
+            fillColor = COLOR_DISABLED
         }
         else {
-            upper = this.prepPrice(upper)
-            lower = this.prepPrice(lower)
-        }
+            upper = upper.abbreviateNumber()
+            lower = lower.abbreviateNumber()
 
-        if(state != MarketStateType.REG){
-            var img = document.getElementById(state)
-            this.drawingCtx.drawImage(img, -8, 74, 25, 25)
+            if(state != MarketStateType.REG){
+                switch(this.data.state){
+                    case MarketStateType.PRE:
+                        fillColor = COLOR_PRE
+                        break
+                    case MarketStateType.POST:
+                        fillColor = COLOR_POST
+                        break
+                    default:
+                        fillColor = COLOR_DISABLED
+                }
+            }
         }
         
         if(editable)
             this.drawEditableContent()
+        
+        this.drawingCtx.fillStyle = fillColor
+        this.drawingCtx.beginPath()
+        this.drawingCtx.moveTo(0, 75)
+        this.drawingCtx.lineTo(15, 75+9)
+        this.drawingCtx.lineTo(0, 75+18)
+        this.drawingCtx.fill()
+
         this.drawRight(upper, this.isUpperEnabled ? COLOR_GREEN : COLOR_DISABLED, 52, 26)
-        this.drawRight(price, COLOR_FOREGROUND, 89, 26)
+        this.drawRight(price, COLOR_FOREGROUND, 88, 26)
         this.drawRight(lower, this.isLowerEnabled ? COLOR_RED : COLOR_DISABLED, 126, 26)
     }
 
@@ -435,44 +466,27 @@ class LimitManager extends Manager{
 
     drawEditableContent(){
         var imgName
+        var enablePos = this.isUpper ? 40 : 114
         var iconPos = this.isUpper ? 35 : 109
         var linePos = this.isUpper ? 32 : 106
         var enabled = this.isUpper ? this.isUpperEnabled : this.isLowerEnabled
         
-        switch(this.currentView){    
-            case LimitViewType.UPPER_ENABLED :
-            case LimitViewType.LOWER_ENABLED :
-                imgName = enabled ? 'limitEnabledImg' : 'limitDisabledImg'
-                break
-            default :
-                imgName = this.isInc ? 'arrowUp' : 'arrowDown'
-                break
-        }
-
         this.drawHeader('Limits')
-
         this.drawingCtx.lineWidth = 1
         this.drawingCtx.fillStyle = '#333333'
         this.drawingCtx.strokeStyle = '#777777'
-        
-        this.drawingCtx.beginPath()
-        this.drawingCtx.rect(-2, linePos, CANVAS_WIDTH+4, 34);
-        this.drawingCtx.fill()
-        
-        var img = document.getElementById(imgName)
-        this.drawingCtx.drawImage(img, 10, iconPos, 43, 26)
-    }
+        this.drawingCtx.fillRect(-2, linePos, CANVAS_WIDTH+4, 34)
 
-    //-----------------------------------------------------------------------------------------
-
-    updateEnabledView(){
-        var enabled = this.isUpper ? this.isUpperEnabled : this.isLowerEnabled
-        
-        this.drawHeader(this.isUpper ? 'Upper' : 'Lower')
-        this.drawRight('Limit', COLOR_FOREGROUND, 48, 22)
-
-        var img = document.getElementById(enabled ? 'limitEnabledImg' : 'limitDisabledImg')
-        this.drawingCtx.drawImage(img, 35, 66)
+        switch(this.currentView){    
+            case LimitViewType.UPPER_ENABLED :
+            case LimitViewType.LOWER_ENABLED :
+                this.drawSwitch(enabled, 3, enablePos)
+                break
+            default :
+                var img = document.getElementById(this.isInc ? 'arrowUp' : 'arrowDown')
+                this.drawingCtx.drawImage(img, -8, iconPos, 43, 26)
+                break
+        }
     }
 
     //-----------------------------------------------------------------------------------------
@@ -492,6 +506,16 @@ class LimitManager extends Manager{
     drawHeader(value){
         this.drawRight(value, COLOR_FOREGROUND, 20)
         this.drawLeft(this.countdown, COLOR_FOREGROUND, 20, 22, 600, 4)
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    drawSwitch(state, xPos, yPos){
+        var width = 10
+        this.drawingCtx.strokeStyle = COLOR_FOREGROUND
+        this.drawingCtx.fillStyle = state ? COLOR_GREEN : COLOR_DISABLED
+        this.drawingCtx.fillRect(xPos, yPos, width, 15)
+        this.drawingCtx.strokeRect(xPos, yPos, width, 15)
     }
 
 }

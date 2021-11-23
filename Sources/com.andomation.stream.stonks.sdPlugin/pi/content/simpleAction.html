@@ -5,12 +5,7 @@
 <summary>For crypto use 'coin-currency' : ETH-USD</summary>
 <div class="sdpi-item">
     <div class="sdpi-item-label">Symbol</div>
-    <input id="symbol" class="sdpi-item-value" type="text" placeholder="GME" style="text-transform:uppercase"/>
-</div>
-
-<div class="sdpi-item">
-    <div class="sdpi-item-label">Decimals</div>
-        <input id="decimals" class="sdpi-item-value" type="number" placeholder="2" />
+    <input id="symbol" class="sdpi-item-value" type="text" placeholder="GME" oninput="let p=this.selectionStart;this.value=this.value.toUpperCase();this.setSelectionRange(p, p);"/>
 </div>
 
 <div type="radio" class="sdpi-item" id="show_trend">
