@@ -477,7 +477,6 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawRange(){
-        var fillColor = COLOR_BACKGROUND
         var price  = this.data.close.abbreviateNumber()
         var high = this.data.high.abbreviateNumber()
         var low = this.data.low.abbreviateNumber()
@@ -487,8 +486,9 @@ class SimpleAction extends Action {
         var yPos = isFooter ? [81,103,126,88] : [52,89,126,75]
 
         if(this.currentView != ViewType.TICKER) {
-            high = this.data.dayHighPerc + '%'
-            low = this.data.dayLowPerc + '%'
+            this.drawLeft('-/+',COLOR_FOREGROUND, 16, 21, 600, 6)
+            high = this.currentView == ViewType.DAY_PERC ? this.data.dayHighPerc + '%' : this.data.dayHigh.abbreviateNumber()
+            low = this.currentView == ViewType.DAY_PERC ? this.data.dayLowPerc + '%' : this.data.dayLow.abbreviateNumber()
         }
         else if( this.footerMode == FooterType.RANGE_PERC || this.footerMode == FooterType.RANGE_PLUS_PERC ){
             high = this.data.highPerc + '%'
@@ -496,6 +496,10 @@ class SimpleAction extends Action {
         }
 
         if( isFooter && (this.footerMode == FooterType.RANGE || this.footerMode == FooterType.RANGE_PERC)){
+            if(low.length > 6 || high.length > 6){
+                high = Number(high).abbreviateNumber(2,5)
+                low = Number(low).abbreviateNumber(2,5)
+            }
             this.drawSmartPair("Lo", low, COLOR_RED, "Hi", high, COLOR_GREEN)
             return
         }
@@ -506,9 +510,7 @@ class SimpleAction extends Action {
         this.drawingCtx.lineTo(15, yPos[3]+9)
         this.drawingCtx.lineTo(0, yPos[3]+18)
         this.drawingCtx.fill()
-
-        if(this.currentView != ViewType.TICKER)
-            this.drawLeft('-/+',COLOR_FOREGROUND, 16, 21, 600, 6)
+            
         this.drawPair('', COLOR_FOREGROUND, high, COLOR_GREEN, yPos[0], font)
         this.drawPair('', COLOR_FOREGROUND, price, COLOR_FOREGROUND, yPos[1], font)
         this.drawPair('', COLOR_FOREGROUND, low, COLOR_RED, yPos[2], font)
@@ -522,6 +524,11 @@ class SimpleAction extends Action {
         var low = this.data.low.abbreviateNumber()
         var scale = 144 * Utils.rangeToPercent(this.data.close, this.data.low, this.data.high)
         
+        if(low.length > 6 || high.length > 6){
+            high = Number(high).abbreviateNumber(2,5)
+            low = Number(low).abbreviateNumber(2,5)
+        }
+
         if(isAlt){
             high = this.data.highPerc + '%'
             low = this.data.lowPerc + '%'
