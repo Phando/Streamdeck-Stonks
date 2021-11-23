@@ -63,10 +63,6 @@ class StreamDeckClient {
         return _canvas
     }
 
-    // set canvas(value){
-    //     this.context.canvas = value
-    // }
-
     get clickCount(){
         return this.context.clickCount
     }
@@ -94,10 +90,6 @@ class StreamDeckClient {
     get drawingCtx(){
         return _drawingCtx
     }
-
-    // set drawingCtx(value){
-    //     this.context.drawingCtx = value
-    // }
 
     get isLongPress(){
         return this.context.isLongPress
@@ -232,13 +224,6 @@ class StreamDeckClient {
     updateDisplay(jsn){
         this.uuid = jsn.context
     }
-
-    // //-----------------------------------------------------------------------------------------
-
-    // prepPrice(value, decimals=this.settings.decimals){
-    //     //return Utils.abbreviateNumber(value, decimals, Math.abs(decimals - this.settings.decimals))
-    //     return value.abbreviateNumber()
-    // }
 
     //-----------------------------------------------------------------------------------------
     

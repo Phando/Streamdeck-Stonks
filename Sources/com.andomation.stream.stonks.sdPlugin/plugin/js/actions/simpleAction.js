@@ -292,7 +292,8 @@ class SimpleAction extends Action {
         payload.volume      = symbol.regularMarketVolume
         payload.foreground  = COLOR_FOREGROUND
         payload.background  = COLOR_BACKGROUND
-        payload.decimals    = payload.price.abbreviateNumber()
+        // payload.decimals    = payload.price.countDecimals()
+        // payload.zeros       = payload.price.countDecimalZeros()
         
         // Range
         payload.state   = MarketStateType.REG
@@ -327,8 +328,6 @@ class SimpleAction extends Action {
         payload.high    = Math.max(payload.high, payload.price)
         payload.lowPerc = Math.abs(payload.low/payload.close).toPrecisionPure(2)
         payload.highPerc = Math.abs(payload.high/payload.close).toPrecisionPure(2)
-
-        console.log(payload.low, payload.close, payload.low/payload.close)
 
         if(this.showTrend == 'enabled'){
             var color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
@@ -429,7 +428,6 @@ class SimpleAction extends Action {
     drawChange(){
         let change = this.data.change || 0
         let percent = this.data.percent || 0
-        let pad = change.countDecimalZeros() > 0 ? 1 : 0 
         let color = COLOR_GREEN
 
         if(change < 0){
@@ -438,8 +436,11 @@ class SimpleAction extends Action {
             percent = Math.abs(percent)
         }
         
-        change = change.abbreviateNumber(6, pad)
+        let zed1 = this.data.price.countDecimalZeros()
+        let zed2 = change.countDecimalZeros()
+
         percent = percent.toPrecisionPure(2)
+        change = zed1 > zed2 ? change.abbreviateNumber(zed1-zed2) : change.abbreviateNumber()
         this.drawSmartPair('', percent+'%', color, '', change, color,)
     }
     
@@ -471,7 +472,7 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawVolume(){
-        let volume = this.data.volume.abbreviateNumber(4)
+        let volume = this.data.volume.abbreviateNumber(2,4)
         this.drawRight(volume, COLOR_FOREGROUND, 78, 24)
     }
 
@@ -487,7 +488,6 @@ class SimpleAction extends Action {
         var font = isFooter ? 23 : 26
         var yPos = isFooter ? [81,103,126,86] : [52,89,126,75]
 
-        console.log(this.currentView)
         if( this.currentView == ViewType.DAY_PERC ||
             ( this.footerMode == FooterType.RANGE_PERC || this.footerMode == FooterType.RANGE_PLUS_PERC )){
             high = this.data.dayHighPerc + '%'
@@ -522,7 +522,7 @@ class SimpleAction extends Action {
         this.drawingCtx.fill()
 
         if(this.currentView != ViewType.TICKER)
-            this.drawLeft('range',COLOR_FOREGROUND, 16, 21, 600, 6)
+            this.drawLeft('-/+',COLOR_FOREGROUND, 16, 21, 600, 6)
         this.drawPair('', COLOR_FOREGROUND, high, COLOR_GREEN, yPos[0], font)
         this.drawPair('', COLOR_FOREGROUND, price, COLOR_FOREGROUND, yPos[1], font)
         this.drawPair('', COLOR_FOREGROUND, low, COLOR_RED, yPos[2], font)
@@ -532,7 +532,6 @@ class SimpleAction extends Action {
 
     drawSlider(){
         var isAlt = this.footerMode == FooterType.SLIDER2
-        console.log("DECIMALS", this.data.price, this.data.price.countDecimals())
         var high = this.data.high.abbreviateNumber()
         var low = this.data.low.abbreviateNumber()
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)
