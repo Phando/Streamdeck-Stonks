@@ -184,7 +184,6 @@ class SimpleAction extends Action {
         const sdpi_collection = Utils.getProp(jsn, 'payload.sdpi_collection', {});
 
         if(sdpi_collection.key == 'symbol'){
-            //this.symbol = this.symbol.toUpperCase()
             this.limitManager.resetLimits()
             $SD.api.setSettings(this.uuid, this.settings)
         }
@@ -293,6 +292,7 @@ class SimpleAction extends Action {
         payload.volume      = symbol.regularMarketVolume
         payload.foreground  = COLOR_FOREGROUND
         payload.background  = COLOR_BACKGROUND
+        payload.decimals    = payload.price.abbreviateNumber()
         
         // Range
         payload.state   = MarketStateType.REG
@@ -322,9 +322,9 @@ class SimpleAction extends Action {
         
         payload.dayLowPerc = Math.abs(payload.low/payload.close).toPrecisionPure(2)
         payload.dayHighPerc = Math.abs(payload.high/payload.close).toPrecisionPure(2)
-
-        payload.low     = Math.min(payload.low,payload.price)
-        payload.high    = Math.max(payload.high,payload.price)
+        
+        payload.low     = Math.min(payload.low, payload.price)
+        payload.high    = Math.max(payload.high, payload.price)
         payload.lowPerc = Math.abs(payload.low/payload.close).toPrecisionPure(2)
         payload.highPerc = Math.abs(payload.high/payload.close).toPrecisionPure(2)
 
@@ -471,7 +471,7 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawVolume(){
-        let volume = Utils.abbreviateNumber(this.data.volume)
+        let volume = this.data.volume.abbreviateNumber(4)
         this.drawRight(volume, COLOR_FOREGROUND, 78, 24)
     }
 
@@ -532,6 +532,7 @@ class SimpleAction extends Action {
 
     drawSlider(){
         var isAlt = this.footerMode == FooterType.SLIDER2
+        console.log("DECIMALS", this.data.price, this.data.price.countDecimals())
         var high = this.data.high.abbreviateNumber()
         var low = this.data.low.abbreviateNumber()
         var scale = 144 * Utils.rangeToPercent(this.data.priceMarket, this.data.low, this.data.high)

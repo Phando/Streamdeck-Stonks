@@ -285,7 +285,7 @@ class StreamDeckClient {
     
     drawScaledPair(label, labelColor, value, valueColor, yPos, maxFont=MAX_FONT){
         var content = label.toString() + value.toString()
-        var font = Utils.calculateFont(content, CANVAS_WIDTH-14, 18, maxFont)
+        var font = Utils.calculateFont(content, CANVAS_WIDTH-16, 18, maxFont)
         this.drawPair(label, labelColor, value, valueColor, yPos, font)
     }
 

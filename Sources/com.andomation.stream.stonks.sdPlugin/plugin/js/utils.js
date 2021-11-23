@@ -1,23 +1,33 @@
 const deg2rad = deg => (deg * Math.PI) / 180.0;
 
 Number.prototype.countDigits = function () {
-    if(Math.floor(this.valueOf()) === this.valueOf() || Math.abs(this.valueOf()) < 1) return 0
-    return this.toString().split(".")[0].length || 0
+    if(Math.abs(this.valueOf()) < 1) return 0
+    return this.toString().split('.')[0].length || 0
 }
-
+ 
 Number.prototype.countDecimals = function () {
     if(Math.floor(this.valueOf()) === this.valueOf()) return 0
-    return this.toString().split(".")[1].length || 0
+    return this.toString().split('.')[1].length || 0
+}
+ 
+Number.prototype.countDecimalZeros = function () {
+    if(Math.floor(this.valueOf()) === this.valueOf()) return 0
+    return (this.toString().split('.')[1].match(/^0+/) || [''])[0].length
 }
 
-Number.prototype.countDecimalZeros = function () {
-    if(Math.floor(this.valueOf()) === this.valueOf() || this.valueOf() > 0.1) return 0
-    let test = this.toString().split(".")[1]
-    return (test.match(/^0+/) || [''])[0].length
+Number.prototype.getPreferredDecimals = function (preferredLength=6, precision=2){
+    let value = this.valueOf()
+    let dig = value.countDigits()
+    let dec = Math.min(precision, Math.max(value.countDecimals(), precision))
+    let zed = value.countDecimalZeros()
+    
+    if(zed > 2) return -zed
+    if(dig > preferredLength) return 0
+    return Math.min(preferredLength - dig, precision)
 }
 
 Number.prototype.toPrecisionPure = function(precision) {
-	  if(typeof precision == 'undefined') return this.valueOf()
+	if(typeof precision == 'undefined') return this.valueOf()
 		
     let parts = this.toString().split(".")
     let whole = parts[0]
@@ -31,27 +41,26 @@ Number.prototype.toPrecisionPure = function(precision) {
     return whole +'.'+ fraction
 }
 
-Number.prototype.abbreviateNumber = function (maxLength=6, precision=2) {
-  let value = this.valueOf()
-  let dig = value.countDigits()
-  let dec = Math.max(value.countDecimals(), precision)
-  let zer = value.countDecimalZeros()
-  
-  if(dig + dec <= maxLength)
-  	return value.toPrecisionPure(dec)
-  
-  if(zer>2){ 
-  	value = value.toString().replace(/^[.|0]*/,'').substring(0,maxLength-1)
-  	return '`0' + value
-  }
-  
-  if(maxLength - dig >= 0)
-  	return value.toPrecisionPure(Math.min(2, maxLength - dig))
-  
-  let digits = dig % 3 == 0 ? 0 :  3 - Math.round(dig % 3)
-  return new Intl.NumberFormat( 'en-US', { maximumFractionDigits: digits, notation: 'compact', compactDisplay: 'short'}).format(value)
+Number.prototype.abbreviateNumber = function(maxLength = 6, precision = 2) {
+    let value = this.valueOf()
+    let dig = value.countDigits()
+    let dec = Math.min(precision, Math.max(value.countDecimals(), precision))
+    let zed = value.countDecimalZeros()
+        
+    if(zed >= 2)
+      return '`0' + value.toString().replace(/^[.|0]*/, '').substring(0, maxLength - 1)
+      
+    if(dig > maxLength){
+        let digits = dig % 3 == 0 ? 0 : 3 - Math.round(dig % 3)
+        return new Intl.NumberFormat('en-US', {
+            maximumFractionDigits: digits,
+            notation: 'compact',
+            compactDisplay: 'short'
+        }).format(value)
+    }
+    
+    return value.toPrecisionPure(Math.min(maxLength - dig, precision))
 }
-
 
 
 var Utils = {
@@ -136,20 +145,20 @@ Utils.percentToRange = function (percent, min, max) {
 
 //-----------------------------------------------------------------------------------------
 
-Utils.abbreviateNumber = function(value, precision=2, delta=0) {
-    if(value == 0 || (value > 0.001 && value < 10000))
-        return value.toDecimals(precision)
+// Utils.abbreviateNumber = function(value, precision=2, delta=0) {
+//     if(value == 0 || (value > 0.001 && value < 10000))
+//         return value.toDecimals(precision)
 
-    if(value > 0.001){
-        let digits = value % 3 == 0 ? 0 : 1
-        return new Intl.NumberFormat( 'en-US', { maximumFractionDigits: digits, notation: 'compact', compactDisplay: 'short'}).format(value)
-    }
+//     if(value > 0.001){
+//         let digits = value % 3 == 0 ? 0 : 1
+//         return new Intl.NumberFormat( 'en-US', { maximumFractionDigits: digits, notation: 'compact', compactDisplay: 'short'}).format(value)
+//     }
     
-    // Small number truncation
-    let pad = delta==0 ? '`0' : '`0' + Array(delta).fill(0).join('')
-    value = value.toString().substring(2, Number(precision)+2)
-    return  pad + value.replace(/^[^1-9]*/,'')
-};
+//     // Small number truncation
+//     let pad = delta==0 ? '`0' : '`0' + Array(delta).fill(0).join('')
+//     value = value.toString().substring(2, Number(precision)+2)
+//     return  pad + value.replace(/^[^1-9]*/,'')
+// };
 
 //-----------------------------------------------------------------------------------------
 
