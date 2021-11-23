@@ -439,8 +439,9 @@ class SimpleAction extends Action {
         let zed1 = this.data.price.countDecimalZeros()
         let zed2 = change.countDecimalZeros()
 
+        console.log(zed1, zed2)
         percent = percent.toPrecisionPure(2)
-        change = zed1 > zed2 ? change.abbreviateNumber(zed1-zed2) : change.abbreviateNumber()
+        change = zed1 < zed2 ? change.abbreviateNumber(zed1-zed2) : change.abbreviateNumber()
         this.drawSmartPair('', percent+'%', color, '', change, color,)
     }
     
