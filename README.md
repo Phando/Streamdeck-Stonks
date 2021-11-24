@@ -1,17 +1,8 @@
-
 # Stonks
 
-![Hero Image](./images/appStore.png)
+![Hero](images/appStore.png)
 
-
-1![Error Image](images/error.png)
-
-2![Error Image](/images/error.png)
-
-3![Error Image](./images/error.png)
-
-
-*Stonks* is not mispelled. This plugin is intended for diamond handed investors to keep an eye on their investments. It is a simple plugin that lets you watch stocks and crypto. It shows the symbol, price, volume, market state, daily ranges, and more... 
+This plugin is intended for diamond handed investors to keep an eye on their investments. Investors can watch stocks and crypto using one plugin. It shows the symbol, price, volume, market state, daily ranges, charts and more... 
 
 If you find bugs or want to see new features please log at ticket in the [github repo](https://github.com/Phando/Streamdeck-Stonks/issues).
 
@@ -20,98 +11,119 @@ If you find bugs or want to see new features please log at ticket in the [github
 - Stock Lookups
 - Crypto Lookups
 - Charting
+- Multiple layouts
 - Limit notifications
 - On device limit adjustments
-- Multiple layouts
 - Cross-platform (macOS, Windows)
 
-Alternate locales and currencies will be supported in a future release.
+Alternate locales and currencies will be supported in a future releases.
 
 Check the [changelog](Changelog.md) for the latest updates.
 
 ## Quickstart
 
-This short guide will help you get started.
-
-![Labels](images/Layout.png)
-
 ### Set the symbol:
 
 **Stocks** use the stock symbol. AMC, GME, TSLA... 
+
 **Crypto** uses the symbol and currency.  BTC-EUR, ETH-USD, SHIB-USD...
+
+In the Property Inspector, enter your favorite asset symbol and let the data pour in. 
 
 If the plugin runs into any issues or can not find a symbol, you will see a 'Not Found' error state. If the plugin doesn't recover, restart the Streamdeck app.
 
-![Error](images/Error.png)
+![Error](images/error.png)
 
 ## Layout
 
+![Footers](images/footers.png)
 
+The primary view of this plugin is focused on the current price. Additional information is supported in the various footter views. The footers show the most relevant infomation and span into pre and post market data. The  There are footers that show range data which are marked up with a small triangle to indicate that value is from the previous market close. 
+
+### Footer Details
+
+* **None** - Keeping your desktop clean and simple
+* **Change** - The decimal and percentage change values since the previous market close. This includes pre, regular and post change amounts.
+* **Range** - The highest high and the lowest low since the previous market close. This includes pre, regular and post range amounts.
+* **Range%** - This is the same as Range, but in percent format.
+* **Range Plus** - This shows the range highs and lows as well as the previous market close. 
+* **Range Plus%** - This is the same as Range Plus, but in percent format.
+* **Range Viz** - This shows the days range as colored bars with the previous market close as the point where the colors meet. The white indicator shows the current price accounting for pre, regular and post values.
+* **Range Viz%** - This is the same as Range Viz, but, you guessed it, in percent format.
+
+### Market State
+![States](images/states.png)
+
+The market state is a small indicator to the left of the asset price. During regular trading hours it is invisible. In pre market the top half is colord and the rest is grey. In post market, the bottom half is colored and the rest is grey. When the market is closed, the whole market state indicator is grey. The market state indicator does not show up for crypto assets as the market is always on. 
+
+## Additional Views
+
+![Views](images/views.png)
+
+There are additional views to give more information and insight for the assets you are intersted in. These views are generally based on regular market trading data. This aplies to the highs and lows as well as the chart data. In the Property Inspector, you can select which views you would like to see (cycle through) as you click the Streamdeck button.
+
+### View Details 
+
+Single day charts will show a horiontal line indicating the previous market close. Depending on the zoom level of the chart, the line will be omitted as it doesnt fit in the range.
+
+* **Day Decimal** - This shows the day's high, low and previous close for regular trading hours. 
+* **Day Percent** - This is the same as Day Decimal, but in percent format.
+* **Limits** - This shows the high/low limits thresholds, the previous close as well as whether the limits are enabled. 
+* **Chart 30 minutes**
+* **Chart 1 hour**
+* **Chart 2 hour**
+* **Chart 1 day**
+* **Chart 5 days**
+* **Chart 1 month**
+* **Chart 3 months**
+* **Chart 6 months**
+* **Chart 12 months**
+
+## Limits
+
+![Limits](images/limits.png)
+
+Limits are implemented so users know when to take action or when to let their diamond hands do the hodling. A gradient header is added behind the symbol to indicate the limit state. The image above shows what a high and low limit look like.
+
+![Limits View](images/limitsView.png)
+
+It is possible to enable/disable and adjust the limits right on the device. A long press will take the plugin into Limits View. This view is governed by a timer. If the view is left alone, it will self dismiss back to the ticker view. Once in the Limits View clicking the button will adjust what ever section you are on. Limits can be adjusted numerically or by percent. There are several settings around limits explained in the settings details section. 
+
+### Limit Adjustment Order
+
+* **Upper Limit Enable/Disable**
+* **Upper Limit Increment** - Skipped if disabled
+* **Upper Limit Decrement** - Skipped if disabled
+* **Lower Limit Enable/Disable**
+* **Lower Limit Decrement** - Skipped if disabled
+* **Lower Limit Increment** - Skipped if disabled
+ 
 
 ## Settings Details
 
-Symbol
-Decimals
-Show Trend
-Footer
-
-### Footer:
-NONE        : 'none',
-CHANGE      : 'change',
-METER       : 'meter',
-SLIDER1     : 'slider1',
-SLIDER2     : 'slider2',
-RANGE       : 'range',
-RANGE_PERC  : 'rangePerc',
-RANGE_PLUS  : 'rangePlus',
-RANGE_PLUS_PERC : 'rangePlusPerc'
-
-### Alternate Views:
-
-TICKER          : 'defaultView',
-DAY_DEC         : 'showDayDecimal',
-DAY_PERC        : 'showDayPercent',
-LIMITS          : 'showLimits',
-CHART_MIN_30    : 'show30MinChart',
-CHART_HR_1      : 'show1HourChart',
-CHART_HR_2      : 'show2HourChart',
-CHART_DAY_1     : 'show1DayChart',
-CHART_DAY_5     : 'show5DayChart',
-CHART_MONTH_1   : 'show1MonthChart',
-CHART_MONTH_3   : 'show3MonthChart',
-CHART_MONTH_6   : 'show6MonthChart',
-CHART_MONTH_12  : 'show12MonthChart',
-    
-### Limits:
-
-#### Adjusting
+* Title - Ignored
+* Symbol - The asset you are looking to track
+* Show Trend - Color the price to indicate higher or lower than previous close
+* Show State - Display the Market State Indicator
+* Fill Charts - Show area charts or line charts
+* Footer - Select which footer style you want on the main screen
+* Views - Choose which views to display when clicking the Streamdeck button
+* Limit Type - Choose between numerical or percentage limits
+* Increment - The increment amount to be used when clicking the button in Limits View
+* Screen Time - Sets the duration timer for the Limits View adjustments
+* Upper Limit Enabled - Enable or disable the Upper Limit
+* Upper Limit - The threshold value to trigger the Upper Limit
+* Lower Limit Enabled - Enable or disable the Lower Limit
+* Lower Limit - The threshold value to trigger the Lower Limit
+* Restore Deflauts - Click this button to reset all the plugin settings. 
 
 ## Technical Details
 
-http://localhost:23654/
-
-You can set how often the plugin fetches new data. The value is in seconds and needs to be between 3 and 300. The default value is 60 for once a minute. The API is limited to 2,000 requests per hour or 48,000 per day. Each instance of the plugin adds to that number. Be sure to choose an interval that will not exceed these limits.
-
-To determine the maximum speed for your interval use this formula
-
-**60 / (33.34 / #buttons)**
-
-If you have 5 buttons assigned to Stonks, the maximum interval you should choose would be 9.
-
-48,000 (per day) / 24 (hours) / 60 (minutes) ~= 33.34
-
-60(seconds) / (33.34 / 5) ~= 9
-
-### Price Limits:
-
-The plugin will change colors if a high or low limit are set. Aditionally, the url where the button links to can be changed if a limit is triggered.
-
-### Button Mode:
-
-You can choose what happens when a button is pressed. It will either refresh the stock value or it can open to a url. Depending on your limits settings, the button can have a different action for normal state, upper limit state and lower limit state.
-
-Imagine a use case where refresh is the normal state, the upper state would open your brokers webpage and a low state would open your webmail.
+To view the output of the plugin you can point a browser to 
+[http://localhost:23654](http://localhost:23654) and click on *com.andomation.stream.stonks*.
 
 ###Requirements
 
 Stream Deck 4.1 or later.
+
+If you find bugs or want to see new features please log at ticket in the [github repo](https://github.com/Phando/Streamdeck-Stonks/issues).
