@@ -16,7 +16,7 @@
             <label for="showTrend-radio1" class="sdpi-item-label"><span></span>True</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="showTrend-radio2" type="radio" value="disabled" name="showTrend">
+            <input id="showTrend-radio2" type="radio" value="disabled" name="showTrend" >
             <label for="showTrend-radio2" class="sdpi-item-label"><span></span>False</label>
         </div>
     </div>
@@ -51,7 +51,7 @@
 </div>
 <div class="sdpi-item" id="home_select">
     <div class="sdpi-item-label">Home</div>
-    <select class="sdpi-item-value select sdProperty" id="home"></select>
+    <select class="sdpi-item-value select sdProperty" id="home" default="range"></select>
 </div>
 
 <div class="sdpi-heading">Alternate Views</div>
@@ -60,43 +60,43 @@
     <div class="sdpi-item-label">Footers</div>
     <div class="sdpi-item-value min100">
         <div class="sdpi-item-child">
-            <input id="none" type="checkbox" value="enabled" related="home">
+            <input id="none" type="checkbox" value="enabled" related="home" relation="option">
             <label for="none" class="sdpi-item-label"><span></span>None</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="change" type="checkbox" value="enabled" related="home">
+            <input id="change" type="checkbox" value="enabled" related="home" relation="option">
             <label for="change" class="sdpi-item-label"><span></span>Change</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="range" type="checkbox" value="enabled" related="home">
+            <input id="range" type="checkbox" value="enabled" related="home" relation="option">
             <label for="range" class="sdpi-item-label"><span></span>Range</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="rangePerc" type="checkbox" value="enabled" related="home">
+            <input id="rangePerc" type="checkbox" value="enabled" related="home" relation="option">
             <label for="rangePerc" class="sdpi-item-label"><span></span>Range%</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="rangePlus" type="checkbox" value="enabled" related="home">
+            <input id="rangePlus" type="checkbox" value="enabled" related="home" relation="option">
             <label for="rangePlus" class="sdpi-item-label"><span></span>Range Mkt</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="rangePlusPerc" type="checkbox" value="enabled" related="home">
+            <input id="rangePlusPerc" type="checkbox" value="enabled" related="home" relation="option">
             <label for="rangePlusPerc" class="sdpi-item-label"><span></span>Range Mkt%</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="viz" type="checkbox" value="enabled" related="home">
+            <input id="viz" type="checkbox" value="enabled" related="home" relation="option">
             <label for="viz" class="sdpi-item-label"><span></span>Viz</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="vizPerc" type="checkbox" value="enabled" related="home">
+            <input id="vizPerc" type="checkbox" value="enabled" related="home" relation="option">
             <label for="vizPerc" class="sdpi-item-label"><span></span>Viz%</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="vizLimits" type="checkbox" value="enabled" related="home">
+            <input id="vizLimits" type="checkbox" value="enabled" related="home" relation="option">
             <label for="vizLimits" class="sdpi-item-label"><span></span>Viz Limits</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="vizPercLimits" type="checkbox" value="enabled" related="home">
+            <input id="vizPercLimits" type="checkbox" value="enabled" related="home" relation="option">
             <label for="vizPercLimits" class="sdpi-item-label"><span></span>Viz Limits%</label>
         </div>
     </div>
@@ -107,15 +107,15 @@
     <div class="sdpi-item-label">Details</div>
     <div class="sdpi-item-value min100">
         <div class="sdpi-item-child">
-            <input id="showDayDecimal" type="checkbox" value="enabled" related="home">
+            <input id="showDayDecimal" type="checkbox" value="enabled" related="home" relation="option">
             <label for="showDayDecimal" class="sdpi-item-label"><span></span>Day Numeric</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="showDayPercent" type="checkbox" value="enabled" related="home">
+            <input id="showDayPercent" type="checkbox" value="enabled" related="home" relation="option">
             <label for="showDayPercent" class="sdpi-item-label"><span></span>Day Percent</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="showLimits" type="checkbox" value="enabled" related="home">
+            <input id="showLimits" type="checkbox" value="enabled" related="home" relation="option">
             <label for="showLimits" class="sdpi-item-label"><span></span>Limits</label>
         </div>
     </div>
@@ -126,39 +126,39 @@
     <div class="sdpi-item-label">Charts</div>
     <div class="sdpi-item-value min100">
         <div class="sdpi-item-child">
-            <input id="show30MinChart" type="checkbox" value="enabled" related="home">
+            <input id="show30MinChart" type="checkbox" value="enabled" related="home" relation="option">
             <label for="show30MinChart" class="sdpi-item-label"><span></span>30 Min</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show1HourChart" type="checkbox" value="enabled" related="home">
+            <input id="show1HourChart" type="checkbox" value="enabled" related="home" relation="option">
             <label for="show1HourChart" class="sdpi-item-label"><span></span>1 Hour</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show2HourChart" type="checkbox" value="enabled" related="home">
+            <input id="show2HourChart" type="checkbox" value="enabled" related="home" relation="option">
             <label for="show2HourChart" class="sdpi-item-label"><span></span>2 Hour</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show1DayChart" type="checkbox" value="enabled" related="home">
+            <input id="show1DayChart" type="checkbox" value="enabled" related="home" relation="option">
             <label for="show1DayChart" class="sdpi-item-label"><span></span>1 Day</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show5DayChart" type="checkbox" value="enabled" related="home">
+            <input id="show5DayChart" type="checkbox" value="enabled" related="home" relation="option">
             <label for="show5DayChart" class="sdpi-item-label"><span></span>5 Day</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show1MonthChart" type="checkbox" value="enabled" related="home">
+            <input id="show1MonthChart" type="checkbox" value="enabled" related="home" relation="option">
             <label for="show1MonthChart" class="sdpi-item-label"><span></span>1 Month</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show3MonthChart" type="checkbox" value="enabled" related="home">
+            <input id="show3MonthChart" type="checkbox" value="enabled" related="home" relation="option">
             <label for="show3MonthChart" class="sdpi-item-label"><span></span>3 Month</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show6MonthChart" type="checkbox" value="enabled" related="home">
+            <input id="show6MonthChart" type="checkbox" value="enabled" related="home" relation="option">
             <label for="show6MonthChart" class="sdpi-item-label"><span></span>6 Month</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show12MonthChart" type="checkbox" value="enabled" related="home">
+            <input id="show12MonthChart" type="checkbox" value="enabled" related="home" relation="option">
             <label for="show12MonthChart" class="sdpi-item-label"><span></span>12 Month</label>
         </div>
     </div>

@@ -213,31 +213,32 @@ function handleSdpiItemChange(e, idx) {
     }
   }
 
-  console.log("E Type", e.type, e, $SD)
+  console.log("E Type", e.type, getRelation(e))
+  updateRelation(e)
+  
+  // if(e.type == "radio" || e.type == "checkbox"){
+  //   var settings = $SD.actionInfo.payload.settings
 
-  if(e.type == "radio" || e.type == "checkbox"){
-    var settings = $SD.actionInfo.payload.settings
-    
-    sdpiItemChildren.forEach((item) => { 
-      if(!item.checked || e.type == "radio"){
-        delete settings[item.id]
-      }
-    });
+  //   sdpiItemChildren.forEach((item) => { 
+  //     if(!item.checked || e.type == "radio"){
+  //       delete settings[item.id]
+  //     }
+  //   });
 
-    if(e.checked){
-      e.setAttribute("_value", e.value)
-      if(e.type == "radio")
-        e.setAttribute("_name", e.name)
-      else 
-        settings[e.id] = e.value
-    }
-    else if(e.value == 'enabled'){
-      e.setAttribute("_value", '_false')
-    }
+  //   if(e.checked){
+  //     e.setAttribute("_value", e.value)
+  //     if(e.type == "radio")
+  //       e.setAttribute("_name", e.name)
+  //     else 
+  //       settings[e.id] = e.value
+  //   }
+  //   else if(e.value == 'enabled'){
+  //     e.setAttribute("_value", '_false')
+  //   }
     
-    $SD.actionInfo.payload.settings = settings
-    //saveSettings(action.settings)
-  }
+  //   $SD.actionInfo.payload.settings = settings
+  //   //saveSettings(action.settings)
+  // }
 
   if (sdpiItemGroup && !sdpiItemChildren.length) {
     for (let x of ["input", "meter", "progress"]) {
@@ -282,108 +283,171 @@ function handleSdpiItemChange(e, idx) {
 
 //------------------------------ DOM Helpers -----------------------------------//
 
-const populateRelated = (pl) => {
-  // Populate related select lists with their selected values
-  var selects = $("select");
-  selects.each( function(i,sel){
-    var payload = null
-    var selected = false
-    var related = $("[related="+sel.id+"]")
-    if(related.length==0) return
+// const populateRelated = (pl) => {
+//   // Populate related select lists with their selected values
+//   var selects = $("select");
+//   selects.each( function(i,sel){
+//     var payload = null
+//     var selected = false
+//     var related = $("[related="+sel.id+"]")
+//     if(related.length==0) return
 
-    $(sel).find('option').detach();
+//     $(sel).find('option').detach();
     
-    related.each( function(j,item){
-      if(item.checked){
-        if(!selected && item.id == pl[sel.id])
-          selected = item.id
+//     related.each( function(j,item){
+//       if(item.checked){
+//         if(!selected && item.id == pl[sel.id])
+//           selected = item.id
         
-        let label = $("label[for='"+ item.id+"']").text()
-        $(sel).append($('<option>', {value:item.id, text:label}));
-      }
-    });
+//         let label = $("label[for='"+ item.id+"']").text()
+//         $(sel).append($('<option>', {value:item.id, text:label}));
+//       }
+//     });
     
-    // Solid match return
-    if(selected != false){
-      $(sel).val(selected)
-      return
-    }
+//     // Solid match return
+//     if(selected != false){
+//       $(sel).val(selected)
+//       return
+//     }
 
-    // Not found check for an empty list
-    if($(sel).find('option').length == 0){
-      let label = $("label[for='"+ related[0].id+"']").text()
-      $(sel).append($('<option>', {value:related[0].id, text:label}));
-      payload = { key:related[0].id, value:'enabled', group:false, index:0, selection:null, checked:true }
-      $SD.emit("piDataChanged", payload)
-    }
+//     // Not found check for an empty list
+//     if($(sel).find('option').length == 0){
+//       let label = $("label[for='"+ related[0].id+"']").text()
+//       $(sel).append($('<option>', {value:related[0].id, text:label}));
+//       payload = { key:related[0].id, value:'enabled', group:false, index:0, selection:null, checked:true }
+//       $SD.emit("piDataChanged", payload)
+//     }
 
-    // No selection, pick the first element
-    payload = { key:sel.id, value:sel.options[0].value, group:false, index:0, selection:[], checked:false }
+//     // No selection, pick the first element
+//     payload = { key:sel.id, value:sel.options[0].value, group:false, index:0, selection:[], checked:false }
+//     $SD.emit("piDataChanged", payload)
+//   });
+// }
+
+//-----------------------------------------------------------------------------------------
+
+const getRelation = (element) => {
+  if(element.hasAttribute("related"))
+    return element.getAttribute("related")
+
+  return document.querySelectorAll("[name="+ element.getAttribute("name") +"]").length > 1 ? element.name : null
+};
+
+//-----------------------------------------------------------------------------------------
+
+const getRelatedList = (key) => {
+  let elementList = document.querySelectorAll("[name="+key+"]")
+  return elementList.length > 0 ? elementList : document.querySelectorAll("[related="+key+"]") 
+}
+
+//-----------------------------------------------------------------------------------------
+
+const initRadio = (element, pl) => {
+  let name = element.getAttribute('name')
+  element.checked = element.value == pl[name]
+}
+
+//-----------------------------------------------------------------------------------------
+
+const updateRadios = (element, settings) => {
+  getRelatedList(element.getAttribute('name')).forEach(function(item){
+      delete settings[item.id]
+  });
+
+  //settings[element.getAttribute('name')] = element.value
+}
+
+//-----------------------------------------------------------------------------------------
+
+const initOption = (element, pl) => {
+  if(pl[element.id] != 'enabled') return
+  var parent = document.getElementById(element.getAttribute('related') )
+
+  let label = $("label[for='"+ element.id +"']").text()
+  $(parent).append($('<option>', {value:element.id, text:label}));
+}
+
+//-----------------------------------------------------------------------------------------
+
+const updateOptions = (element, pl) => {
+  if(element.checked) return
+
+  let parent = document.getElementById(element.getAttribute('related'))
+  if(parent.value != element.id) return
+
+  let checkedItems = Array.from(document.querySelectorAll("[related="+ parent.id +"]:checked"))
+  
+  if(checkedItems.length == 0){
+    checkedItems.push({id:parent.getAttribute("default")})
+    payload = { key:checkedItems[0].id, value:'enabled', group:false, index:0, selection:[], checked:true }
     $SD.emit("piDataChanged", payload)
+  }
+
+  payload = { key:parent.id, value:checkedItems[0].id, group:false, index:0, selection:[], checked:false }
+  $SD.emit("piDataChanged", payload)
+}
+
+//-----------------------------------------------------------------------------------------
+
+const initRelation = (key, pl) => {
+  let relatedList = getRelatedList(key)
+  if(relatedList.length == 0) return
+
+  let parent = document.getElementById(key)
+  if(parent && parent.type.includes('select'))
+    $(parent).find('option').detach()
+  
+  relatedList.forEach(function(element){
+    if(getRelation(element) == null) return
+    
+    if(element.getAttribute("relation") == "option")
+      initOption(element, pl)
+    else if(element.type == "radio")
+      initRadio(element, pl)
   });
 }
 
-const isRelated = (element) => {
-  return element.hasAttribute("related");
-};
+//-----------------------------------------------------------------------------------------
 
-const hasRelated = (element) => {
-  console.log("Action Test", element.id, action.settings)
-  for (const [key, value] of Object.entries(action.settings)) {
-    let item = document.querySelector('#'+ key);
-    //console.log("=>", key, value)
-    if(item == null) continue
-    console.log("=>", key, isRelated(item))
-  }
-  return false
-}
+const updateRelation = (element) => {
+  let relation = getRelation(element)
+  if(relation == null) return
 
+  var settings = $SD.actionInfo.payload.settings
 
-const updateRelated = (element, pl) => {
-  //if(!element.hasAttribute('related'))
-  if(!isRelated(element))//.hasAttribute('related'))
-    return
+  if(element.getAttribute("relation") == "option")
+    updateOptions(element, settings)
+  else if(element.type == "radio")
+    updateRadios(element, settings)
+
+  console.log("Saving", element.id)
+  element.setAttribute('_name', element.hasAttribute('name') ? element.getAttribute('name') : element.id)
+  element.setAttribute('_value', element.checked ? element.value : '_false')
   
-  var related = document.getElementById( element.getAttribute('related') )
-  let label = $("label[for='"+ element.id +"']").text()
-  $(related).append($('<option>', {value:element.id, text:label}));
-
-  if(pl[related.id] == element.id)
-    $(related).val(element.id)
+  $SD.actionInfo.payload.settings = settings
 }
 
 const updateUI = (pl) => {
-  // Insert Radio Values if Needed
-  for (const [key, value] of Object.entries(pl)) {
-    var fieldList = document.querySelectorAll("[id^="+key+"-radio]") 
-    if( fieldList.length == 0 ) continue
-    
-    fieldList.forEach(function(item){
-        console.log("Field", item, item.id, item.value)
-        if(item.value == pl[key]){
-          pl[item.id] = pl[key]
-        } 
-        else {
-            delete pl[item.id]
-        }
-    });
-    
-    let test = document.querySelector('#home'); 
-    hasRelated(test)
-  }
-
+  // Update any related content prior to setting any values
+  for (const [key] of Object.entries(pl))
+    initRelation(key, pl)
+  
   // Default Functionality
   Object.keys(pl).map((e) => {
     if (e && e != "") {
       const foundElement = document.querySelector(`#${e}`);
       console.log(`searching for: #${e}`, "found:", foundElement);
       
-      if(!foundElement || foundElement.type == "file")
+      if(!foundElement || foundElement.type == "file" || foundElement.type == "radio")
         return
       
-      if(foundElement.type == "checkbox" || foundElement.type ==  "radio"){
+      if(foundElement.type == "checkbox"){
         foundElement.checked = foundElement.value == pl[e]
-        updateRelated(foundElement, pl)
+      }
+      else if(foundElement.type.includes("select")){
+        console.log("Select Test", foundElement)
+        //foundElement.checked = foundElement.value == pl[e]
+        $(foundElement).val(pl[e])
       }
       else {
         foundElement.value = pl[e];
