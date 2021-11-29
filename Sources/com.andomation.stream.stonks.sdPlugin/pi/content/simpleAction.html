@@ -1,5 +1,5 @@
 <div class="sdpi-heading">Info</div>
-<summary>For detailed settings descriptions please see the <a href="https://github.com/Phando/Streamdeck-Stonks/blob/master/README.md" target="_blank">documentation</a>.</summary>
+<summary>Complete documentation available <a href="https://github.com/Phando/Streamdeck-Stonks/blob/master/README.md" target="_blank"><b>here</b></a></summary>
 
 <div class="sdpi-heading">General</div>
 <summary>For crypto use 'coin-currency' : ETH-USD</summary>
@@ -49,107 +49,116 @@
         </div>
     </div>
 </div>
+<div class="sdpi-item" id="home_select">
+    <div class="sdpi-item-label">Home</div>
+    <select class="sdpi-item-value select sdProperty" id="home"></select>
+</div>
 
-<div class="sdpi-heading">Footer</div>
-<div type="radio" class="sdpi-item" id="footer_mode">
-    <div class="sdpi-item-label">Mode</div>
+<div class="sdpi-heading">Alternate Views</div>
+
+<div type="checkbox" class="sdpi-item" id="summary-views">
+    <div class="sdpi-item-label">Footers</div>
     <div class="sdpi-item-value min100">
         <div class="sdpi-item-child">
-            <input id="footerMode-radio0" type="radio" value="none" name="footerMode">
-            <label for="footerMode-radio0" class="sdpi-item-label"><span></span>None</label>
+            <input id="none" type="checkbox" value="enabled" related="home">
+            <label for="none" class="sdpi-item-label"><span></span>None</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio1" type="radio" value="change" name="footerMode">
-            <label for="footerMode-radio1" class="sdpi-item-label"><span></span>Change</label>
+            <input id="change" type="checkbox" value="enabled" related="home">
+            <label for="change" class="sdpi-item-label"><span></span>Change</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio2" type="radio" value="range" name="footerMode">
-            <label for="footerMode-radio2" class="sdpi-item-label"><span></span>Range</label>
+            <input id="range" type="checkbox" value="enabled" related="home">
+            <label for="range" class="sdpi-item-label"><span></span>Range</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio3" type="radio" value="rangePerc" name="footerMode">
-            <label for="footerMode-radio3" class="sdpi-item-label"><span></span>Range%</label>
+            <input id="rangePerc" type="checkbox" value="enabled" related="home">
+            <label for="rangePerc" class="sdpi-item-label"><span></span>Range%</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio4" type="radio" value="rangePlus" name="footerMode">
-            <label for="footerMode-radio4" class="sdpi-item-label"><span></span>Range Mkt</label>
+            <input id="rangePlus" type="checkbox" value="enabled" related="home">
+            <label for="rangePlus" class="sdpi-item-label"><span></span>Range Mkt</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio5" type="radio" value="rangePlusPerc" name="footerMode">
-            <label for="footerMode-radio5" class="sdpi-item-label"><span></span>Range Mkt%</label>
+            <input id="rangePlusPerc" type="checkbox" value="enabled" related="home">
+            <label for="rangePlusPerc" class="sdpi-item-label"><span></span>Range Mkt%</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio6" type="radio" value="slider1" name="footerMode">
-            <label for="footerMode-radio6" class="sdpi-item-label"><span></span>Range Viz</label>
+            <input id="viz" type="checkbox" value="enabled" related="home">
+            <label for="viz" class="sdpi-item-label"><span></span>Viz</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="footerMode-radio7" type="radio" value="slider2" name="footerMode">
-            <label for="footerMode-radio7" class="sdpi-item-label"><span></span>Range Viz%</label>
+            <input id="vizPerc" type="checkbox" value="enabled" related="home">
+            <label for="vizPerc" class="sdpi-item-label"><span></span>Viz%</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="vizLimits" type="checkbox" value="enabled" related="home">
+            <label for="vizLimits" class="sdpi-item-label"><span></span>Viz Limits</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="vizPercLimits" type="checkbox" value="enabled" related="home">
+            <label for="vizPercLimits" class="sdpi-item-label"><span></span>Viz Limits%</label>
         </div>
     </div>
 </div>
-
-<div class="sdpi-heading">Views</div>
+<p>
 
 <div type="checkbox" class="sdpi-item" id="summary-views">
-    <div class="sdpi-item-label">Info</div>
+    <div class="sdpi-item-label">Details</div>
     <div class="sdpi-item-value min100">
-        <!-- <div class="sdpi-item-child">
-            <input id="showDefault" type="checkbox" value="enabled">
-            <label for="showDefault" class="sdpi-item-label"><span></span>Default</label>
-        </div> -->
         <div class="sdpi-item-child">
-            <input id="showDayDecimal" type="checkbox" value="enabled">
+            <input id="showDayDecimal" type="checkbox" value="enabled" related="home">
             <label for="showDayDecimal" class="sdpi-item-label"><span></span>Day Numeric</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="showDayPercent" type="checkbox" value="enabled">
+            <input id="showDayPercent" type="checkbox" value="enabled" related="home">
             <label for="showDayPercent" class="sdpi-item-label"><span></span>Day Percent</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="showLimits" type="checkbox" value="enabled">
+            <input id="showLimits" type="checkbox" value="enabled" related="home">
             <label for="showLimits" class="sdpi-item-label"><span></span>Limits</label>
         </div>
     </div>
 </div>
 <p>
+
 <div type="checkbox" class="sdpi-item" id="chart-views">
     <div class="sdpi-item-label">Charts</div>
     <div class="sdpi-item-value min100">
         <div class="sdpi-item-child">
-            <input id="show30MinChart" type="checkbox" value="enabled">
+            <input id="show30MinChart" type="checkbox" value="enabled" related="home">
             <label for="show30MinChart" class="sdpi-item-label"><span></span>30 Min</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show1HourChart" type="checkbox" value="enabled">
+            <input id="show1HourChart" type="checkbox" value="enabled" related="home">
             <label for="show1HourChart" class="sdpi-item-label"><span></span>1 Hour</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show2HourChart" type="checkbox" value="enabled">
+            <input id="show2HourChart" type="checkbox" value="enabled" related="home">
             <label for="show2HourChart" class="sdpi-item-label"><span></span>2 Hour</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show1DayChart" type="checkbox" value="enabled">
+            <input id="show1DayChart" type="checkbox" value="enabled" related="home">
             <label for="show1DayChart" class="sdpi-item-label"><span></span>1 Day</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show5DayChart" type="checkbox" value="enabled">
+            <input id="show5DayChart" type="checkbox" value="enabled" related="home">
             <label for="show5DayChart" class="sdpi-item-label"><span></span>5 Day</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show1MonthChart" type="checkbox" value="enabled">
+            <input id="show1MonthChart" type="checkbox" value="enabled" related="home">
             <label for="show1MonthChart" class="sdpi-item-label"><span></span>1 Month</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show3MonthChart" type="checkbox" value="enabled">
+            <input id="show3MonthChart" type="checkbox" value="enabled" related="home">
             <label for="show3MonthChart" class="sdpi-item-label"><span></span>3 Month</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show6MonthChart" type="checkbox" value="enabled">
+            <input id="show6MonthChart" type="checkbox" value="enabled" related="home">
             <label for="show6MonthChart" class="sdpi-item-label"><span></span>6 Month</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="show12MonthChart" type="checkbox" value="enabled">
+            <input id="show12MonthChart" type="checkbox" value="enabled" related="home">
             <label for="show12MonthChart" class="sdpi-item-label"><span></span>12 Month</label>
         </div>
     </div>
@@ -240,4 +249,38 @@
 <div class="sdpi-item">
     <div class="sdpi-item-label">Defaults</div>
     <button class="sdpi-item-value" id="restoreDefaults" value="Restore Defaults" data-localize="Restore Defaults">Restore</button>
-  </div>
+</div>
+
+<script>
+    /*
+function updateList(){
+	var sel = $('#home');
+	var selected = sel.val();
+  sel.find('option').detach();
+ 
+  $("input[related='home']").each(function(index) {
+    if(this.checked){
+    	let label = $("label[for='"+ this.id+"']").text()
+    	sel.append($('<option>', {value:this.id, text:label}));
+    }
+  });
+  
+  if(sel.find('option').length == 0){
+  	sel.append($('<option>', {value:'show30MinChart', text:'View 1'}));
+  	$("#view1").prop("checked", true);
+  }
+ 
+  if(sel.find('option[value='+ selected +']').length != 0)
+    sel.val(selected);
+  else
+  	sel[0].selected = true;
+}
+
+$(document).ready(function() {
+	updateList()
+
+	$("input[related='views']").change(function(index) {
+  	updateList()
+  });
+}); */
+</script>

@@ -75,7 +75,7 @@ class ChartManager extends Manager {
 
     onKeyUp(jsn) {
         super.onKeyUp(jsn)
-        let viewName = ViewType.keyFor(this.currentView)
+        let viewName = ViewType.keyFor(this.currentView.id)
 
         for (const [key, value] of Object.entries(ChartType)) {
             if(viewName == key){

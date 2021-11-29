@@ -282,8 +282,77 @@ function handleSdpiItemChange(e, idx) {
 
 //------------------------------ DOM Helpers -----------------------------------//
 
+const populateRelated = (pl) => {
+  // Populate related select lists with their selected values
+  var selects = $("select");
+  selects.each( function(i,sel){
+    var payload = null
+    var selected = false
+    var related = $("[related="+sel.id+"]")
+    if(related.length==0) return
+
+    $(sel).find('option').detach();
+    
+    related.each( function(j,item){
+      if(item.checked){
+        if(!selected && item.id == pl[sel.id])
+          selected = item.id
+        
+        let label = $("label[for='"+ item.id+"']").text()
+        $(sel).append($('<option>', {value:item.id, text:label}));
+      }
+    });
+    
+    // Solid match return
+    if(selected != false){
+      $(sel).val(selected)
+      return
+    }
+
+    // Not found check for an empty list
+    if($(sel).find('option').length == 0){
+      let label = $("label[for='"+ related[0].id+"']").text()
+      $(sel).append($('<option>', {value:related[0].id, text:label}));
+      payload = { key:related[0].id, value:'enabled', group:false, index:0, selection:null, checked:true }
+      $SD.emit("piDataChanged", payload)
+    }
+
+    // No selection, pick the first element
+    payload = { key:sel.id, value:sel.options[0].value, group:false, index:0, selection:[], checked:false }
+    $SD.emit("piDataChanged", payload)
+  });
+}
+
+const isRelated = (element) => {
+  return element.hasAttribute("related");
+};
+
+const hasRelated = (element) => {
+  console.log("Action Test", element.id, action.settings)
+  for (const [key, value] of Object.entries(action.settings)) {
+    let item = document.querySelector('#'+ key);
+    //console.log("=>", key, value)
+    if(item == null) continue
+    console.log("=>", key, isRelated(item))
+  }
+  return false
+}
+
+
+const updateRelated = (element, pl) => {
+  //if(!element.hasAttribute('related'))
+  if(!isRelated(element))//.hasAttribute('related'))
+    return
+  
+  var related = document.getElementById( element.getAttribute('related') )
+  let label = $("label[for='"+ element.id +"']").text()
+  $(related).append($('<option>', {value:element.id, text:label}));
+
+  if(pl[related.id] == element.id)
+    $(related).val(element.id)
+}
+
 const updateUI = (pl) => {
-  console.log("UPADE UI", pl)
   // Insert Radio Values if Needed
   for (const [key, value] of Object.entries(pl)) {
     var fieldList = document.querySelectorAll("[id^="+key+"-radio]") 
@@ -298,21 +367,23 @@ const updateUI = (pl) => {
             delete pl[item.id]
         }
     });
+    
+    let test = document.querySelector('#home'); 
+    hasRelated(test)
   }
 
+  // Default Functionality
   Object.keys(pl).map((e) => {
     if (e && e != "") {
       const foundElement = document.querySelector(`#${e}`);
       console.log(`searching for: #${e}`, "found:", foundElement);
       
-      if(!foundElement || foundElement.type == "file"){ 
-        return;
-      }
-      
+      if(!foundElement || foundElement.type == "file")
+        return
       
       if(foundElement.type == "checkbox" || foundElement.type ==  "radio"){
-        console.log("RADIO",  pl[e], foundElement)
         foundElement.checked = foundElement.value == pl[e]
+        updateRelated(foundElement, pl)
       }
       else {
         foundElement.value = pl[e];
@@ -328,6 +399,8 @@ const updateUI = (pl) => {
       }
     }
   });
+
+  //populateRelated(pl)
 };
 
 /**
@@ -468,7 +541,6 @@ document.addEventListener("DOMContentLoaded", function () {
     navigator.userAgent.includes("Mac") ? "mac" : "win"
   );
   
-  console.log("SD", $SD)
   if(document.getElementById('contentLoaded') != null){
     updateUI(action.settings);
     prepareDOMElements();

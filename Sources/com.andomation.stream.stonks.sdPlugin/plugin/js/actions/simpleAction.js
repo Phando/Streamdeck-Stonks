@@ -1,15 +1,3 @@
-const FooterType = Object.freeze({
-    NONE        : 'none',
-    CHANGE      : 'change',
-    METER       : 'meter',
-    SLIDER1     : 'slider1',
-    SLIDER2     : 'slider2',
-    RANGE       : 'range',
-    RANGE_PERC  : 'rangePerc',
-    RANGE_PLUS  : 'rangePlus',
-    RANGE_PLUS_PERC : 'rangePlusPerc'
-});
-
 const MarketStateType = Object.freeze({
     PRE     : 'marketPre',
     REG     : 'marketReg',
@@ -18,26 +6,39 @@ const MarketStateType = Object.freeze({
 });
 
 const ViewType = Object.freeze({
-    TICKER          : 'defaultView',
-    DAY_DEC         : 'showDayDecimal',
-    DAY_PERC        : 'showDayPercent',
-    LIMITS          : 'showLimits',
-    CHART_MIN_30    : 'show30MinChart',
-    CHART_HR_1      : 'show1HourChart',
-    CHART_HR_2      : 'show2HourChart',
-    CHART_DAY_1     : 'show1DayChart',
-    CHART_DAY_5     : 'show5DayChart',
-    CHART_MONTH_1   : 'show1MonthChart',
-    CHART_MONTH_3   : 'show3MonthChart',
-    CHART_MONTH_6   : 'show6MonthChart',
-    CHART_MONTH_12  : 'show12MonthChart',
+    NONE            : {header:true,  vol:true,  perc:false, id:'none'},
+    CHANGE          : {header:true,  vol:true,  perc:false, id:'change'},
+    VIZ             : {header:true,  vol:true,  perc:false, id:'viz'},
+    VIZ_PERC        : {header:true,  vol:true,  perc:true,  id:'vizPerc'},
+    VIZ_LMT         : {header:true,  vol:true,  perc:false, id:'vizLimit'},
+    VIZ_PERC_LMT    : {header:true,  vol:true,  perc:true,  id:'vizPercLimit'},
+    RANGE           : {header:true,  vol:true,  perc:false, id:'range'},
+    RANGE_PERC      : {header:true,  vol:true,  perc:true,  id:'rangePerc'},
+    RANGE_PLUS      : {header:true,  vol:true,  perc:false, id:'rangePlus'},
+    RANGE_PLUS_PERC : {header:true,  vol:true,  perc:true,  id:'rangePlusPerc'},
+    DAY_DEC         : {header:false, vol:true,  perc:false, id:'showDayDecimal'},
+    DAY_PERC        : {header:false, vol:true,  perc:true,  id:'showDayPercent'},
+    LIMITS          : {header:false, vol:true,  perc:false, id:'showLimits'},
+    CHART_MIN_30    : {header:true,  vol:true,  perc:false, id:'show30MinChart'},
+    CHART_HR_1      : {header:true,  vol:true,  perc:false, id:'show1HourChart'},
+    CHART_HR_2      : {header:true,  vol:true,  perc:false, id:'show2HourChart'},
+    CHART_DAY_1     : {header:true,  vol:true,  perc:false, id:'show1DayChart'},
+    CHART_DAY_5     : {header:true,  vol:true,  perc:false, id:'show5DayChart'},
+    CHART_MONTH_1   : {header:true,  vol:true,  perc:false, id:'show1MonthChart'},
+    CHART_MONTH_3   : {header:true,  vol:true,  perc:false, id:'show3MonthChart'},
+    CHART_MONTH_6   : {header:true,  vol:true,  perc:false, id:'show6MonthChart'},
+    CHART_MONTH_12  : {header:true,  vol:true,  perc:false, id:'show12MonthChart'},
 
     keyFor : (value) => {
-        for (const [key, match] of Object.entries(ViewType)) {
-            if(value == match){
+        for (const [key, match] of Object.entries(ViewType))
+            if(value == match.id)
                 return key
-            }
-        }
+    },
+
+    valueFor : (value) => {
+        for (const [key, match] of Object.entries(ViewType))
+            if(value == match.id)
+                return match
     }
 });
 
@@ -50,20 +51,20 @@ class SimpleAction extends Action {
         this.type = this.type + ".simple";
     }
 
+    get home(){
+        return this.settings.home
+    }
+
+    set home(value){
+        this.settings.home = value
+    }
+
     get symbol(){
         return this.settings.symbol
     }
 
     set symbol(value){
         this.settings.symbol = value
-    }
-    
-    get footerMode(){
-        return this.settings.footerMode
-    }
-
-    set footerMode(value){
-        this.settings.footerMode = value
     }
 
     get showState(){
@@ -83,7 +84,7 @@ class SimpleAction extends Action {
     }
 
     get isChart() {
-        return this.currentView.includes('Chart')
+        return this.currentView.id.includes('Chart')
     }
 
     get zoomCharts(){
@@ -92,6 +93,16 @@ class SimpleAction extends Action {
 
     set zoomCharts(value){
         this.settings.zoomCharts = value
+    }
+
+    get homeIndex(){
+        return this.viewList.findIndex(item => item.id === this.home)
+    }
+
+    set state(stateName){
+        this.clickCount = stateName == STATE_DEFAULT ? this.homeIndex : 0
+        this.context.stateName = stateName
+        this.updateDisplay(this.context)
     }
 
     // Streamdeck Event Handlers
@@ -117,11 +128,11 @@ class SimpleAction extends Action {
         super.onDidReceiveSettings(jsn)
         
         console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
+        this.home       = this.home || ViewType.VIZ.id
         this.symbol     = this.symbol || 'GME'
         this.showTrend  = this.showTrend  || 'disabled'
         this.showState  = this.showState  || 'disabled'
         this.zoomCharts = this.zoomCharts || 'disabled'
-        this.footerMode = this.footerMode || FooterType.CHANGE
         
         this.prepViewList()
         this.chartManager.onDidReceiveSettings(jsn)
@@ -263,25 +274,26 @@ class SimpleAction extends Action {
         
         if(this.settings.hasViews == false){
             this.settings.hasViews = true
-            this.settings[ViewType.TICKER]        = 'enabled'
-            this.settings[ViewType.DAY_DEC]       = 'enabled'
-            this.settings[ViewType.CHART_MIN_30]  = 'enabled'
-            this.settings[ViewType.CHART_HR_2]    = 'enabled'
-            this.settings[ViewType.CHART_DAY_1]   = 'enabled'
-            this.settings[ViewType.CHART_DAY_5]   = 'enabled'
-            this.settings[ViewType.CHART_MONTH_1] = 'enabled'
+            this.settings[ViewType.VIZ.id]           = 'enabled'
+            this.settings[ViewType.DAY_DEC.id]       = 'enabled'
+            this.settings[ViewType.CHART_MIN_30.id]  = 'enabled'
+            this.settings[ViewType.CHART_HR_2.id]    = 'enabled'
+            this.settings[ViewType.CHART_DAY_1.id]   = 'enabled'
+            this.settings[ViewType.CHART_DAY_5.id]   = 'enabled'
+            this.settings[ViewType.CHART_MONTH_1.id] = 'enabled'
         }
 
         this.viewList = this.viewList || []
         this.viewList.length = 0
-        this.viewList.push(ViewType.TICKER)
         
         for (const [key, value] of Object.entries(ViewType)) {
             if(typeof value == 'function') continue
-            if(value.startsWith('show') && this.settings[value] == 'enabled'){
+            if(this.settings[value.id] == 'enabled')
                 this.viewList.push(value)
-            }
+            // if(value.id == this.home)
+            //     this.clickCount = this.viewList.length-1
         }
+        this.clickCount = this.homeIndex
     }
 
     //-----------------------------------------------------------------------------------------
@@ -306,10 +318,12 @@ class SimpleAction extends Action {
         payload.state   = MarketStateType.REG
         payload.low     = symbol.regularMarketDayLow
         payload.high    = symbol.regularMarketDayHigh
-        payload.dayLow  = symbol.regularMarketDayLow
-        payload.dayHigh = symbol.regularMarketDayHigh
         payload.change  = symbol.regularMarketChange
         payload.percent = symbol.regularMarketChangePercent
+        payload.dayLow  = symbol.regularMarketDayLow
+        payload.dayHigh = symbol.regularMarketDayHigh
+        payload.dayLowPerc = Math.abs(payload.dayLow.percentChange(payload.prevClose)).toPrecisionPure(2)
+        payload.dayHighPerc = Math.abs(payload.dayHigh.percentChange(payload.prevClose)).toPrecisionPure(2)
 
         // Factor after market pricing
         if (symbol.marketState != "REGULAR") {
@@ -328,17 +342,15 @@ class SimpleAction extends Action {
             }
         }
         
-        // Extended hours hi/lo
+        // Extended values
         payload.low     = Math.min(payload.low, payload.price)
         payload.high    = Math.max(payload.high, payload.price)
         payload.lowPerc = Math.abs(payload.low.percentChange(payload.close)).toPrecisionPure(2)
         payload.highPerc = Math.abs(payload.high.percentChange(payload.close)).toPrecisionPure(2)
-        payload.dayLowPerc = Math.abs(payload.dayLow.percentChange(payload.close)).toPrecisionPure(2)
-        payload.dayHighPerc = Math.abs(payload.dayHigh.percentChange(payload.close)).toPrecisionPure(2)
 
         if(this.showTrend == 'enabled'){
-            var color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
-            payload.foreground = payload.price < payload.close ? COLOR_RED : color
+            var color = payload.price > payload.trend ? COLOR_GREEN : payload.foreground
+            payload.foreground = payload.price < payload.trend ? COLOR_RED : color
         }
 
         this.data = payload
@@ -350,6 +362,11 @@ class SimpleAction extends Action {
 
     updateDisplay(jsn) {
         super.updateDisplay(jsn)
+
+        if(typeof this.data == 'undefined'){
+            dataManager.fetchSymbolData()
+            return
+        }
         
         if(this.state == STATE_LIMITS){
             this.limitManager.updateDisplay(jsn)
@@ -360,18 +377,39 @@ class SimpleAction extends Action {
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
         
-        switch(this.currentView){    
-            case ViewType.TICKER:
-                this.drawHeader(jsn)
-                this.drawFooter()
+        console.log("CView", this.currentView, this.currentView.id)
+        
+        if(this.currentView.header)
+            this.drawHeader(jsn)
+        
+        if(this.currentView.volume)
+            this.drawVolume()
+        
+        switch(this.currentView){
+            case ViewType.NONE:
+                break     
+            case ViewType.CHANGE:
+                this.drawChange()   
+                break 
+            case ViewType.VIZ:          
+            case ViewType.VIZ_PERC:        
+            case ViewType.VIZ_LMT:         
+            case ViewType.VIZ_PERC_LMT:    
+                this.drawSlider()
+                break
+            case ViewType.RANGE:           
+            case ViewType.RANGE_PERC:   
+            case ViewType.RANGE_PLUS:     
+            case ViewType.RANGE_PLUS_PERC: 
+                this.drawRange()
                 break
             case ViewType.LIMITS:
                 this.drawSymbol(jsn);
                 this.drawLeft('limit',COLOR_FOREGROUND, 16, 21, 600, 6)
                 this.limitManager.updateInfoView(jsn)
                 break
-            case ViewType.DAY_DEC :
-            case ViewType.DAY_PERC :
+            case ViewType.DAY_DEC:
+            case ViewType.DAY_PERC:
                 this.drawSymbol()
                 this.drawRange()
                 break
@@ -394,35 +432,6 @@ class SimpleAction extends Action {
             this.drawPrice(this.data.price)
         }
         this.drawSymbol()
-    }
-
-    //-----------------------------------------------------------------------------------------
-
-    drawFooter(){
-        if(Utils.isUndefined(this.data))
-            return
-
-        switch(this.footerMode){
-            case FooterType.NONE:
-                this.drawVolume()
-                break
-            case FooterType.CHANGE:
-                this.drawVolume()
-                this.drawChange()
-                break
-            case FooterType.METER:
-                this.drawMeter()
-                break
-            case FooterType.SLIDER1:
-            case FooterType.SLIDER2:
-                this.drawSlider()
-                break
-            case FooterType.RANGE:
-            case FooterType.RANGE_PERC:
-                this.drawVolume()
-            default:
-                this.drawRange()
-        }
     }
 
     // Rendering Functions (little to no logic)
@@ -486,21 +495,20 @@ class SimpleAction extends Action {
         var high = this.data.high.abbreviateNumber()
         var low = this.data.low.abbreviateNumber()
 
-        var isFooter = this.currentView == ViewType.TICKER
-        var font = isFooter ? 23 : 26
-        var yPos = isFooter ? [81,103,126,88] : [52,89,126,75]
+        var font = this.currentView.header ? 23 : 26
+        var yPos = this.currentView.header ? [81,103,126,88] : [52,89,126,75] 
 
-        if(this.currentView != ViewType.TICKER) {
-            this.drawLeft('-/+',COLOR_FOREGROUND, 16, 21, 600, 6)
-            high = this.currentView == ViewType.DAY_PERC ? this.data.dayHighPerc + '%' : this.data.dayHigh.abbreviateNumber()
-            low = this.currentView == ViewType.DAY_PERC ? this.data.dayLowPerc + '%' : this.data.dayLow.abbreviateNumber()
+        if( !this.currentView.header ) {
+            this.drawLeft('- / +',COLOR_FOREGROUND, 16, 21, 600, 6)
+            high = this.currentView.perc ? this.data.dayHighPerc + '%' : this.data.dayHigh.abbreviateNumber()
+            low = this.currentView.perc ? this.data.dayLowPerc + '%' : this.data.dayLow.abbreviateNumber()
         }
-        else if( this.footerMode == FooterType.RANGE_PERC || this.footerMode == FooterType.RANGE_PLUS_PERC ){
+        else if( this.currentView.perc ){
             high = this.data.highPerc + '%'
             low = this.data.lowPerc + '%'
         }
 
-        if( isFooter && (this.footerMode == FooterType.RANGE || this.footerMode == FooterType.RANGE_PERC)){
+        if( this.currentView.header && (this.currentView == ViewType.RANGE || this.currentView == ViewType.RANGE_PERC)){
             if(low.length > 6 || high.length > 6){
                 high = Number(high).abbreviateNumber(2,5)
                 low = Number(low).abbreviateNumber(2,5)
@@ -524,7 +532,6 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSlider(){
-        var isAlt = this.footerMode == FooterType.SLIDER2
         var high = this.data.high.abbreviateNumber()
         var low = this.data.low.abbreviateNumber()
         var scale = 144 * Utils.rangeToPercent(this.data.close, this.data.low, this.data.high)
@@ -534,7 +541,7 @@ class SimpleAction extends Action {
             low = Number(low).abbreviateNumber(2,5)
         }
 
-        if(isAlt){
+        if(this.currentView.perc){
             high = this.data.highPerc + '%'
             low = this.data.lowPerc + '%'
         }

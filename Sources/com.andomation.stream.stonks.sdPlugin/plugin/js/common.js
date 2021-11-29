@@ -108,7 +108,7 @@ class StreamDeckClient {
     }
 
     set state(stateName){
-        this.context.clickCount = 0
+        this.clickCount = 0
         this.context.stateName = stateName
         this.updateDisplay(this.context)
     }
