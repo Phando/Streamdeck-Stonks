@@ -213,33 +213,8 @@ function handleSdpiItemChange(e, idx) {
     }
   }
 
-  console.log("E Type", e.type, getRelation(e))
   updateRelation(e)
   
-  // if(e.type == "radio" || e.type == "checkbox"){
-  //   var settings = $SD.actionInfo.payload.settings
-
-  //   sdpiItemChildren.forEach((item) => { 
-  //     if(!item.checked || e.type == "radio"){
-  //       delete settings[item.id]
-  //     }
-  //   });
-
-  //   if(e.checked){
-  //     e.setAttribute("_value", e.value)
-  //     if(e.type == "radio")
-  //       e.setAttribute("_name", e.name)
-  //     else 
-  //       settings[e.id] = e.value
-  //   }
-  //   else if(e.value == 'enabled'){
-  //     e.setAttribute("_value", '_false')
-  //   }
-    
-  //   $SD.actionInfo.payload.settings = settings
-  //   //saveSettings(action.settings)
-  // }
-
   if (sdpiItemGroup && !sdpiItemChildren.length) {
     for (let x of ["input", "meter", "progress"]) {
       sdpiItemChildren = sdpiItemGroup.querySelectorAll(x);
@@ -283,49 +258,6 @@ function handleSdpiItemChange(e, idx) {
 
 //------------------------------ DOM Helpers -----------------------------------//
 
-// const populateRelated = (pl) => {
-//   // Populate related select lists with their selected values
-//   var selects = $("select");
-//   selects.each( function(i,sel){
-//     var payload = null
-//     var selected = false
-//     var related = $("[related="+sel.id+"]")
-//     if(related.length==0) return
-
-//     $(sel).find('option').detach();
-    
-//     related.each( function(j,item){
-//       if(item.checked){
-//         if(!selected && item.id == pl[sel.id])
-//           selected = item.id
-        
-//         let label = $("label[for='"+ item.id+"']").text()
-//         $(sel).append($('<option>', {value:item.id, text:label}));
-//       }
-//     });
-    
-//     // Solid match return
-//     if(selected != false){
-//       $(sel).val(selected)
-//       return
-//     }
-
-//     // Not found check for an empty list
-//     if($(sel).find('option').length == 0){
-//       let label = $("label[for='"+ related[0].id+"']").text()
-//       $(sel).append($('<option>', {value:related[0].id, text:label}));
-//       payload = { key:related[0].id, value:'enabled', group:false, index:0, selection:null, checked:true }
-//       $SD.emit("piDataChanged", payload)
-//     }
-
-//     // No selection, pick the first element
-//     payload = { key:sel.id, value:sel.options[0].value, group:false, index:0, selection:[], checked:false }
-//     $SD.emit("piDataChanged", payload)
-//   });
-// }
-
-//-----------------------------------------------------------------------------------------
-
 const getRelation = (element) => {
   if(element.hasAttribute("related"))
     return element.getAttribute("related")
@@ -353,8 +285,6 @@ const updateRadios = (element, settings) => {
   getRelatedList(element.getAttribute('name')).forEach(function(item){
       delete settings[item.id]
   });
-
-  //settings[element.getAttribute('name')] = element.value
 }
 
 //-----------------------------------------------------------------------------------------

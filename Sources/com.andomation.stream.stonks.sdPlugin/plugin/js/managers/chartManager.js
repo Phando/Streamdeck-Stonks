@@ -69,6 +69,10 @@ class ChartManager extends Manager {
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
         this.fill = this.fill || 'enabled'
+
+        let key = ViewType.keyFor(this.currentView.id)
+        if(key.includes('CHART'))
+            this.type = ChartType[key]
     } 
 
     //-----------------------------------------------------------------------------------------
@@ -151,6 +155,12 @@ class ChartManager extends Manager {
 
     updateDisplay(jsn){
         super.updateDisplay(jsn)
+
+        // if(typeof this.type == 'undefined'){
+        //     dataManager.fetchSymbolData()
+        //     return
+        // }
+        
         this.drawLeft(this.type.label,COLOR_FOREGROUND, 16, 21, 600, 6)
         
         if(!this.chart.hasOwnProperty('data') || this.chart.data.length == 0){

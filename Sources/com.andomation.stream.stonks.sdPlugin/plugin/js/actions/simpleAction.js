@@ -137,6 +137,7 @@ class SimpleAction extends Action {
         this.prepViewList()
         this.chartManager.onDidReceiveSettings(jsn)
         this.limitManager.onDidReceiveSettings(jsn)
+
         $SD.api.setSettings(this.uuid, this.settings)
     } 
 
@@ -349,6 +350,7 @@ class SimpleAction extends Action {
         payload.highPerc = Math.abs(payload.high.percentChange(payload.close)).toPrecisionPure(2)
 
         if(this.showTrend == 'enabled'){
+            console.log("SHOWING TREND")
             var color = payload.price > payload.trend ? COLOR_GREEN : payload.foreground
             payload.foreground = payload.price < payload.trend ? COLOR_RED : color
         }
