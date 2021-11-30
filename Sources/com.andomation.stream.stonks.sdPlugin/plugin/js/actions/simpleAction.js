@@ -534,14 +534,15 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSlider(){
-        let close = this.data.close
-        let isPerc = this.limitManager.type == LimitType.PERCENT
-        var low = this.data.low.abbreviateNumber()
-        var high = this.data.high.abbreviateNumber()
-        let min = this.data.low
-        let max = this.data.high
         let padMin = 0
         let padMax = 0
+        let min = this.data.low
+        let max = this.data.high
+        var low = min.abbreviateNumber()
+        var high = max.abbreviateNumber()
+        this.drawingCtx.lineWidth = 2        
+        let close = this.data.close
+        let isPerc = this.limitManager.type == LimitType.PERCENT
 
         if(low.length > 6 || high.length > 6){
             high = Number(high).abbreviateNumber(2,5)
@@ -553,24 +554,26 @@ class SimpleAction extends Action {
             low = this.data.lowPerc + '%'
         }    
 
+        // Set the new min and account for lowerLimit
         if(this.limitManager.isLowerEnabled){
             padMin = isPerc ? close - close * this.limitManager.lowerLimit/100 : this.limitManager.lowerLimit
             min = Math.min(min, padMin)
         }
 
+        // Set the new max and account for upperLimit
         if(this.limitManager.isUpperEnabled){
             padMax = isPerc ? close + close * this.limitManager.upperLimit/100 : this.limitManager.upperLimit
             max = Math.max(max, padMax)
-        }
-        
-        this.drawingCtx.lineWidth = 2            
-    
+        }    
+
+        // Use the new min/max to draw the lowerLimit
         if(this.limitManager.isLowerEnabled){
             padMin = 144 * Utils.rangeToPercent(padMin, min, max)
             this.drawingCtx.fillStyle = COLOR_RED
             this.drawingCtx.fillRect(padMin.minmax(6,138), 111, 4, 24)
         }
         
+        // Use the new min/max to draw the upperLimit
         if(this.limitManager.isUpperEnabled){
             padMax = 144 * Utils.rangeToPercent(padMax, min, max)
             this.drawingCtx.fillStyle = COLOR_GREEN
