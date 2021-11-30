@@ -1,13 +1,13 @@
-class SimpleActionPI extends ActionPI {
+class StonksActionPI extends ActionPI {
 
     constructor(){
         super()
-        this.type = this.type + ".simple";
+        this.type = this.type + ".stonks";
     }
 
     init(jsn) {
         super.init(jsn)
-        this.injectContent("content/simpleAction.html", this.onContentLoaded);
+        this.injectContent("content/stonksAction.html", this.onContentLoaded);
     }
 
     onContentLoaded = () => {

@@ -40,29 +40,29 @@ const ViewType = Object.freeze({
     }
 });
 
-class SimpleAction extends Action {
+class StonksAction extends Action {
     chartManager = new ChartManager()
     limitManager = new LimitManager()
 
     constructor() {
         super() 
-        this.type = this.type + ".simple";
+        this.type = this.type + ".stonks"
     }
 
-    get coloredLabels(){
-        return this.settings.coloredLabels
+    get colorLabels(){
+        return this.settings.colorLabels
     }
 
-    set coloredLabels(value){
-        this.settings.coloredLabels = value
+    set colorLabels(value){
+        this.settings.colorLabels = value
     }
 
     get colorLow(){ 
-        return this.coloredLabels == 'enabled' ? COLOR_RED : COLOR_FOREGROUND
+        return this.colorLabels == 'enabled' ? COLOR_RED : '#B0B0B0'
     }
         
     get colorHigh(){
-        return this.coloredLabels == 'enabled' ? COLOR_GREEN : COLOR_FOREGROUND
+        return this.colorLabels == 'enabled' ? COLOR_GREEN : COLOR_FOREGROUND
     }
 
     get home(){
@@ -138,12 +138,12 @@ class SimpleAction extends Action {
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
         
-        console.log("SimpleAction - onDidReceiveSettings", jsn, this.settings)
+        console.log("StonksAction - onDidReceiveSettings", jsn, this.settings)
         this.home       = this.home || ViewType.VIZ.id
         this.symbol     = this.symbol || 'GME'
         this.showTrend  = this.showTrend  || 'disabled'
         this.showState  = this.showState  || 'disabled'
-        this.coloredLabels = this.coloredLabels || 'enabled'
+        this.colorLabels = this.colorLabels || 'enabled'
         
         this.prepViewList()
         this.chartManager.onDidReceiveSettings(jsn)
@@ -236,7 +236,7 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveSymbolData(jsn) {
-        //console.log("SimpleAction - onDidReceiveSymbol: ", jsn)
+        //console.log("StonksAction - onDidReceiveSymbol: ", jsn)
         this.uuid = jsn.context
         var symbol = jsn.payload
 
@@ -595,7 +595,7 @@ class SimpleAction extends Action {
         this.drawingCtx.strokeStyle = COLOR_RED
         this.drawingCtx.fillRect(0, 116, scale, 14)
         this.drawingCtx.strokeRect(0, 116, scale, 14)
-
+        
         this.drawingCtx.fillStyle = COLOR_GREEN_LT
         this.drawingCtx.strokeStyle = COLOR_GREEN
         this.drawingCtx.fillRect(scale, 116, 144, 14)

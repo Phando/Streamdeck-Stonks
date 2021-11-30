@@ -7,7 +7,7 @@ let dataManager = new DataManager()
 // This is true even if your plugin has a single action.
 //-----------------------------------------------------------------------------------------
 
-actions.push(new SimpleAction())
+actions.push(new StonksAction())
 actions.push(new ComplexAction())
 actions.push(new DecrementAction())
 actions.push(new IncrementAction())

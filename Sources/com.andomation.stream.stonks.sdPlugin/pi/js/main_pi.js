@@ -2,7 +2,7 @@ var action = {}
 var onchangeevt = "onchange"; // 'oninput';
 let sdpiWrapper = document.querySelector(".sdpi-wrapper");
 
-actions.push(new SimpleActionPI())
+actions.push(new StonksActionPI())
 //actions.push(new ComplexActionPI())
 //actions.push(new CoreActionPi())
 

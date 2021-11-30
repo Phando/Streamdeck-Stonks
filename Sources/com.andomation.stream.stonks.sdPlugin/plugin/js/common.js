@@ -314,7 +314,7 @@ class StreamDeckClient {
     //-----------------------------------------------------------------------------------------
 
     renderError(jsn) {
-        //console.log('SimpleAction - renderError', jsn)
+        //console.log('StonksAction - renderError', jsn)
         this.uuid = jsn.context
         this.drawingCtx.fillStyle = COLOR_BACKGROUND
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)

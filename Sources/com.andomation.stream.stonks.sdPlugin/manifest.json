@@ -2,14 +2,14 @@
   "Actions": [
     {
       "Icon": "images/plugin/plugin", 
-      "Name": "Stonks - Simple",
+      "Name": "Stonks",
       "States": [
         {
           "Image": "images/actions/action"
         }
       ],
       "Tooltip": "Keep track of ticker and crypto prices.",
-      "UUID": "com.andomation.stream.stonks.simple"
+      "UUID": "com.andomation.stream.stonks"
     }
   ], 
   "SDKVersion": 2,

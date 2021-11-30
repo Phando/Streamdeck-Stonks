@@ -1,5 +1,5 @@
 class ActionPI extends StreamDeckClient{
-	type = "com.andomation.stream.stonks"
+	type = "com.andomation.stream"
 	
 	constructor() {
 		super()

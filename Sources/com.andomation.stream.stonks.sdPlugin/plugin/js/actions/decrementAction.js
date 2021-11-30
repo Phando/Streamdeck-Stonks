@@ -3,7 +3,7 @@ class DecrementAction extends Action {
  
   constructor(){
     super();
-    this.type = this.type + ".decrement";
+    this.type = this.type + "stonks.dec";
   }
 
   onKeyDown(jsn) {
