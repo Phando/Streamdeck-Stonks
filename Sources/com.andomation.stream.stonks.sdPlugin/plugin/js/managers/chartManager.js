@@ -155,12 +155,6 @@ class ChartManager extends Manager {
 
     updateDisplay(jsn){
         super.updateDisplay(jsn)
-
-        // if(typeof this.type == 'undefined'){
-        //     dataManager.fetchSymbolData()
-        //     return
-        // }
-        
         this.drawLeft(this.type.label,COLOR_FOREGROUND, 16, 21, 600, 6)
         
         if(!this.chart.hasOwnProperty('data') || this.chart.data.length == 0){
@@ -197,11 +191,11 @@ class ChartManager extends Manager {
 
     drawChartData(){
         let xPos = 2
+        let yMax = 0
         let scale = Utils.rangeToPercent(this.chart.data[0], this.chart.min, this.chart.max)
 
         this.drawingCtx.lineWidth = 2
         this.drawingCtx.strokeStyle = this.chart.isUp ? COLOR_GREEN : COLOR_RED // '#A32CC4'
-        this.drawingCtx.fillStyle = this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL // '#A32CC477'
         this.drawingCtx.beginPath()
         this.drawingCtx.moveTo(-2,146)
         this.drawingCtx.lineTo(-2,CHART_BASE - (CHART_SCALE * scale))
@@ -210,13 +204,23 @@ class ChartManager extends Manager {
             scale = Utils.rangeToPercent(item, this.chart.min, this.chart.max)
             this.drawingCtx.lineTo(xPos,CHART_BASE - (CHART_SCALE * scale))
             xPos++
+            yMax = Math.max(yMax, CHART_SCALE * scale)
         });
 
+        // Close the path
         this.drawingCtx.lineTo(146,CHART_BASE - (CHART_SCALE * scale))
         this.drawingCtx.lineTo(146,146)
         this.drawingCtx.closePath()
+        
+        if(this.fill == 'enabled'){
+            var grd = this.drawingCtx.createLinearGradient(0, CHART_BASE - yMax, 0, 144);
+            grd.addColorStop(0.2, this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL);
+            grd.addColorStop(0.9, COLOR_BACKGROUND);
+            this.drawingCtx.fillStyle = grd;
+            this.drawingCtx.fill()
+        } 
+
         this.drawingCtx.stroke()
-        if(this.fill == 'enabled') this.drawingCtx.fill()
     }
     
 }

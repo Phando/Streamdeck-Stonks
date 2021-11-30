@@ -13,12 +13,12 @@ const COLOR_DISABLED = '#909090'
 const COLOR_ERROR    = '#FFFF00'
 const COLOR_FOREGROUND = '#D8D8D8'
 const COLOR_BACKGROUND = '#1D1E1F'
-const COLOR_GREEN    = '#00FF00' //'#9867c5'
-const COLOR_GREEN_CL = '#00770077' // '#9867c5aa'
-const COLOR_GREEN_LT = '#008800'
+const COLOR_GREEN    = '#00FF00'
+const COLOR_GREEN_CL = '#008800'
+const COLOR_GREEN_LT = '#006600'
 const COLOR_RED      = '#FF0000'
-const COLOR_RED_CL   = '#77000077'
-const COLOR_RED_LT   = '#880000'
+const COLOR_RED_CL   = '#880000'
+const COLOR_RED_LT   = '#660000'
 
 // Global Variables
 // TODO : Maybe rename all these to _varName
@@ -195,15 +195,13 @@ class StreamDeckClient {
 
     onKeyUp(jsn) {
         this.uuid = jsn.context
-
-        // if(this.isLongPress)
-        //     this.isLongPress = false
     }
 
     //-----------------------------------------------------------------------------------------
 
     onLongPress(jsn) {
         this.uuid = jsn.context
+        this.isLongPress = true
     }
 
     //-----------------------------------------------------------------------------------------

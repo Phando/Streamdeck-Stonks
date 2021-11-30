@@ -183,7 +183,7 @@ class SimpleAction extends Action {
 
     onLongPress(jsn){
         super.onLongPress(jsn)
-        console.log("Long", this.state, jsn)
+        
         switch(this.state){
             case STATE_DEFAULT : 
                 this.state = STATE_LIMITS
