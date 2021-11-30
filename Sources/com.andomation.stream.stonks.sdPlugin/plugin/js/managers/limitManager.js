@@ -97,16 +97,15 @@ class LimitManager extends Manager{
 
     get limitState(){
         var result = 0
-        var price = this.data.price
-        
-        if(this.type == LimitType.PERCENT)
-            price = Math.abs(this.data.percent)    
+        var isPerc = this.type == LimitType.PERCENT
+        var high = isPerc ? this.data.close + this.data.close * this.upperLimit/100 : this.upperLimit
+        var low  = isPerc ? this.data.close - this.data.close * this.lowerLimit/100 : this.lowerLimit
         
         if(this.isUpperEnabled)
-            result = price >= this.upperLimit ? 1 : 0
+            result = this.data.price >= high ? 1 : 0
 
         if(this.isLowerEnabled)
-            result = price <= this.lowerLimit ? -1 : result
+            result = this.data.price <= low ? -1 : result
 
         return result
     }
@@ -226,8 +225,8 @@ class LimitManager extends Manager{
 
     onLongPress(jsn){
         super.onLongPress(jsn)
-        
-        this.clickCount = this.viewList.findIndex(item => item == LimitViewType.UPPER_ENABLED)
+        console.log("Long Press")
+        this.clickCount = 0//this.viewList.findIndex(item => item == LimitViewType.UPPER_ENABLED)
         this.updateDisplay(jsn)
     }
 
@@ -503,7 +502,7 @@ class LimitManager extends Manager{
         }
         this.drawingCtx.closePath()
         this.drawingCtx.fill()
-        this.drawingCtx.stroke()
+        //this.drawingCtx.stroke()
     }
 
     //-----------------------------------------------------------------------------------------
@@ -514,7 +513,7 @@ class LimitManager extends Manager{
         this.drawingCtx.beginPath();
         this.drawingCtx.arc(xPos, yPos, 7, 0, 2 * Math.PI, false);
         this.drawingCtx.fill();
-        this.drawingCtx.stroke();
+        //this.drawingCtx.stroke();
     }
 
 }

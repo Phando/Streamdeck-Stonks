@@ -204,7 +204,6 @@ class StreamDeckClient {
 
     onLongPress(jsn) {
         this.uuid = jsn.context
-        this.isLongPress = true
     }
 
     //-----------------------------------------------------------------------------------------

@@ -10,8 +10,6 @@ const ViewType = Object.freeze({
     CHANGE          : {header:true,  vol:true,  perc:false, id:'change'},
     VIZ             : {header:true,  vol:true,  perc:false, id:'viz'},
     VIZ_PERC        : {header:true,  vol:true,  perc:true,  id:'vizPerc'},
-    VIZ_LMT         : {header:true,  vol:true,  perc:false, id:'vizLimit'},
-    VIZ_PERC_LMT    : {header:true,  vol:true,  perc:true,  id:'vizPercLimit'},
     RANGE           : {header:true,  vol:true,  perc:false, id:'range'},
     RANGE_PERC      : {header:true,  vol:true,  perc:true,  id:'rangePerc'},
     RANGE_PLUS      : {header:true,  vol:true,  perc:false, id:'rangePlus'},
@@ -99,7 +97,12 @@ class SimpleAction extends Action {
         return this.viewList.findIndex(item => item.id === this.home)
     }
 
+    get state(){
+        return this.context.stateName
+    }
+
     set state(stateName){
+        console.log("Setting", stateName)
         this.clickCount = stateName == STATE_DEFAULT ? this.homeIndex : 0
         this.context.stateName = stateName
         this.updateDisplay(this.context)
@@ -180,7 +183,7 @@ class SimpleAction extends Action {
 
     onLongPress(jsn){
         super.onLongPress(jsn)
-        
+        console.log("Long", this.state, jsn)
         switch(this.state){
             case STATE_DEFAULT : 
                 this.state = STATE_LIMITS
@@ -350,9 +353,8 @@ class SimpleAction extends Action {
         payload.highPerc = Math.abs(payload.high.percentChange(payload.close)).toPrecisionPure(2)
 
         if(this.showTrend == 'enabled'){
-            console.log("SHOWING TREND")
-            var color = payload.price > payload.trend ? COLOR_GREEN : payload.foreground
-            payload.foreground = payload.price < payload.trend ? COLOR_RED : color
+            var color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
+            payload.foreground = payload.price < payload.close ? COLOR_RED : color
         }
 
         this.data = payload
@@ -379,7 +381,7 @@ class SimpleAction extends Action {
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
         
-        console.log("CView", this.currentView, this.currentView.id)
+        console.log("CView", this.currentView)
         
         if(this.currentView.header)
             this.drawHeader(jsn)
@@ -395,8 +397,6 @@ class SimpleAction extends Action {
                 break 
             case ViewType.VIZ:          
             case ViewType.VIZ_PERC:        
-            case ViewType.VIZ_LMT:         
-            case ViewType.VIZ_PERC_LMT:    
                 this.drawSlider()
                 break
             case ViewType.RANGE:           
@@ -534,10 +534,15 @@ class SimpleAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSlider(){
-        var high = this.data.high.abbreviateNumber()
+        let close = this.data.close
+        let isPerc = this.limitManager.type == LimitType.PERCENT
         var low = this.data.low.abbreviateNumber()
-        var scale = 144 * Utils.rangeToPercent(this.data.close, this.data.low, this.data.high)
-        
+        var high = this.data.high.abbreviateNumber()
+        let min = this.data.low
+        let max = this.data.high
+        let padMin = 0
+        let padMax = 0
+
         if(low.length > 6 || high.length > 6){
             high = Number(high).abbreviateNumber(2,5)
             low = Number(low).abbreviateNumber(2,5)
@@ -546,11 +551,35 @@ class SimpleAction extends Action {
         if(this.currentView.perc){
             high = this.data.highPerc + '%'
             low = this.data.lowPerc + '%'
+        }    
+
+        if(this.limitManager.isLowerEnabled){
+            padMin = isPerc ? close - close * this.limitManager.lowerLimit/100 : this.limitManager.lowerLimit
+            min = Math.min(min, padMin)
+        }
+
+        if(this.limitManager.isUpperEnabled){
+            padMax = isPerc ? close + close * this.limitManager.upperLimit/100 : this.limitManager.upperLimit
+            max = Math.max(max, padMax)
+        }
+        
+        this.drawingCtx.lineWidth = 2            
+    
+        if(this.limitManager.isLowerEnabled){
+            padMin = 144 * Utils.rangeToPercent(padMin, min, max)
+            this.drawingCtx.fillStyle = COLOR_RED
+            this.drawingCtx.fillRect(padMin.minmax(6,138), 111, 4, 24)
+        }
+        
+        if(this.limitManager.isUpperEnabled){
+            padMax = 144 * Utils.rangeToPercent(padMax, min, max)
+            this.drawingCtx.fillStyle = COLOR_GREEN
+            this.drawingCtx.fillRect(padMax.minmax(6,138), 111, 4, 24)
         }
         
         this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 98)
-        
-        this.drawingCtx.lineWidth = 2
+
+        var scale = 144 * Utils.rangeToPercent(this.data.close, min, max)
         this.drawingCtx.fillStyle = COLOR_RED_LT
         this.drawingCtx.strokeStyle = COLOR_RED
         this.drawingCtx.fillRect(0, 116, scale, 14)
@@ -564,7 +593,7 @@ class SimpleAction extends Action {
         this.drawingCtx.fillStyle = COLOR_DISABLED
         this.drawingCtx.fillRect(scale-2, 117, 4, 12)
 
-        scale = 144 * Utils.rangeToPercent(this.data.price, this.data.low, this.data.high)
+        scale = 144 * Utils.rangeToPercent(this.data.price, min, max)
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
         this.drawingCtx.fillRect(scale.minmax(6,138), 110, 4, 26)
     }

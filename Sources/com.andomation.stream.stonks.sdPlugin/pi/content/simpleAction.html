@@ -91,14 +91,6 @@
             <input id="vizPerc" type="checkbox" value="enabled" related="home" relation="option">
             <label for="vizPerc" class="sdpi-item-label"><span></span>Viz%</label>
         </div>
-        <div class="sdpi-item-child">
-            <input id="vizLimits" type="checkbox" value="enabled" related="home" relation="option">
-            <label for="vizLimits" class="sdpi-item-label"><span></span>Viz Limits</label>
-        </div>
-        <div class="sdpi-item-child">
-            <input id="vizPercLimits" type="checkbox" value="enabled" related="home" relation="option">
-            <label for="vizPercLimits" class="sdpi-item-label"><span></span>Viz Limits%</label>
-        </div>
     </div>
 </div>
 <p>
@@ -166,6 +158,24 @@
 
 <div class="sdpi-heading">Limits</div>
 
+<div type="radio" class="sdpi-item" id="limit_time">
+    <div class="sdpi-item-label">Screen Time</div>
+    <div class="sdpi-item-value ">
+        <div class="sdpi-item-child">
+            <input id="frameTime-radio1" type="radio" value="2" name="frameTime">
+            <label for="frameTime-radio1" class="sdpi-item-label"><span></span>Short</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="frameTime-radio2" type="radio" value="5" name="frameTime">
+            <label for="frameTime-radio2" class="sdpi-item-label"><span></span>Medium</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="frameTime-radio3" type="radio" value="9" name="frameTime">
+            <label for="frameTime-radio3" class="sdpi-item-label"><span></span>Long</label>
+        </div>
+    </div>
+</div>
+
 <div type="radio" class="sdpi-item" id="limit_type">
     <div class="sdpi-item-label">Type</div>
     <div class="sdpi-item-value ">
@@ -183,24 +193,6 @@
 <div class="sdpi-item">
     <div class="sdpi-item-label">Increment</div>
     <input id="limitIncrement" class="sdpi-item-value" type="number"/>     
-</div>
-
-<div type="radio" class="sdpi-item" id="limit_time">
-    <div class="sdpi-item-label">Screen Time</div>
-    <div class="sdpi-item-value ">
-        <div class="sdpi-item-child">
-            <input id="frameTime-radio1" type="radio" value="2" name="frameTime">
-            <label for="frameTime-radio1" class="sdpi-item-label"><span></span>Short</label>
-        </div>
-        <div class="sdpi-item-child">
-            <input id="frameTime-radio2" type="radio" value="5" name="frameTime">
-            <label for="frameTime-radio2" class="sdpi-item-label"><span></span>Medium</label>
-        </div>
-        <div class="sdpi-item-child">
-            <input id="frameTime-radio3" type="radio" value="9" name="frameTime">
-            <label for="frameTime-radio3" class="sdpi-item-label"><span></span>Long</label>
-        </div>
-    </div>
 </div>
 
 <div class="sdpi-heading">Upper Limit</div>
