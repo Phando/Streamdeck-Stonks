@@ -49,6 +49,22 @@ class SimpleAction extends Action {
         this.type = this.type + ".simple";
     }
 
+    get coloredLabels(){
+        return this.settings.coloredLabels
+    }
+
+    set coloredLabels(value){
+        this.settings.coloredLabels = value
+    }
+
+    get colorLow(){ 
+        return this.coloredLabels == 'enabled' ? COLOR_RED : COLOR_FOREGROUND
+    }
+        
+    get colorHigh(){
+        return this.coloredLabels == 'enabled' ? COLOR_GREEN : COLOR_FOREGROUND
+    }
+
     get home(){
         return this.settings.home
     }
@@ -83,14 +99,6 @@ class SimpleAction extends Action {
 
     get isChart() {
         return this.currentView.id.includes('Chart')
-    }
-
-    get zoomCharts(){
-        return this.settings.zoomCharts
-    }
-
-    set zoomCharts(value){
-        this.settings.zoomCharts = value
     }
 
     get homeIndex(){
@@ -135,7 +143,7 @@ class SimpleAction extends Action {
         this.symbol     = this.symbol || 'GME'
         this.showTrend  = this.showTrend  || 'disabled'
         this.showState  = this.showState  || 'disabled'
-        this.zoomCharts = this.zoomCharts || 'disabled'
+        this.coloredLabels = this.coloredLabels || 'enabled'
         
         this.prepViewList()
         this.chartManager.onDidReceiveSettings(jsn)
@@ -328,7 +336,7 @@ class SimpleAction extends Action {
         payload.dayHigh = symbol.regularMarketDayHigh
         payload.dayLowPerc = Math.abs(payload.dayLow.percentChange(payload.prevClose)).toPrecisionPure(2)
         payload.dayHighPerc = Math.abs(payload.dayHigh.percentChange(payload.prevClose)).toPrecisionPure(2)
-
+        
         // Factor after market pricing
         if (symbol.marketState != "REGULAR") {
             if(symbol.marketState.includes("PRE")){
@@ -407,7 +415,7 @@ class SimpleAction extends Action {
                 break
             case ViewType.LIMITS:
                 this.drawSymbol(jsn);
-                this.drawLeft('limit',COLOR_FOREGROUND, 16, 21, 600, 6)
+                this.drawLeft('limit', COLOR_FOREGROUND, 16, 21, 600, 6)
                 this.limitManager.updateInfoView(jsn)
                 break
             case ViewType.DAY_DEC:
@@ -442,10 +450,10 @@ class SimpleAction extends Action {
     drawChange(){
         let change = this.data.change || 0
         let percent = this.data.percent || 0
-        let color = COLOR_GREEN
+        let color = this.colorHigh
         
         if(change < 0){
-            color = COLOR_RED
+            color = this.colorLow
             change = Math.abs(change)
             percent = Math.abs(percent)
         }
@@ -462,7 +470,7 @@ class SimpleAction extends Action {
 
     drawMarketState(state, yPos=32){
         if(state == MarketStateType.REG || this.showState == 'disabled') return
-
+        
         let blockHeight = 15
         this.drawingCtx.fillStyle = state == MarketStateType.PRE ? COLOR_PRE : COLOR_DISABLED
         this.drawingCtx.fillRect(0, yPos, 7, blockHeight)
@@ -515,7 +523,7 @@ class SimpleAction extends Action {
                 high = Number(high).abbreviateNumber(2,5)
                 low = Number(low).abbreviateNumber(2,5)
             }
-            this.drawSmartPair("Lo", low, COLOR_RED, "Hi", high, COLOR_GREEN)
+            this.drawSmartPair("Lo", low, this.colorLow, "Hi", high, this.colorHigh)
             return
         }
         
@@ -526,9 +534,9 @@ class SimpleAction extends Action {
         this.drawingCtx.lineTo(0, yPos[3]+18)
         this.drawingCtx.fill()
             
-        this.drawPair('', COLOR_FOREGROUND, high, COLOR_GREEN, yPos[0], font)
+        this.drawPair('', COLOR_FOREGROUND, high, this.colorHigh, yPos[0], font)
         this.drawPair('', COLOR_FOREGROUND, price, COLOR_FOREGROUND, yPos[1], font)
-        this.drawPair('', COLOR_FOREGROUND, low, COLOR_RED, yPos[2], font)
+        this.drawPair('', COLOR_FOREGROUND, low, this.colorLow, yPos[2], font)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -580,7 +588,7 @@ class SimpleAction extends Action {
             this.drawingCtx.fillRect(padMax.minmax(6,138), 111, 4, 24)
         }
         
-        this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 98)
+        this.drawScaledPair(low, this.colorLow, high, this.colorHigh, 98)
 
         var scale = 144 * Utils.rangeToPercent(this.data.close, min, max)
         this.drawingCtx.fillStyle = COLOR_RED_LT
