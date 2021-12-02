@@ -36,16 +36,16 @@
     </div>
 </div>
 
-<div type="radio" class="sdpi-item" id="label_colors">
-    <div class="sdpi-item-label">Color Labels</div>
+<div type="radio" class="sdpi-item" id="less_color">
+    <div class="sdpi-item-label">Less Color</div>
     <div class="sdpi-item-value ">
         <div class="sdpi-item-child">
-            <input id="coloredLabels-radio1" type="radio" value="enabled" name="colorLabels">
-            <label for="coloredLabels-radio1" class="sdpi-item-label"><span></span>True</label>
+            <input id="lessColor-radio1" type="radio" value="enabled" name="lessColor">
+            <label for="lessColor-radio1" class="sdpi-item-label"><span></span>True</label>
         </div>
         <div class="sdpi-item-child">
-            <input id="coloredLabels-radio2" type="radio" value="disabled" name="colorLabels">
-            <label for="coloredLabels-radio2" class="sdpi-item-label"><span></span>False</label>
+            <input id="lessColor-radio2" type="radio" value="disabled" name="lessColor">
+            <label for="lessColor-radio2" class="sdpi-item-label"><span></span>False</label>
         </div>
     </div>
 </div>
@@ -63,13 +63,32 @@
         </div>
     </div>
 </div>
+
+<div class="sdpi-heading">Update Close</div>
+<summary>Update previous close to today's close after regular market hours for footer views.</summary>
+<div type="radio" class="sdpi-item" id="update_close">
+    <div class="sdpi-item-label">Update</div>
+    <div class="sdpi-item-value ">
+        <div class="sdpi-item-child">
+            <input id="updateClose-radio1" type="radio" value="enabled" name="updateClose">
+            <label for="updateClose-radio1" class="sdpi-item-label"><span></span>True</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="updateClose-radio2" type="radio" value="disabled" name="updateClose" >
+            <label for="updateClose-radio2" class="sdpi-item-label"><span></span>False</label>
+        </div>
+    </div>
+</div>
+
+<div class="sdpi-heading">Default View</div>
+
 <div class="sdpi-item" id="home_select">
     <div class="sdpi-item-label">Home</div>
     <select class="sdpi-item-value select sdProperty" id="home" default="range"></select>
 </div>
 
-<div class="sdpi-heading">Alternate Views</div>
-
+<div class="sdpi-heading">Available Views</div>
+<summary>Additional views to cycle through on click.</summary>
 <div type="checkbox" class="sdpi-item" id="summary-views">
     <div class="sdpi-item-label">Footers</div>
     <div class="sdpi-item-value min100">

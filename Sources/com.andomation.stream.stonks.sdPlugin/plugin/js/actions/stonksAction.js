@@ -49,20 +49,20 @@ class StonksAction extends Action {
         this.type = this.type + ".stonks"
     }
 
-    get colorLabels(){
-        return this.settings.colorLabels
+    get lessColor(){
+        return this.settings.lessColor
     }
 
-    set colorLabels(value){
-        this.settings.colorLabels = value
+    set lessColor(value){
+        this.settings.lessColor = value
     }
 
     get colorLow(){ 
-        return this.colorLabels == 'enabled' ? COLOR_RED : '#B0B0B0'
+        return this.lessColor == 'enabled' ? '#B0B0B0' : COLOR_RED
     }
         
     get colorHigh(){
-        return this.colorLabels == 'enabled' ? COLOR_GREEN : COLOR_FOREGROUND
+        return this.lessColor == 'enabled' ? COLOR_FOREGROUND : COLOR_GREEN 
     }
 
     get home(){
@@ -95,6 +95,14 @@ class StonksAction extends Action {
 
     set showTrend(value){
         this.settings.showTrend = value
+    }
+
+    get updateClose(){
+        return this.settings.updateClose
+    }
+
+    set updateClose(value){
+        this.settings.updateClose = value
     }
 
     get isChart() {
@@ -141,9 +149,10 @@ class StonksAction extends Action {
         console.log("StonksAction - onDidReceiveSettings", jsn, this.settings)
         this.home       = this.home || ViewType.VIZ.id
         this.symbol     = this.symbol || 'GME'
-        this.showTrend  = this.showTrend  || 'disabled'
-        this.showState  = this.showState  || 'disabled'
-        this.colorLabels = this.colorLabels || 'enabled'
+        this.lessColor  = this.lessColor || 'disabled'
+        this.showTrend  = this.showTrend || 'disabled'
+        this.showState  = this.showState || 'disabled'
+        this.updateClose = this.updateClose || 'disabled'
         
         this.prepViewList()
         this.chartManager.onDidReceiveSettings(jsn)
@@ -346,7 +355,7 @@ class StonksAction extends Action {
                 payload.state   = symbol.marketState == "PRE" ? MarketStateType.PRE : MarketStateType.CLOSED
             }
             else {
-                payload.close   = symbol.regularMarketPrice
+                payload.close   = this.updateClose == 'enabled' ? symbol.regularMarketPrice : payload.close
                 payload.price   = symbol.postMarketPrice || payload.price
                 payload.change  = symbol.postMarketChange || payload.change
                 payload.percent = symbol.postMarketChangePercent || payload.percent

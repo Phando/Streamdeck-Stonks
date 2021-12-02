@@ -3,7 +3,7 @@ class IncrementAction extends Action {
  
   constructor(){
     super();
-    this.type = this.type + ".increment";
+    this.type = this.type + ".stonks.inc";
   }
 
   onConnected(jsn) {
@@ -11,7 +11,8 @@ class IncrementAction extends Action {
   }
 
   onKeyDown(jsn) {
-    // Overriding to skip the automatic registration to main.lastPressed
+    // Overriding:
+    // Needed to skip the automatic registration to main.lastPressed
   }
 
   onKeyUp(jsn) {
