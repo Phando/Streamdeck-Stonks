@@ -9,6 +9,7 @@ const STATE_DEFAULT = 'default'
 
 const COLOR_PRE      = '#F8981D'
 const COLOR_POST     = '#26AAE1'
+const COLOR_DIM      = '#C0C0C0'
 const COLOR_DISABLED = '#909090'
 const COLOR_ERROR    = '#FFFF00'
 const COLOR_FOREGROUND = '#D8D8D8'

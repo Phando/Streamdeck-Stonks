@@ -2,6 +2,14 @@ const MAX_NUMBER_LENGTH = 6
 
 const deg2rad = (deg) => (deg * Math.PI) / 180.0;
 
+Number.prototype.min = function (min) {
+  return Math.min(min, this.valueOf());
+};
+
+Number.prototype.max = function (max) {
+  return Math.max(max, this.valueOf());
+};
+
 Number.prototype.minmax = function (min = 0, max = 100) {
     return Math.min(max, Math.max(min, this.valueOf()));
 };

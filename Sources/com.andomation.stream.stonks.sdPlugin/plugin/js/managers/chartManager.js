@@ -1,4 +1,3 @@
-
 const CHART_SCALE = 50
 const CHART_BASE = 130
 const CHART_WIDTH = 140
@@ -56,6 +55,18 @@ class ChartManager extends Manager {
     get isTail(){
         return this.type.type == 'range1'
     }
+
+    initType(){
+        let viewName = ViewType.keyFor(this.currentView.id)
+        
+        console.log("Chart Setting", viewName, this.currentView.id)
+        for (const [key, value] of Object.entries(ChartType)) {
+            if(viewName == key){
+                this.type = value
+                return
+            }
+        }
+    }
     
     //-----------------------------------------------------------------------------------------
 
@@ -69,24 +80,14 @@ class ChartManager extends Manager {
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
         this.fill = this.fill || 'enabled'
-
-        let key = ViewType.keyFor(this.currentView.id)
-        if(key.includes('CHART'))
-            this.type = ChartType[key]
+        this.initType()
     } 
 
     //-----------------------------------------------------------------------------------------
 
     onKeyUp(jsn) {
         super.onKeyUp(jsn)
-        let viewName = ViewType.keyFor(this.currentView.id)
-
-        for (const [key, value] of Object.entries(ChartType)) {
-            if(viewName == key){
-                this.type = value
-                return
-            }
-        }
+        this.initType()
     }
 
     //-----------------------------------------------------------------------------------------
@@ -145,7 +146,6 @@ class ChartManager extends Manager {
         else
             this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1]    
 
-        console.log("Chart", this.chart.data.length)
         if(this.chart.data.length == 141){
             console.log("Chart Data", this.chart.data)
         }
@@ -155,6 +155,13 @@ class ChartManager extends Manager {
 
     updateDisplay(jsn){
         super.updateDisplay(jsn)
+        
+        if(typeof this.type == 'undefined'){
+            this.initType()
+            dataManager.fetchChartData()
+            return
+        }
+
         this.drawLeft(this.type.label,COLOR_FOREGROUND, 16, 21, 600, 6)
         
         if(!this.chart.hasOwnProperty('data') || this.chart.data.length == 0){

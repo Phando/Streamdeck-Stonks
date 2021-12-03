@@ -9,43 +9,29 @@
 </div>
 
 <div type="radio" class="sdpi-item" id="show_trend">
-    <div class="sdpi-item-label">Show Trend</div>
+    <div class="sdpi-item-label">Price Trend</div>
     <div class="sdpi-item-value ">
         <div class="sdpi-item-child">
             <input id="showTrend-radio1" type="radio" value="enabled" name="showTrend">
-            <label for="showTrend-radio1" class="sdpi-item-label"><span></span>True</label>
+            <label for="showTrend-radio1" class="sdpi-item-label"><span></span>Show</label>
         </div>
         <div class="sdpi-item-child">
             <input id="showTrend-radio2" type="radio" value="disabled" name="showTrend" >
-            <label for="showTrend-radio2" class="sdpi-item-label"><span></span>False</label>
+            <label for="showTrend-radio2" class="sdpi-item-label"><span></span>Hide</label>
         </div>
     </div>
 </div>
 
 <div type="radio" class="sdpi-item" id="show_state">
-    <div class="sdpi-item-label">Show State</div>
+    <div class="sdpi-item-label">Market State</div>
     <div class="sdpi-item-value ">
         <div class="sdpi-item-child">
             <input id="showState-radio1" type="radio" value="enabled" name="showState">
-            <label for="showState-radio1" class="sdpi-item-label"><span></span>True</label>
+            <label for="showState-radio1" class="sdpi-item-label"><span></span>Show</label>
         </div>
         <div class="sdpi-item-child">
             <input id="showState-radio2" type="radio" value="disabled" name="showState">
-            <label for="showState-radio2" class="sdpi-item-label"><span></span>False</label>
-        </div>
-    </div>
-</div>
-
-<div type="radio" class="sdpi-item" id="less_color">
-    <div class="sdpi-item-label">Less Color</div>
-    <div class="sdpi-item-value ">
-        <div class="sdpi-item-child">
-            <input id="lessColor-radio1" type="radio" value="enabled" name="lessColor">
-            <label for="lessColor-radio1" class="sdpi-item-label"><span></span>True</label>
-        </div>
-        <div class="sdpi-item-child">
-            <input id="lessColor-radio2" type="radio" value="disabled" name="lessColor">
-            <label for="lessColor-radio2" class="sdpi-item-label"><span></span>False</label>
+            <label for="showState-radio2" class="sdpi-item-label"><span></span>Hide</label>
         </div>
     </div>
 </div>
@@ -80,15 +66,15 @@
     </div>
 </div>
 
-<div class="sdpi-heading">Default View</div>
+<div class="sdpi-heading">Views</div>
 
 <div class="sdpi-item" id="home_select">
-    <div class="sdpi-item-label">Home</div>
+    <div class="sdpi-item-label">Initial View</div>
     <select class="sdpi-item-value select sdProperty" id="home" default="range"></select>
 </div>
 
-<div class="sdpi-heading">Available Views</div>
-<summary>Additional views to cycle through on click.</summary>
+<hr>
+
 <div type="checkbox" class="sdpi-item" id="summary-views">
     <div class="sdpi-item-label">Footers</div>
     <div class="sdpi-item-value min100">
@@ -128,6 +114,8 @@
 </div>
 <p>
 
+<hr>
+
 <div type="checkbox" class="sdpi-item" id="summary-views">
     <div class="sdpi-item-label">Details</div>
     <div class="sdpi-item-value min100">
@@ -146,6 +134,8 @@
     </div>
 </div>
 <p>
+
+<hr>
 
 <div type="checkbox" class="sdpi-item" id="chart-views">
     <div class="sdpi-item-label">Charts</div>
@@ -205,6 +195,20 @@
         <div class="sdpi-item-child">
             <input id="frameTime-radio3" type="radio" value="9" name="frameTime">
             <label for="frameTime-radio3" class="sdpi-item-label"><span></span>Long</label>
+        </div>
+    </div>
+</div>
+
+<div type="radio" class="sdpi-item" id="show_limits">
+    <div class="sdpi-item-label">Vis Limits</div>
+    <div class="sdpi-item-value ">
+        <div class="sdpi-item-child">
+            <input id="visLimits-radio1" type="radio" value="enabled" name="visLimits">
+            <label for="visLimits-radio1" class="sdpi-item-label"><span></span>Show</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="visLimits-radio2" type="radio" value="disabled" name="visLimits">
+            <label for="visLimits-radio2" class="sdpi-item-label"><span></span>Hide</label>
         </div>
     </div>
 </div>

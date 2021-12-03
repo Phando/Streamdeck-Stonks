@@ -375,8 +375,6 @@ const updateUI = (pl) => {
         foundElement.checked = foundElement.value == pl[e]
       }
       else if(foundElement.type.includes("select")){
-        console.log("Select Test", foundElement)
-        //foundElement.checked = foundElement.value == pl[e]
         $(foundElement).val(pl[e])
       }
       else {

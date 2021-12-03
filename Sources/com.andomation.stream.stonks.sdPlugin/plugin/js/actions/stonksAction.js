@@ -6,17 +6,17 @@ const MarketStateType = Object.freeze({
 });
 
 const ViewType = Object.freeze({
-    NONE            : {header:true,  vol:true,  perc:false, id:'none'},
-    CHANGE          : {header:true,  vol:true,  perc:false, id:'change'},
-    VIZ             : {header:true,  vol:true,  perc:false, id:'viz'},
-    VIZ_PERC        : {header:true,  vol:true,  perc:true,  id:'vizPerc'},
-    RANGE           : {header:true,  vol:true,  perc:false, id:'range'},
-    RANGE_PERC      : {header:true,  vol:true,  perc:true,  id:'rangePerc'},
-    RANGE_PLUS      : {header:true,  vol:true,  perc:false, id:'rangePlus'},
-    RANGE_PLUS_PERC : {header:true,  vol:true,  perc:true,  id:'rangePlusPerc'},
-    DAY_DEC         : {header:false, vol:true,  perc:false, id:'showDayDecimal'},
-    DAY_PERC        : {header:false, vol:true,  perc:true,  id:'showDayPercent'},
-    LIMITS          : {header:false, vol:true,  perc:false, id:'showLimits'},
+    NONE            : {header:true,  vol:true,   perc:false, id:'none'},
+    CHANGE          : {header:true,  vol:true,   perc:false, id:'change'},
+    VIZ             : {header:true,  vol:true,   perc:false, id:'viz'},
+    VIZ_PERC        : {header:true,  vol:true,   perc:true,  id:'vizPerc'},
+    RANGE           : {header:true,  vol:true,   perc:false, id:'range'},
+    RANGE_PERC      : {header:true,  vol:true,   perc:true,  id:'rangePerc'},
+    RANGE_PLUS      : {header:true,  vol:false,  perc:false, id:'rangePlus'},
+    RANGE_PLUS_PERC : {header:true,  vol:false,  perc:true,  id:'rangePlusPerc'},
+    DAY_DEC         : {header:false, vol:false,  perc:false, id:'showDayDecimal'},
+    DAY_PERC        : {header:false, vol:false,  perc:true,  id:'showDayPercent'},
+    LIMITS          : {header:false, vol:false,  perc:false, id:'showLimits'},
     CHART_MIN_30    : {header:true,  vol:true,  perc:false, id:'show30MinChart'},
     CHART_HR_1      : {header:true,  vol:true,  perc:false, id:'show1HourChart'},
     CHART_HR_2      : {header:true,  vol:true,  perc:false, id:'show2HourChart'},
@@ -47,22 +47,6 @@ class StonksAction extends Action {
     constructor() {
         super() 
         this.type = this.type + ".stonks"
-    }
-
-    get lessColor(){
-        return this.settings.lessColor
-    }
-
-    set lessColor(value){
-        this.settings.lessColor = value
-    }
-
-    get colorLow(){ 
-        return this.lessColor == 'enabled' ? '#B0B0B0' : COLOR_RED
-    }
-        
-    get colorHigh(){
-        return this.lessColor == 'enabled' ? COLOR_FOREGROUND : COLOR_GREEN 
     }
 
     get home(){
@@ -103,6 +87,14 @@ class StonksAction extends Action {
 
     set updateClose(value){
         this.settings.updateClose = value
+    }
+
+    get visLimits(){
+        return this.settings.visLimits
+    }
+
+    set visLimits(value){
+        this.settings.visLimits = value
     }
 
     get isChart() {
@@ -149,10 +141,10 @@ class StonksAction extends Action {
         console.log("StonksAction - onDidReceiveSettings", jsn, this.settings)
         this.home       = this.home || ViewType.VIZ.id
         this.symbol     = this.symbol || 'GME'
-        this.lessColor  = this.lessColor || 'disabled'
         this.showTrend  = this.showTrend || 'disabled'
         this.showState  = this.showState || 'disabled'
         this.updateClose = this.updateClose || 'disabled'
+        this.visLimits  = this.visLimits || 'enabled'
         
         this.prepViewList()
         this.chartManager.onDidReceiveSettings(jsn)
@@ -403,7 +395,7 @@ class StonksAction extends Action {
         if(this.currentView.header)
             this.drawHeader(jsn)
         
-        if(this.currentView.volume)
+        if(this.currentView.vol)
             this.drawVolume()
         
         switch(this.currentView){
@@ -459,10 +451,10 @@ class StonksAction extends Action {
     drawChange(){
         let change = this.data.change || 0
         let percent = this.data.percent || 0
-        let color = this.colorHigh
+        let color = COLOR_GREEN
         
         if(change < 0){
-            color = this.colorLow
+            color = COLOR_RED
             change = Math.abs(change)
             percent = Math.abs(percent)
         }
@@ -491,7 +483,7 @@ class StonksAction extends Action {
 
     drawSymbol(){
         let symbol = this.symbol.split('-')[0]
-        this.drawRight(symbol, COLOR_FOREGROUND, 18, 24, 600, 2)
+        this.drawRight(symbol, COLOR_DIM, 18, 24, 600, 2)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -504,7 +496,7 @@ class StonksAction extends Action {
 
     drawVolume(){
         let volume = this.data.volume.abbreviateNumber(2,4)
-        this.drawRight(volume, COLOR_FOREGROUND, 78, 24)
+        this.drawRight(volume, COLOR_DIM, 78, 24)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -532,7 +524,7 @@ class StonksAction extends Action {
                 high = Number(high).abbreviateNumber(2,5)
                 low = Number(low).abbreviateNumber(2,5)
             }
-            this.drawSmartPair("Lo", low, this.colorLow, "Hi", high, this.colorHigh)
+            this.drawSmartPair("Lo", low, COLOR_RED, "Hi", high, COLOR_GREEN)
             return
         }
         
@@ -543,9 +535,9 @@ class StonksAction extends Action {
         this.drawingCtx.lineTo(0, yPos[3]+18)
         this.drawingCtx.fill()
             
-        this.drawPair('', COLOR_FOREGROUND, high, this.colorHigh, yPos[0], font)
+        this.drawPair('', COLOR_FOREGROUND, high, COLOR_GREEN, yPos[0], font)
         this.drawPair('', COLOR_FOREGROUND, price, COLOR_FOREGROUND, yPos[1], font)
-        this.drawPair('', COLOR_FOREGROUND, low, this.colorLow, yPos[2], font)
+        this.drawPair('', COLOR_FOREGROUND, low, COLOR_RED, yPos[2], font)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -553,13 +545,15 @@ class StonksAction extends Action {
     drawSlider(){
         let padMin = 0
         let padMax = 0
+        let yPos = 119
         let min = this.data.low
         let max = this.data.high
         var low = min.abbreviateNumber()
         var high = max.abbreviateNumber()
-        this.drawingCtx.lineWidth = 2        
+        this.drawingCtx.lineWidth = 3        
         let close = this.data.close
         let isPerc = this.limitManager.type == LimitType.PERCENT
+        let showLimits = this.visLimits == 'enabled'
 
         if(low.length > 6 || high.length > 6){
             high = Number(high).abbreviateNumber(2,5)
@@ -572,50 +566,56 @@ class StonksAction extends Action {
         }    
 
         // Set the new min and account for lowerLimit
-        if(this.limitManager.isLowerEnabled){
+        if(showLimits && this.limitManager.isLowerEnabled){
             padMin = isPerc ? close - close * this.limitManager.lowerLimit/100 : this.limitManager.lowerLimit
             min = Math.min(min, padMin)
         }
 
         // Set the new max and account for upperLimit
-        if(this.limitManager.isUpperEnabled){
+        if(showLimits && this.limitManager.isUpperEnabled){
             padMax = isPerc ? close + close * this.limitManager.upperLimit/100 : this.limitManager.upperLimit
             max = Math.max(max, padMax)
         }    
 
-        // Use the new min/max to draw the lowerLimit
-        if(this.limitManager.isLowerEnabled){
-            padMin = 144 * Utils.rangeToPercent(padMin, min, max)
-            this.drawingCtx.fillStyle = COLOR_RED
-            this.drawingCtx.fillRect(padMin.minmax(6,138), 111, 4, 24)
-        }
-        
-        // Use the new min/max to draw the upperLimit
-        if(this.limitManager.isUpperEnabled){
-            padMax = 144 * Utils.rangeToPercent(padMax, min, max)
-            this.drawingCtx.fillStyle = COLOR_GREEN
-            this.drawingCtx.fillRect(padMax.minmax(6,138), 111, 4, 24)
-        }
-        
-        this.drawScaledPair(low, this.colorLow, high, this.colorHigh, 98)
+        //this.drawScaledPair(low, COLOR_DIM, high, COLOR_FOREGROUND, 103)
+        this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 103)
 
         var scale = 144 * Utils.rangeToPercent(this.data.close, min, max)
         this.drawingCtx.fillStyle = COLOR_RED_LT
         this.drawingCtx.strokeStyle = COLOR_RED
-        this.drawingCtx.fillRect(0, 116, scale, 14)
-        this.drawingCtx.strokeRect(0, 116, scale, 14)
+        this.drawingCtx.fillRect(0, yPos, scale, 14)
+        this.drawingCtx.strokeRect(0, yPos, scale, 14)
         
         this.drawingCtx.fillStyle = COLOR_GREEN_LT
         this.drawingCtx.strokeStyle = COLOR_GREEN
-        this.drawingCtx.fillRect(scale, 116, 144, 14)
-        this.drawingCtx.strokeRect(scale, 116, 144, 14)
+        this.drawingCtx.fillRect(scale, yPos, 144, 14)
+        this.drawingCtx.strokeRect(scale, yPos, 144, 14)
 
-        this.drawingCtx.fillStyle = COLOR_DISABLED
-        this.drawingCtx.fillRect(scale-2, 117, 4, 12)
+        // Remove the stroke between the green and red
+        this.drawingCtx.fillRect(scale-1, yPos+1, 4, 12)
 
+        // Use the new min/max to draw the lowerLimit
+        if(showLimits && this.limitManager.isLowerEnabled){
+            padMin = 144 * Utils.rangeToPercent(padMin, min, max)
+            this.drawingCtx.fillStyle = '#200000'
+            this.drawingCtx.fillRect(0, yPos+1, padMin.max(6), 12)
+            this.drawingCtx.fillStyle = COLOR_RED
+            this.drawingCtx.fillRect(padMin.minmax(6,138), yPos, 3, 14)
+        }
+        
+        // Use the new min/max to draw the upperLimit
+        if(showLimits && this.limitManager.isUpperEnabled){
+            padMax = 144 * Utils.rangeToPercent(padMax, min, max)
+            this.drawingCtx.fillStyle = '#002000'
+            this.drawingCtx.fillRect(padMax, yPos+1, 144, 12)
+            this.drawingCtx.fillStyle = COLOR_GREEN
+            this.drawingCtx.fillRect(padMax.min(138), yPos, 3, 14)
+        }
+
+        // Draw the thumb
         scale = 144 * Utils.rangeToPercent(this.data.price, min, max)
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
-        this.drawingCtx.fillRect(scale.minmax(6,138), 110, 4, 26)
+        this.drawingCtx.fillRect(scale.minmax(8,138)-2, yPos-4, 4, 22)
     }
 
 }
