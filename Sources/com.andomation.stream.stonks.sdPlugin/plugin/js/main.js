@@ -8,9 +8,9 @@ let dataManager = new DataManager()
 //-----------------------------------------------------------------------------------------
 
 actions.push(new StonksAction())
-actions.push(new ComplexAction())
-actions.push(new DecrementAction())
-actions.push(new IncrementAction())
+// actions.push(new ComplexAction())
+// actions.push(new DecrementAction())
+// actions.push(new IncrementAction())
 
 // There's only one StreamDeck object. It carries connection parameters 
 // and handles communication to/from the software's PluginManager.

@@ -113,7 +113,6 @@ class StonksAction extends Action {
         console.log("Setting", stateName)
         this.clickCount = stateName == STATE_DEFAULT ? this.homeIndex : 0
         this.context.stateName = stateName
-        this.updateDisplay(this.context)
     }
 
     // Streamdeck Event Handlers
@@ -137,6 +136,8 @@ class StonksAction extends Action {
 
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
+        // if(Utils.isUndefined(this.data))
+        //     this.initDisplay()
         
         console.log("StonksAction - onDidReceiveSettings", jsn, this.settings)
         this.home       = this.home || ViewType.VIZ.id
@@ -210,6 +211,8 @@ class StonksAction extends Action {
         this.limitManager.stopTimer(jsn)
         
         console.log('onPropertyInspectorDidAppear FETCH')
+        this.clickCount = 0
+        this.context.stateName = STATE_DEFAULT
         dataManager.fetchData()
     }
 
@@ -376,9 +379,20 @@ class StonksAction extends Action {
     // Display Handlers
     //-----------------------------------------------------------------------------------------
 
+    initDisplay() {
+        this.drawingCtx.fillStyle = COLOR_BACKGROUND
+        this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+        
+        var img = document.getElementById('action');
+        this.drawingCtx.drawImage(img, 10, 10, 124, 124);
+        $SD.api.setImage(this.uuid, this.canvas.toDataURL())
+    }
+
+    //-----------------------------------------------------------------------------------------
+
     updateDisplay(jsn) {
         super.updateDisplay(jsn)
-
+        
         if(this.state == STATE_LIMITS){
             this.limitManager.updateDisplay(jsn)
             return
@@ -582,7 +596,6 @@ class StonksAction extends Action {
         this.drawingCtx.strokeStyle = COLOR_RED
         this.drawingCtx.fillRect(0, yPos, scale, 14)
         this.drawingCtx.strokeRect(0, yPos, scale, 14)
-        console.log("VIZ", min, this.data.close, max, scale)
         
         this.drawingCtx.fillStyle = COLOR_GREEN_LT
         this.drawingCtx.strokeStyle = COLOR_GREEN

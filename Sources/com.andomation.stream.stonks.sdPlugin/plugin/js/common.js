@@ -136,7 +136,8 @@ class StreamDeckClient {
     onWillAppear(jsn) {
         this.uuid = jsn.context
         var settings = Utils.getProp(jsn, 'payload.settings', {})
-
+        this.initDisplay(jsn)
+        
         if(settings.version != $pluginVersion){
             console.log('onWillAppear - new instance or version')
             settings = {}
@@ -152,11 +153,10 @@ class StreamDeckClient {
     onPropertyInspectorDidAppear(jsn) {
         this.uuid = jsn.context
         
-        if(Object.keys(this.settings).length == 0)
+        if(Object.keys(this.settings).length == 0){
+            console.log("onPropertyInspectorDidAppear - WHY ARE WE HERE?", this.settings, jsn)
             this.onDidReceiveSettings({context:this.uuid,payload:{settings:{}}})
-
-        this.state = STATE_DEFAULT
-        this.updateDisplay(jsn)
+        }
     }
 
     //-----------------------------------------------------------------------------------------
@@ -217,6 +217,11 @@ class StreamDeckClient {
         this.uuid = jsn.context
     }
     
+    //-----------------------------------------------------------------------------------------
+    initDisplay(jsn){
+        this.uuid = jsn.context
+    }
+     
     //-----------------------------------------------------------------------------------------
 
     updateDisplay(jsn){

@@ -18,9 +18,9 @@
   "Author": "Andomation", 
   "CodePath": "plugin/index.html",
   "PropertyInspectorPath": "pi/index_pi.html",
-  "Description": "Stock and Ctypto Ticker", 
+  "Description": "Stock and Ctypto Ticker with Multiple Views, Limits and Charting", 
   "Name": "Stonks", 
-  "Icon": "images/actions/action", 
+  "Icon": "images/plugin/appStore.png", 
   "URL": "https://github.com/Phando/Streamdeck-Stonks", 
   "Version": "1.1.0", 
   "OS": [
