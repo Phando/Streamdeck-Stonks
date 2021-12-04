@@ -28,7 +28,9 @@ Check the [changelog](Changelog.md) for the latest updates.
 
 **Crypto** uses the symbol and currency.  BTC-EUR, ETH-USD, SHIB-USD...
 
-In the Property Inspector, enter your favorite asset symbol and let the data pour in. 
+In the Property Inspector, enter your favorite asset symbol and let the data pour in. It should look something like the screen below. 
+
+![Default](images/default.png)
 
 If the plugin runs into any issues or can not find a symbol, you will see a 'Not Found' error state. If the plugin doesn't recover, restart the Streamdeck app.
 
@@ -38,7 +40,7 @@ If the plugin runs into any issues or can not find a symbol, you will see a 'Not
 
 ![Footers](images/footers.png)
 
-The primary view of this plugin is focused on the current price. Additional information is supported in the various footter views. The footers show the most relevant infomation and span into pre and post market data. The  There are footers that show range data which are marked up with a small triangle to indicate that value is from the previous market close. 
+The primary view of this plugin is focused on the current price. Additional information is supported in footter views. There are footers that show range data which are marked up with a small triangle to indicate that value is from the previous market close. If you choose the *Update Close* option, data in the footers will use today's close as the previous market close after regular market hours. 
 
 ### Footer Details
 
@@ -50,11 +52,6 @@ The primary view of this plugin is focused on the current price. Additional info
 * **Range Plus%** - This is the same as Range Plus, but in percent format.
 * **Range Viz** - This shows the days range as colored bars with the previous market close as the point where the colors meet. The white indicator shows the current price accounting for pre, regular and post values.
 * **Range Viz%** - This is the same as Range Viz, but, you guessed it, in percent format.
-
-### Market State
-![States](images/states.png)
-
-The market state is a small indicator to the left of the asset price. During regular trading hours it is invisible. In pre market the top half is colord and the rest is grey. In post market, the bottom half is colored and the rest is grey. When the market is closed, the whole market state indicator is grey. The market state indicator does not show up for crypto assets as the market is always on. 
 
 ## Additional Views
 
@@ -79,6 +76,11 @@ Single day charts will show a horiontal line indicating the previous market clos
 * **Chart 6 months**
 * **Chart 12 months**
 
+### Market State
+![States](images/states.png)
+
+The market state is a small indicator to the left of the asset price. During regular trading hours it is invisible. In pre market the top half is colord and the rest is grey. In post market, the bottom half is colored and the rest is grey. When the market is closed, the whole market state indicator is grey. The market state indicator does not show up for crypto assets as the market is always on. 
+
 ## Limits
 
 ![Limits](images/limits.png)
@@ -97,20 +99,21 @@ It is possible to enable/disable and adjust the limits right on the device. A lo
 * **Lower Limit Enable/Disable**
 * **Lower Limit Decrement** - Skipped if disabled
 * **Lower Limit Increment** - Skipped if disabled
- 
 
 ## Settings Details
 
 * Title - Ignored
 * Symbol - The asset you are looking to track
-* Show Trend - Color the price to indicate higher or lower than previous close
-* Show State - Display the Market State Indicator
+* Price Trend - Color the price to indicate higher or lower than previous close
+* Market State - Display the Market State Indicator
 * Fill Charts - Show area charts or line charts
-* Footer - Select which footer style you want on the main screen
-* Views - Choose which views to display when clicking the Streamdeck button
-* Limit Type - Choose between numerical or percentage limits
-* Increment - The increment amount to be used when clicking the button in Limits View
+* Update Close - Update the previous close values to today's close after regular market hours
+* Initial View - Which view from the *View Checkboxes* is shown as the main screen
+* View Checkboxes - Choose which views to display when clicking the Streamdeck button
 * Screen Time - Sets the duration timer for the Limits View adjustments
+* Viz Limits - Show the limits on the *Viz* footers
+* Limit Type - Choose between numerical or percentage limits
+* Increment - The increment amount to be used when clicking the button in *Limits View*
 * Upper Limit Enabled - Enable or disable the Upper Limit
 * Upper Limit - The threshold value to trigger the Upper Limit
 * Lower Limit Enabled - Enable or disable the Lower Limit
@@ -118,6 +121,10 @@ It is possible to enable/disable and adjust the limits right on the device. A lo
 * Restore Deflauts - Click this button to reset all the plugin settings. 
 
 ## Technical Details
+
+Tiny numbers like the price of SHIB are shown in an abbreviated form. The abbreviation trims all but one leading zero and adds a tick. **0.00003968** is shown as **`03968**
+
+Values for highs and lows shown in the footers extends into pre and post market values.
 
 To view the output of the plugin you can point a browser to 
 [http://localhost:23654](http://localhost:23654) and click on *com.andomation.stream.stonks*.

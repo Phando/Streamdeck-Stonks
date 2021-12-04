@@ -180,6 +180,7 @@ class StonksAction extends Action {
 
         if(this.isChart){
             this.chartManager.onKeyUp(jsn)
+            console.log("onKeyUp FETCH")
             dataManager.fetchChartData()
             return
         }
@@ -207,7 +208,9 @@ class StonksAction extends Action {
         this.uuid = jsn.context
         super.onPropertyInspectorDidAppear(jsn)
         this.limitManager.stopTimer(jsn)
-        dataManager.fetchSymbolData()
+        
+        console.log('onPropertyInspectorDidAppear FETCH')
+        dataManager.fetchData()
     }
 
     //-----------------------------------------------------------------------------------------
@@ -223,7 +226,9 @@ class StonksAction extends Action {
 
         this.prepViewList()
         this.limitManager.onSendToPlugin(jsn)
-        dataManager.fetchSymbolData()
+
+        console.log('onSendToPlugin FETCH')
+        dataManager.fetchData()
     }
 
     // Custom Event Handlers
@@ -241,7 +246,7 @@ class StonksAction extends Action {
         this.uuid = jsn.context
         var symbol = jsn.payload
 
-        if(typeof symbol == 'undefined'){
+        if(Utils.isUndefined(symbol)){
             var payload = {context : jsn.context, error:{}}
             payload.error.message = this.symbol
             payload.error.message1 = 'Not Found'
@@ -266,7 +271,7 @@ class StonksAction extends Action {
 
     onDidReceiveChartData(jsn) {
         this.uuid = jsn.context
-        
+
         if(this.isChart && this.chartManager.dataMatch(jsn)){
             this.chartManager.onDidReceiveData(jsn)
             this.updateDisplay(jsn)
@@ -329,8 +334,6 @@ class StonksAction extends Action {
         
         // Range
         payload.state   = MarketStateType.REG
-        payload.low     = symbol.regularMarketDayLow
-        payload.high    = symbol.regularMarketDayHigh
         payload.change  = symbol.regularMarketChange
         payload.percent = symbol.regularMarketChangePercent
         payload.dayLow  = symbol.regularMarketDayLow
@@ -356,9 +359,9 @@ class StonksAction extends Action {
         }
         
         // Extended values
-        payload.low     = Math.min(payload.low, payload.price)
-        payload.high    = Math.max(payload.high, payload.price)
-        payload.lowPerc = Math.abs(payload.low.percentChange(payload.close)).toPrecisionPure(2)
+        payload.low      = this.updateClose == 'enabled' ? Math.min(symbol.regularMarketDayLow, payload.price) : symbol.regularMarketDayLow
+        payload.high     = this.updateClose == 'enabled' ? Math.max(symbol.regularMarketDayHigh, payload.price) : symbol.regularMarketDayHigh
+        payload.lowPerc  = Math.abs(payload.low.percentChange(payload.close)).toPrecisionPure(2)
         payload.highPerc = Math.abs(payload.high.percentChange(payload.close)).toPrecisionPure(2)
 
         if(this.showTrend == 'enabled'){
@@ -376,11 +379,6 @@ class StonksAction extends Action {
     updateDisplay(jsn) {
         super.updateDisplay(jsn)
 
-        if(typeof this.data == 'undefined'){
-            dataManager.fetchSymbolData()
-            return
-        }
-        
         if(this.state == STATE_LIMITS){
             this.limitManager.updateDisplay(jsn)
             return
@@ -390,11 +388,9 @@ class StonksAction extends Action {
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
         
-        console.log("CView", this.currentView)
-        
         if(this.currentView.header)
             this.drawHeader(jsn)
-        
+
         if(this.currentView.vol)
             this.drawVolume()
         
@@ -546,12 +542,12 @@ class StonksAction extends Action {
         let padMin = 0
         let padMax = 0
         let yPos = 119
+        this.drawingCtx.lineWidth = 3        
+        let close = this.data.close
         let min = this.data.low
         let max = this.data.high
         var low = min.abbreviateNumber()
         var high = max.abbreviateNumber()
-        this.drawingCtx.lineWidth = 3        
-        let close = this.data.close
         let isPerc = this.limitManager.type == LimitType.PERCENT
         let showLimits = this.visLimits == 'enabled'
 
@@ -580,11 +576,13 @@ class StonksAction extends Action {
         //this.drawScaledPair(low, COLOR_DIM, high, COLOR_FOREGROUND, 103)
         this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 103)
 
-        var scale = 144 * Utils.rangeToPercent(this.data.close, min, max)
+        var scale = 144 * Utils.rangeToPercent(this.data.close, min, max).minmax()
+
         this.drawingCtx.fillStyle = COLOR_RED_LT
         this.drawingCtx.strokeStyle = COLOR_RED
         this.drawingCtx.fillRect(0, yPos, scale, 14)
         this.drawingCtx.strokeRect(0, yPos, scale, 14)
+        console.log("VIZ", min, this.data.close, max, scale)
         
         this.drawingCtx.fillStyle = COLOR_GREEN_LT
         this.drawingCtx.strokeStyle = COLOR_GREEN

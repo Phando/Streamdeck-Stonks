@@ -1,4 +1,5 @@
 class DataManager {
+  chartTimer = null;
   dataTimer = null;
   chartURL  = "https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&" //indicators=close&includeTimestamps=false&includePrePost=false
   symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields="
@@ -76,7 +77,7 @@ class DataManager {
 
   fetchData(){
     this.fetchSymbolData()
-    this.fetchChartData()
+    setTimeout(this.fetchChartData.bind(this), 250)
   }
 
   //-----------------------------------------------------------------------------------------
@@ -105,7 +106,6 @@ class DataManager {
       types[chart.type] = chart
     })
 
-    console.log("Chart Types to Fetch", types)
     for (const [key, value] of Object.entries(types)) {
       var url = this.chartURL + "range="+ value.range +"&interval="+ value.interval + this.symbolString
 

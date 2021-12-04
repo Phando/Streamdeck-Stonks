@@ -10,7 +10,7 @@ Number.prototype.max = function (max) {
   return Math.max(max, this.valueOf());
 };
 
-Number.prototype.minmax = function (min = 0, max = 100) {
+Number.prototype.minmax = function (min=0, max=1) {
     return Math.min(max, Math.max(min, this.valueOf()));
 };
 
@@ -173,7 +173,7 @@ Utils.transformValue = function (prcnt, min, max) {
 //-----------------------------------------------------------------------------------------
 
 Utils.rangeToPercent = function (value, min, max) {
-  return (value - min) / (max - min);
+  return (value - min) / (max - min)
 };
 
 //-----------------------------------------------------------------------------------------

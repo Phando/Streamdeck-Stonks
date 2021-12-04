@@ -59,7 +59,6 @@ class ChartManager extends Manager {
     initType(){
         let viewName = ViewType.keyFor(this.currentView.id)
         
-        console.log("Chart Setting", viewName, this.currentView.id)
         for (const [key, value] of Object.entries(ChartType)) {
             if(viewName == key){
                 this.type = value
@@ -95,7 +94,7 @@ class ChartManager extends Manager {
     onDidReceiveData(jsn) {
         super.onDidReceiveData(jsn)
         console.log("ChartManager - onDidReceiveData: ", jsn)
-        
+
         this.chart = Object.assign({}, jsn.payload.response[0].meta)
         this.chart.raw = jsn.payload.response[0].indicators.quote[0].close.filter(Number)
         
@@ -155,20 +154,12 @@ class ChartManager extends Manager {
 
     updateDisplay(jsn){
         super.updateDisplay(jsn)
-        
-        if(typeof this.type == 'undefined'){
-            this.initType()
-            dataManager.fetchChartData()
-            return
-        }
-
         this.drawLeft(this.type.label,COLOR_FOREGROUND, 16, 21, 600, 6)
         
         if(!this.chart.hasOwnProperty('data') || this.chart.data.length == 0){
             this.drawingCtx.textAlign = "center"
-            this.drawingCtx.fillStyle = COLOR_ERROR
-            this.drawingCtx.fillText('Chart Data', CANVAS_WIDTH/2, 85);
-            this.drawingCtx.fillText('Not Found', CANVAS_WIDTH/2, 110);
+            this.drawingCtx.fillStyle = COLOR_DIM
+            this.drawingCtx.fillText('Loading', CANVAS_WIDTH/2, 110);
             return
         }
         
