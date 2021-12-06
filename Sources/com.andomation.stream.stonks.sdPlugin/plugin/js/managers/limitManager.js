@@ -225,8 +225,7 @@ class LimitManager extends Manager{
 
     onLongPress(jsn){
         super.onLongPress(jsn)
-        console.log("Long Press")
-        this.clickCount = 0//this.viewList.findIndex(item => item == LimitViewType.UPPER_ENABLED)
+        this.clickCount = 0
         this.updateDisplay(jsn)
     }
 

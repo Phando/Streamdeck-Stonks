@@ -110,7 +110,6 @@ class StonksAction extends Action {
     }
 
     set state(stateName){
-        console.log("Setting", stateName)
         this.clickCount = stateName == STATE_DEFAULT ? this.homeIndex : 0
         this.context.stateName = stateName
     }
@@ -136,8 +135,6 @@ class StonksAction extends Action {
 
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
-        // if(Utils.isUndefined(this.data))
-        //     this.initDisplay()
         
         console.log("StonksAction - onDidReceiveSettings", jsn, this.settings)
         this.home       = this.home || ViewType.VIZ.id
@@ -152,6 +149,7 @@ class StonksAction extends Action {
         this.limitManager.onDidReceiveSettings(jsn)
 
         $SD.api.setSettings(this.uuid, this.settings)
+        dataManager.scheduleData()
     } 
 
     //-----------------------------------------------------------------------------------------
@@ -181,7 +179,6 @@ class StonksAction extends Action {
 
         if(this.isChart){
             this.chartManager.onKeyUp(jsn)
-            console.log("onKeyUp FETCH")
             dataManager.fetchChartData()
             return
         }
@@ -210,7 +207,6 @@ class StonksAction extends Action {
         super.onPropertyInspectorDidAppear(jsn)
         this.limitManager.stopTimer(jsn)
         
-        console.log('onPropertyInspectorDidAppear FETCH')
         this.clickCount = 0
         this.context.stateName = STATE_DEFAULT
         dataManager.fetchData()
@@ -229,8 +225,6 @@ class StonksAction extends Action {
 
         this.prepViewList()
         this.limitManager.onSendToPlugin(jsn)
-
-        console.log('onSendToPlugin FETCH')
         dataManager.fetchData()
     }
 
@@ -245,7 +239,7 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveSymbolData(jsn) {
-        //console.log("StonksAction - onDidReceiveSymbol: ", jsn)
+        console.log("StonksAction - onDidReceiveSymbol: ", jsn)
         this.uuid = jsn.context
         var symbol = jsn.payload
 
@@ -392,7 +386,7 @@ class StonksAction extends Action {
 
     updateDisplay(jsn) {
         super.updateDisplay(jsn)
-        
+
         if(this.state == STATE_LIMITS){
             this.limitManager.updateDisplay(jsn)
             return

@@ -1,4 +1,5 @@
 class DataManager {
+  batchTimer = null;
   chartTimer = null;
   dataTimer = null;
   chartURL  = "https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&" //indicators=close&includeTimestamps=false&includePrePost=false
@@ -75,7 +76,21 @@ class DataManager {
 
   //-----------------------------------------------------------------------------------------
 
+  scheduleData() {
+    if(this.batchTimer != null)
+      return
+
+    this.batchTimer = setInterval(this.fetchData.bind(this), 250)
+  }
+
+  //-----------------------------------------------------------------------------------------
+
   fetchData(){
+    if(this.batchTimer != null){
+      clearInterval(this.batchTimer)
+      this.batchTimer = null
+    }
+
     this.fetchSymbolData()
     setTimeout(this.fetchChartData.bind(this), 250)
   }

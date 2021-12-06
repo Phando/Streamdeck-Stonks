@@ -41,6 +41,9 @@ class ChartManager extends Manager {
     }
 
     get type(){
+        if(Utils.isUndefined(this.context.chartType))
+            this.initType()
+        
         return this.context.chartType
     }
 
@@ -96,7 +99,14 @@ class ChartManager extends Manager {
         console.log("ChartManager - onDidReceiveData: ", jsn)
 
         this.chart = Object.assign({}, jsn.payload.response[0].meta)
-        this.chart.raw = jsn.payload.response[0].indicators.quote[0].close.filter(Number)
+        let raw = jsn.payload.response[0].indicators.quote[0].close
+        if(Utils.isUndefined(raw) || raw.length == 0){
+            console.log("ChartManager - REFRESH")
+            dataManager.scheduleData()
+            return
+        }
+        
+        this.chart.raw = raw.filter(Number)
         
         let slice = 0
         let interval = 1
