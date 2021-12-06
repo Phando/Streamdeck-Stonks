@@ -120,8 +120,10 @@ Tiny numbers like the price of SHIB are shown in an abbreviated form. The abbrev
 To view the output of the plugin you can point a browser to 
 [http://localhost:23654](http://localhost:23654) and click on *com.andomation.stream.stonks*.
 
-###Requirements
+### Issues
+If you find bugs or want to see new features please log at ticket in the [github repo](https://github.com/Phando/Streamdeck-Stonks/issues).
+
+### Requirements
 
 Stream Deck 4.1 or later.
 
-If you find bugs or want to see new features please log at ticket in the [github repo](https://github.com/Phando/Streamdeck-Stonks/issues).
