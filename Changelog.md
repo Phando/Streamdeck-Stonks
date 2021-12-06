@@ -1,15 +1,17 @@
 # Changelog
 
-## v1.0.5 (10/28/2021) -----
+## v1.1.0 (12/06/2021) -----
 
 #### Enhancements:
 - Total Rewrite
-- Support for multiple actions 
+- Charting
+- Live Limits Adjustments
 - Batched quote requests - less traffic and faster polling
-- 
+- Added support for multiple actions
+- So much more
 
 #### Bug Fixes:
-
+- None
 
 ## v1.0.4 (10/03/2021) -----
 

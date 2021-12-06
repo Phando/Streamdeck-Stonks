@@ -5,7 +5,7 @@
       "Name": "Stonks",
       "States": [
         {
-          "Image": "images/actions/action"
+          "Image": "images/actions/stonks"
         }
       ],
       "Tooltip": "Keep track of ticker and crypto prices.",
@@ -20,7 +20,7 @@
   "PropertyInspectorPath": "pi/index_pi.html",
   "Description": "Stock and Ctypto Ticker with Multiple Views, Limits and Charting", 
   "Name": "Stonks", 
-  "Icon": "images/plugin/appStore.png", 
+  "Icon": "images/plugin/appStore", 
   "URL": "https://github.com/Phando/Streamdeck-Stonks", 
   "Version": "1.1.0", 
   "OS": [
