@@ -1,7 +1,7 @@
 #!/bin/bash
-branch_name=${branch_name:-HEAD}
+branch_name=$(git symbolic-ref -q HEAD)
 
-if [ "$branch_name" != "stage" ]; then
+if [[ "$branch_name" != *"stage"* ]]; then
     echo "Please switch to the 'stage' branch."
     exit 0
 fi
@@ -13,9 +13,8 @@ echo $SCRIPT_DIR
 rm -rf Sources/
 rm DistributionTool
 rm build.sh
-rm prep.sh
+# rm prep.sh
 
 echo ""
 echo "Done"
 exit 0
-
