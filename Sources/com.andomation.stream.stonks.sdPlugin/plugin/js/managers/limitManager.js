@@ -412,6 +412,7 @@ class LimitManager extends Manager{
     //-----------------------------------------------------------------------------------------
 
     updateInfoView(jsn, editable = false){
+        var yPos = 76
         this.uuid = jsn.context
         var upper = this.upperLimit.abbreviateNumber()
         var lower = this.lowerLimit.abbreviateNumber()
@@ -427,9 +428,9 @@ class LimitManager extends Manager{
         
         this.drawingCtx.fillStyle = COLOR_POST
         this.drawingCtx.beginPath()
-        this.drawingCtx.moveTo(0, 75)
-        this.drawingCtx.lineTo(15, 75+9)
-        this.drawingCtx.lineTo(0, 75+18)
+        this.drawingCtx.moveTo(0, yPos)
+        this.drawingCtx.lineTo(15, yPos+9)
+        this.drawingCtx.lineTo(0, yPos+18)
         this.drawingCtx.fill()
 
         this.drawRight(upper, this.isUpperEnabled ? COLOR_GREEN : COLOR_DISABLED, 52, 26)
@@ -453,7 +454,7 @@ class LimitManager extends Manager{
         switch(this.currentView){    
             case LimitViewType.UPPER_ENABLED :
             case LimitViewType.LOWER_ENABLED :
-                this.drawSwitch(14, enablePos, enabled)
+                this.drawSwitch(8, enablePos, enabled)
                 break
             default :
                 this.drawArrow(6, iconPos, this.isInc)    
@@ -510,7 +511,8 @@ class LimitManager extends Manager{
         this.drawingCtx.strokeStyle = COLOR_FOREGROUND
         this.drawingCtx.fillStyle = state ? COLOR_GREEN : COLOR_DISABLED
         this.drawingCtx.beginPath();
-        this.drawingCtx.arc(xPos, yPos, 7, 0, 2 * Math.PI, false);
+        this.drawingCtx.arc(xPos, yPos, 8, 0, 2 * Math.PI, false);
+        this.drawingCtx.rect(0, yPos-8, xPos, 16);
         this.drawingCtx.fill();
         //this.drawingCtx.stroke();
     }

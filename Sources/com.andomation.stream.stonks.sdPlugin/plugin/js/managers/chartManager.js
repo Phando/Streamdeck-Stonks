@@ -214,9 +214,9 @@ class ChartManager extends Manager {
             xPos++
             yMax = Math.max(yMax, CHART_SCALE * scale)
         });
-
+        
         // Close the path
-        this.drawingCtx.lineTo(146,CHART_BASE - (CHART_SCALE * scale))
+        this.drawingCtx.lineTo(xPos-1,146)
         this.drawingCtx.lineTo(146,146)
         this.drawingCtx.closePath()
         
@@ -229,6 +229,8 @@ class ChartManager extends Manager {
         } 
 
         this.drawingCtx.stroke()
+        this.drawingCtx.fillStyle = COLOR_BACKGROUND
+        this.drawingCtx.fillRect(xPos-2, CHART_BASE - (CHART_SCALE * scale), 3, 146)
     }
     
 }
