@@ -22,15 +22,6 @@ rm -r ~/Library/Application\ Support/com.elgato.StreamDeck/Plugins/$PLUGIN
 cp -R Sources/ ~/Library/Application\ Support/com.elgato.StreamDeck/Plugins
 ./DistributionTool -b -i Sources/$PLUGIN -o Release
 
-echo "Prepping - Stage Branch"
-git switch stage
-git pull . development --force
-./prep.sh
-git add .
-git commit -m "Prepping for main"
-git push
-git switch development
-
 echo "Start - Stream Deck"
 open -a "Stream Deck"
 sleep 3
