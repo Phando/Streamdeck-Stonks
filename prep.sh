@@ -1,20 +1,27 @@
-#!/bin/bash
+#!/bin/sh
 branch_name=$(git symbolic-ref -q HEAD)
 
-if [[ "$branch_name" != *"stage"* ]]; then
-    echo "Please switch to the 'stage' branch."
+if [[ "$branch_name" != *"development"* ]]; then
+    echo "post-commit only needs to be run on the 'development' branch."
     exit 0
 fi
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-cd $SCRIPT_DIR
-echo $SCRIPT_DIR
+echo "Prepping - Stage Branch"
+git switch stage
+git fetch
+git reset --hard HEAD
+git merge origin/development
 
 rm -rf Sources/
 rm DistributionTool
 rm build.sh
-# rm prep.sh
+rm prep.sh
+
+echo "Cleaning up"
+git commit -m "Prepping for main"
+# git push
+git switch development
 
 echo ""
-echo "Done"
+echo "post-commit complete."
 exit 0
