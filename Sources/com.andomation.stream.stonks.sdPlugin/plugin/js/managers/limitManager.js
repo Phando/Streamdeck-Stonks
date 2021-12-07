@@ -270,7 +270,6 @@ class LimitManager extends Manager{
         
         this.stopTimer(jsn)
         this.countdown = this.frameTime
-        this.incrementOnClick = true
         $SD.emit(jsn.action + '.exitLimits', this.context)
     }
 
@@ -328,7 +327,7 @@ class LimitManager extends Manager{
         }
 
         this.stopTimer(jsn)
-        
+        console.log("Current View", this.currentView, this.isUpperEnabled, this.isLowerEnabled)
         // Show the next screen
         if(this.currentView == LimitViewType.UPPER_ENABLED && !this.isUpperEnabled){
             this.clickCount = this.viewList.findIndex(item => item == LimitViewType.LOWER_ENABLED)
@@ -340,6 +339,7 @@ class LimitManager extends Manager{
             this.clickCount++
         }
         
+        console.log("Current View2", this.currentView, this.isUpperEnabled, this.isLowerEnabled)
         // Exit : No more adjustment screens
         if( this.currentView == LimitViewType.EXIT_LIMITS ) {
             this.exitlLimits(jsn)

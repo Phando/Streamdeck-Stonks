@@ -234,6 +234,7 @@ class StonksAction extends Action {
     onExitLimits(jsn){
         this.uuid = jsn.context
         this.state = STATE_DEFAULT
+        this.updateDisplay(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
