@@ -7,10 +7,7 @@ if [[ "$branch_name" != *"development"* ]]; then
 fi
 
 echo "Prepping - Stage Branch"
-git switch stage
-git fetch
-git reset --hard HEAD
-git merge origin/development
+git checkout -b stageSpace
 
 rm -rf Sources/
 rm DistributionTool
@@ -19,8 +16,10 @@ rm prep.sh
 
 echo "Cleaning up"
 git commit -m "Prepping for main"
-# git push
+git push origin stageSpace:master
 git switch development
+git checkout .
+git branch -D stageSpace
 
 echo ""
 echo "post-commit complete."
