@@ -3,9 +3,12 @@
 ## v1.1.1 (12/06/2021) -----
 
 #### Enhancements:
-- None
+- Updated chart ranges to be more accuate
+- Scaling 24hr charts to show previous close line
+- Removed change close from charts
+
 #### Bug Fixes:
-- Fixed change close effect on charts
+- Updated major version settings update functionality
 
 ## v1.1.0 (12/06/2021) -----
 
@@ -19,7 +22,7 @@
 
 #### Bug Fixes:
 - None
-
+ 
 ## v1.0.4 (10/03/2021) -----
 
 #### Enhancements:

@@ -44,7 +44,7 @@ The values shown in this plugin represent a snapshot of the current market state
 
 ![Charts](images/charts.png) 
  
-There are many views packed into this plugin and you can pick and choose the ones that are relevant to your trading style. Additionally, you have the option to pick your initial or home view. The selected views will cycle with each click of your Streamdeck button. Charts that span 24 hours attempt to show the previous close as a white line across the chart. The line will occasionally be omitted from the 30 minute and 1 hour charts because the previous close is out of the plotable range. 
+There are many views packed into this plugin and you can pick and choose the ones that are relevant to your trading style. Additionally, you have the option to pick your initial or home view. The selected views will cycle with each click of your Streamdeck button. Charts that span 24 hours show the previous close as a dashed line across the chart.
 
 ### View Types
 

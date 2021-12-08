@@ -119,11 +119,12 @@ class ChartManager extends Manager {
                 slice = Math.floor(CHART_WIDTH/tickWidth)
                 break
             case ChartType.CHART_HR_1 :
-                tickWidth = 2
+                tickWidth = 2.3
                 slice = Math.floor(CHART_WIDTH/tickWidth)
                 break
             case ChartType.CHART_HR_2 :
-                slice = Math.max(140,scratch.length)
+                tickWidth = 1.4
+                slice = Math.floor(CHART_WIDTH/tickWidth)
                 break
             case ChartType.CHART_MONTH_1 :
                 slice = Math.max(140,scratch.length/3)
@@ -150,14 +151,13 @@ class ChartManager extends Manager {
         this.chart.min = Math.min(...rangeSource)
         this.chart.max = Math.max(...rangeSource)
 
-        if(this.isDay)
+        if(this.isDay){
+            this.chart.min = this.data.prevClose.min(this.chart.min)
+            this.chart.max = this.data.prevClose.max(this.chart.max)
             this.chart.isUp = this.data.prevClose < this.chart.data[this.chart.data.length-1]
+        }
         else
             this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1]    
-
-        if(this.chart.data.length == 141){
-            console.log("Chart Data", this.chart.data)
-        }
     }
 
     //-----------------------------------------------------------------------------------------
@@ -184,11 +184,7 @@ class ChartManager extends Manager {
     drawCharLine(){
         let scale = Utils.rangeToPercent(this.data.prevClose, this.chart.min, this.chart.max)
         
-        // Hiding the line if it is too high
-        //console.log("Char Line", scale, this.chart.min, this.chart.max)
-        if(scale > 1.1) return
-        //if(scale < 0) scale = -0.1
-        this.drawingCtx.setLineDash([4, 8]);
+        this.drawingCtx.setLineDash([6, 3]);
         this.drawingCtx.lineWidth = 2
         this.drawingCtx.strokeStyle = COLOR_FOREGROUND
         this.drawingCtx.beginPath()
