@@ -136,16 +136,24 @@ class StreamDeckClient {
     onWillAppear(jsn) {
         this.uuid = jsn.context
         var settings = Utils.getProp(jsn, 'payload.settings', {})
-        var symbol = settings.symbol
+        settings.version = settings.version || "0.0.0"
+        var symbol = settings.symbol || "GME"
         this.initDisplay(jsn)
         
-        // if(settings.version != $pluginVersion){
-        //     console.log('onWillAppear - new instance or version')
-        //     settings = {}
-        //     settings.version = $pluginVersion
-        //     settings.symbol = symbol || "GME"
-        //     jsn.payload.settings = settings
-        // }
+
+        if(settings.version != $pluginVersion){
+            let instanceV = settings.version.split('.')
+            let pluginV = $pluginVersion.split('.')
+            
+            if(instanceV[0] == pluginV[0] && instanceV[1] == pluginV[1]) 
+                return
+
+            console.log('onWillAppear - new instance or version')
+            settings = {}
+            settings.version = $pluginVersion
+            settings.symbol = symbol 
+            jsn.payload.settings = settings
+        }
 
         this.onDidReceiveSettings(jsn)
     }

@@ -185,14 +185,17 @@ class ChartManager extends Manager {
         let scale = Utils.rangeToPercent(this.data.prevClose, this.chart.min, this.chart.max)
         
         // Hiding the line if it is too high
+        //console.log("Char Line", scale, this.chart.min, this.chart.max)
         if(scale > 1.1) return
-        
+        //if(scale < 0) scale = -0.1
+        this.drawingCtx.setLineDash([4, 8]);
         this.drawingCtx.lineWidth = 2
         this.drawingCtx.strokeStyle = COLOR_FOREGROUND
         this.drawingCtx.beginPath()
         this.drawingCtx.moveTo(0, CHART_BASE - (CHART_SCALE * scale))
         this.drawingCtx.lineTo(CHART_WIDTH, CHART_BASE - (CHART_SCALE * scale))
         this.drawingCtx.stroke()
+        this.drawingCtx.setLineDash([]);
     }
 
     //-----------------------------------------------------------------------------------------

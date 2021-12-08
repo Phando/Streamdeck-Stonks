@@ -10,7 +10,7 @@
 ## v1.1.0 (12/06/2021) -----
 
 #### Enhancements:
-- Total Rewrite
+- **Total Rewrite**
 - Charting
 - Live Limits Adjustments
 - Batched quote requests - less traffic and faster polling
