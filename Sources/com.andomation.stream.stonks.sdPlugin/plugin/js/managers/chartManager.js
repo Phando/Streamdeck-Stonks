@@ -151,7 +151,7 @@ class ChartManager extends Manager {
         this.chart.max = Math.max(...rangeSource)
 
         if(this.isDay)
-            this.chart.isUp = this.data.close < this.chart.data[this.chart.data.length-1]
+            this.chart.isUp = this.data.prevClose < this.chart.data[this.chart.data.length-1]
         else
             this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1]    
 

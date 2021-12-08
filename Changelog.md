@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.1.1 (12/06/2021) -----
+
+#### Enhancements:
+- None
+#### Bug Fixes:
+- Fixed change close effect on charts
+
 ## v1.1.0 (12/06/2021) -----
 
 #### Enhancements:
