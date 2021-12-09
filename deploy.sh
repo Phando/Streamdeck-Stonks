@@ -15,6 +15,7 @@ rm build.sh
 rm prep.sh
 
 echo "Cleaning up"
+git add .
 git commit -m "Prepping for main"
 git push origin stageSpace:master
 git switch development
