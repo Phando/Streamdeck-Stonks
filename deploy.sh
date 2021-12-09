@@ -19,7 +19,9 @@ git add .
 git commit -m "Prepping for main"
 
 echo "Pushing to master"
-git push origin stageSpace:master --force
+push=$(git push origin stageSpace:master --force)
+echo $push
+git status
 
 echo "Cleaning up"
 git switch development
