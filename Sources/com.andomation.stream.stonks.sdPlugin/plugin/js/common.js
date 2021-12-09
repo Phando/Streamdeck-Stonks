@@ -144,8 +144,10 @@ class StreamDeckClient {
             let instanceV = settings.version.split('.')
             let pluginV = $pluginVersion.split('.')
             
-            if(instanceV[0] == pluginV[0] && instanceV[1] == pluginV[1]) 
+            if(instanceV[0] == pluginV[0] && instanceV[1] == pluginV[1]){
+                this.onDidReceiveSettings(jsn)
                 return
+            }
 
             console.log('onWillAppear - new instance or version')
             settings = {}
