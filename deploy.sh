@@ -14,10 +14,12 @@ rm DistributionTool
 rm build.sh
 rm prep.sh
 
-echo "Cleaning up"
+echo "Committing"
 git add .
 git commit -m "Prepping for main"
+echo "Pushing to master"
 git push origin stageSpace:master
+echo "Cleaning up"
 git switch development
 git checkout .
 git branch -D stageSpace
