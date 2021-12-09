@@ -140,7 +140,6 @@ class StreamDeckClient {
         var symbol = settings.symbol || "GME"
         this.initDisplay(jsn)
         
-
         if(settings.version != $pluginVersion){
             let instanceV = settings.version.split('.')
             let pluginV = $pluginVersion.split('.')

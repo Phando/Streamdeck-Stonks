@@ -209,6 +209,7 @@ class ChartManager extends Manager {
         
         this.chart.data.forEach((item, index) => {
             scale = Utils.rangeToPercent(item, this.chart.min, this.chart.max)
+
             this.drawingCtx.lineTo(xPos,CHART_BASE - (CHART_SCALE * scale))
             xPos++
             yMax = Math.max(yMax, CHART_SCALE * scale)
@@ -230,6 +231,8 @@ class ChartManager extends Manager {
         this.drawingCtx.stroke()
         this.drawingCtx.fillStyle = COLOR_BACKGROUND
         this.drawingCtx.fillRect(xPos-2, CHART_BASE - (CHART_SCALE * scale), 3, 146)
+
+        $SD.api.setImage(this.uuid, this.canvas.toDataURL())
     }
     
 }

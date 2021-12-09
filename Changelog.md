@@ -4,7 +4,7 @@
 
 #### Enhancements:
 - Updated chart ranges to be more accuate
-- Scaling 24hr charts to show previous close line
+- Scaling 24hr charts to fit previous close line
 - Removed change close from charts
 
 #### Bug Fixes:
