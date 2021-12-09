@@ -3,7 +3,7 @@
 ## v1.1.1 (12/09/2021) -----
 
 #### Enhancements:
-- Updated chart ranges to be more accuate
+- Updated chart ranges to be more accurate
 - Scaling 24hr charts to fit previous close line
 - Removed change close from charts
 - Removed localization (to be added later)
