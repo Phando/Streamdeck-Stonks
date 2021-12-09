@@ -1,14 +1,15 @@
 # Changelog
 
-## v1.1.1 (12/06/2021) -----
+## v1.1.1 (12/09/2021) -----
 
 #### Enhancements:
 - Updated chart ranges to be more accuate
 - Scaling 24hr charts to fit previous close line
 - Removed change close from charts
+- Removed localization (to be added later)
 
 #### Bug Fixes:
-- Updated major version settings update functionality
+- Updated plugin version handling
 
 ## v1.1.0 (12/06/2021) -----
 
