@@ -12,7 +12,7 @@ git checkout -b stageSpace
 rm -rf Sources/
 rm DistributionTool
 rm build.sh
-rm prep.sh
+rm deploy.sh
 
 echo "Committing"
 git add .
