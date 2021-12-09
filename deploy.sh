@@ -17,13 +17,14 @@ rm deploy.sh
 echo "Committing"
 git add .
 git commit -m "Prepping for main"
+
 echo "Pushing to master"
-git push origin stageSpace:master
+git push origin stageSpace:master --force
+
 echo "Cleaning up"
 git switch development
 git checkout .
 git branch -D stageSpace
 
-echo ""
-echo "post-commit complete."
+echo "Done"
 exit 0
