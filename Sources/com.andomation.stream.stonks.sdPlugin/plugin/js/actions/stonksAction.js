@@ -393,8 +393,9 @@ class StonksAction extends Action {
             return
         }
 
-        this.drawingCtx.fillStyle = COLOR_BACKGROUND
-        this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+        this.drawingCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+        // this.drawingCtx.fillStyle = COLOR_BACKGROUND
+        // this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
         
         if(this.currentView.header)

@@ -7,15 +7,15 @@ const ChartType = Object.freeze({
     // intervals [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
     
     // NOTE : The ranges below were chosen to optimize API polling.
-    CHART_MIN_30    : {range:'1d',  interval:'1m',  label:'30m', type:'range1'},
-    CHART_HR_1      : {range:'1d',  interval:'1m',  label:'1hr', type:'range1'},
-    CHART_HR_2      : {range:'1d',  interval:'1m',  label:'2hr', type:'range1'},
-    CHART_DAY_1     : {range:'1d',  interval:'2m',  label:'1d',  type:'range2'},
-    CHART_DAY_5     : {range:'5d',  interval:'5m',  label:'5d',  type:'range3'},
-    CHART_MONTH_1   : {range:'3mo', interval:'60m', label:'1M',  type:'range4'},
-    CHART_MONTH_3   : {range:'3mo', interval:'60m', label:'3M',  type:'range4'},
-    CHART_MONTH_6   : {range:'1y',  interval:'1d',  label:'6M',  type:'range5'},
-    CHART_MONTH_12  : {range:'1y',  interval:'1d',  label:'1y',  type:'range5'},
+    CHART_MIN_30    : {range:'1d',  interval:'1m',  label:'30m', type:'range1', subset:30},
+    CHART_HR_1      : {range:'1d',  interval:'1m',  label:'1hr', type:'range1', subset:60},
+    CHART_HR_2      : {range:'1d',  interval:'1m',  label:'2hr', type:'range1', subset:120},
+    CHART_DAY_1     : {range:'1d',  interval:'2m',  label:'1d',  type:'range2', subset:195},
+    CHART_DAY_5     : {range:'5d',  interval:'15m', label:'5d',  type:'range3', subset:0},
+    CHART_MONTH_1   : {range:'3mo', interval:'60m', label:'1M',  type:'range4', subset:0.33},
+    CHART_MONTH_3   : {range:'3mo', interval:'60m', label:'3M',  type:'range4', subset:0},
+    CHART_MONTH_6   : {range:'1y',  interval:'1d',  label:'6M',  type:'range5', subset:0.5},
+    CHART_MONTH_12  : {range:'1y',  interval:'1d',  label:'1y',  type:'range5', subset:0}
 });
 
 class ChartManager extends Manager {
@@ -53,10 +53,6 @@ class ChartManager extends Manager {
 
     get isDay(){
         return this.type.range == '1d'
-    }
-
-    get isTail(){
-        return this.type.type == 'range1'
     }
 
     initType(){
@@ -106,58 +102,39 @@ class ChartManager extends Manager {
             return
         }
         
-        this.chart.raw = raw.filter(Number)
+        this.chart.raw = raw
+        .filter(function(item){
+            return typeof item == 'number' && isFinite(item);
+        })
+        .map(function (value, index){
+            return {index:index, value:value}
+        })
         
-        let slice = 0
-        let interval = 1
-        let scratch = this.chart.raw
-        let tickWidth = 1
-        
-        switch(this.type){
-            case ChartType.CHART_MIN_30 :
-                tickWidth = 4
-                slice = Math.floor(CHART_WIDTH/tickWidth)
-                break
-            case ChartType.CHART_HR_1 :
-                tickWidth = 2.3
-                slice = Math.floor(CHART_WIDTH/tickWidth)
-                break
-            case ChartType.CHART_HR_2 :
-                tickWidth = 1.4
-                slice = Math.floor(CHART_WIDTH/tickWidth)
-                break
-            case ChartType.CHART_MONTH_1 :
-                slice = Math.max(140,scratch.length/3)
-                break
-            case ChartType.CHART_MONTH_6 :
-                slice = Math.max(140,scratch.length/2)
-                break
-        }
+        let subset = this.type.subset < 1 ? this.chart.raw.length * this.type.subset : this.type.subset
+        this.chart.data = this.chart.raw.slice(-subset)
 
-        scratch = scratch.slice(-slice)
-        if(!this.type.tail)
-            interval = Math.max(1, scratch.length/CHART_WIDTH)
+        let extent = d3.extent(this.chart.data, function(d) { return d.value; })
+        this.chart.min = extent[0]
+        this.chart.max = extent[1]
+        this.chart.rangeMax = 145
 
-        this.chart.data = []
-
-        for(var index = 0; index < scratch.length; index += interval){
-            for(let t=0; t<tickWidth; t++){
-                if(Math.round(index) < scratch.length)
-                    this.chart.data.push(scratch[Math.round(index)])
-            }
-        }
-        
-        let rangeSource = this.chart.data
-        this.chart.min = Math.min(...rangeSource)
-        this.chart.max = Math.max(...rangeSource)
+        // Testing dynamic rangeMax
+        // if(this.type.label == '1d'){
+        //     this.chart.data = this.chart.data.slice(-100)
+        // }
 
         if(this.isDay){
+            // console.log(this.chart.data.length, this.type.subset, this.chart.data.length / this.type.subset)
+            // this.chart.rangeMax *= this.chart.data.length / this.type.subset
             this.chart.min = this.data.prevClose.min(this.chart.min)
             this.chart.max = this.data.prevClose.max(this.chart.max)
-            this.chart.isUp = this.data.prevClose < this.chart.data[this.chart.data.length-1]
+            this.chart.isUp = this.data.prevClose < this.chart.data[this.chart.data.length-1].value
         }
         else
-            this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1]    
+            this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1].value
+
+        // console.log(this.chart.raw.length, this.chart.data.length, this.chart.data)
+        return
     }
 
     //-----------------------------------------------------------------------------------------
@@ -197,42 +174,32 @@ class ChartManager extends Manager {
     //-----------------------------------------------------------------------------------------
 
     drawChartData(){
-        let xPos = 2
-        let yMax = 0
-        let scale = Utils.rangeToPercent(this.chart.data[0], this.chart.min, this.chart.max)
+        var x = d3.scaleLinear()
+            .domain(d3.extent(this.chart.data, function(d) { return d.index; }))
+            .range([-1, this.chart.rangeMax]);
 
+        var y = d3.scaleLinear()
+            .domain([this.chart.min, this.chart.max])
+            .range([130, 75]);
+
+        var area = d3.area()
+            .x(function(d) { return x(d.index); })
+            .y0(145)
+            .y1(function(d) { return y(d.value); })
+            .context(this.drawingCtx);
+
+        var yMax = y(this.chart.max)
+        var grd = this.drawingCtx.createLinearGradient(0, yMax - 10, 0, 144);
+        grd.addColorStop(0.2, this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL);
+        grd.addColorStop(0.9, COLOR_BACKGROUND);
+
+        this.drawingCtx.beginPath();
         this.drawingCtx.lineWidth = 2
-        this.drawingCtx.strokeStyle = this.chart.isUp ? COLOR_GREEN : COLOR_RED // '#A32CC4'
-        this.drawingCtx.beginPath()
-        this.drawingCtx.moveTo(-2,146)
-        this.drawingCtx.lineTo(-2,CHART_BASE - (CHART_SCALE * scale))
-        
-        this.chart.data.forEach((item, index) => {
-            scale = Utils.rangeToPercent(item, this.chart.min, this.chart.max)
-
-            this.drawingCtx.lineTo(xPos,CHART_BASE - (CHART_SCALE * scale))
-            xPos++
-            yMax = Math.max(yMax, CHART_SCALE * scale)
-        });
-        
-        // Close the path
-        this.drawingCtx.lineTo(xPos-1,146)
-        this.drawingCtx.lineTo(146,146)
-        this.drawingCtx.closePath()
-        
-        if(this.fill == 'enabled'){
-            var grd = this.drawingCtx.createLinearGradient(0, CHART_BASE - yMax, 0, 144);
-            grd.addColorStop(0.2, this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL);
-            grd.addColorStop(0.9, COLOR_BACKGROUND);
-            this.drawingCtx.fillStyle = grd;
-            this.drawingCtx.fill()
-        } 
-
-        this.drawingCtx.stroke()
-        this.drawingCtx.fillStyle = COLOR_BACKGROUND
-        this.drawingCtx.fillRect(xPos-2, CHART_BASE - (CHART_SCALE * scale), 3, 146)
-
-        $SD.api.setImage(this.uuid, this.canvas.toDataURL())
+        this.drawingCtx.fillStyle = grd
+        this.drawingCtx.strokeStyle = this.chart.isUp ? COLOR_GREEN : COLOR_RED
+        area(this.chart.data);        
+        this.drawingCtx.fill();
+        this.drawingCtx.stroke();
     }
     
 }
