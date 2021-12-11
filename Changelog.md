@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.2 (12/09/2021) -----
+
+#### Enhancements:
+- Added D3 charting
+
+#### Bug Fixes:
+- None
+
 ## v1.1.1 (12/09/2021) -----
 
 #### Enhancements:
