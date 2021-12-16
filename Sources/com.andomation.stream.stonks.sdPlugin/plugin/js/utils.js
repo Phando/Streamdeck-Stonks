@@ -23,25 +23,10 @@ Number.prototype.countDigits = function () {
   return this.toString().split(".")[0].length || 0;
 };
 
-// Number.prototype.countDecimals = function () {
-//   if (Math.floor(this.valueOf()) === this.valueOf()) return 0;
-//   return this.toStringPure().split(".")[1].length || 0;
-// };
-
 Number.prototype.countDecimalZeros = function () {
   if (!this.toStringPure().startsWith("0.")) return 0;
   return (this.toStringPure().split(".")[1].match(/^0+/) || [""])[0].length;
 };
-
-// Number.prototype.getPreferredDecimals = function (precision=2, maxLength=MAX_NUMBER_LENGTH) {
-//     let value = this.valueOf();
-//     let dig = value.countDigits();
-//     let zed = value.countDecimalZeros();
-
-//     if (zed > 2) return -zed;
-//     if (dig > maxLength) return 0;
-//     return Math.min(maxLength - dig, precision);
-// };
 
 Number.prototype.toStringPure = function () {
   let value = this.valueOf();
@@ -105,7 +90,8 @@ Number.prototype.abbreviateNumber = function (maxLength=MAX_NUMBER_LENGTH, prefi
   	chars += !chars.includes('.') ? '.' : ''
   	maxLength = Number(maxLength) + 1
   }
-  
+
+  // Default
   return chars.padEnd(maxLength, '0').substring(0, Math.max(maxLength, dig))
 };
 
@@ -184,23 +170,6 @@ Utils.rangeToPercent = function (value, min, max) {
 Utils.percentToRange = function (percent, min, max) {
   return (max - min) * percent + min;
 };
-
-//-----------------------------------------------------------------------------------------
-
-// Utils.abbreviateNumber = function(value, precision=2, delta=0) {
-//     if(value == 0 || (value > 0.001 && value < 10000))
-//         return value.toDecimals(precision)
-
-//     if(value > 0.001){
-//         let digits = value % 3 == 0 ? 0 : 1
-//         return new Intl.NumberFormat( 'en-US', { maximumFractionDigits: digits, notation: 'compact', compactDisplay: 'short'}).format(value)
-//     }
-
-//     // Small number truncation
-//     let pad = delta==0 ? '`0' : '`0' + Array(delta).fill(0).join('')
-//     value = value.toString().substring(2, Number(precision)+2)
-//     return  pad + value.replace(/^[^1-9]*/,'')
-// };
 
 //-----------------------------------------------------------------------------------------
 

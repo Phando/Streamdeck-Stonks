@@ -97,6 +97,7 @@ It is possible to enable/disable and adjust the limits right on the device! A **
 
 * **Title** - Ignored
 * **Symbol** - The asset you are looking to track
+* **Max Digits** - The number of characters not including the decimal to show. 
 * **Price Trend** - Color the price to indicate higher or lower than previous close
 * **Market State** - Display the Market State Indicator
 * **Fill Charts** - Show area charts or line charts

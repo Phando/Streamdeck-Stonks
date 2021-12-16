@@ -476,7 +476,7 @@ class StonksAction extends Action {
         
         let zed1 = this.data.price.countDecimalZeros()
         let zed2 = change.countDecimalZeros()
-        //console.log("ZED ", zed1, zed2)
+        
         change = zed2 > zed1 ? change.abbreviateNumber(this.maxDigits, zed2-zed1) : change.abbreviateNumber(this.maxDigits)
         percent = percent.toPrecisionPure(2)
         this.drawSmartPair('', percent+'%', color, '', change, color,)
@@ -569,11 +569,6 @@ class StonksAction extends Action {
         var high = max.abbreviateNumber(this.maxDigits)
         let isPerc = this.limitManager.type == LimitType.PERCENT
         let showLimits = this.visLimits == 'enabled'
-
-        // if(low.length > 6 || high.length > 6){
-        //     high = Number(high).abbreviateNumber(2,5)
-        //     low = Number(low).abbreviateNumber(2,5)
-        // }
 
         if(this.currentView.perc){
             high = this.data.highPerc + '%'
