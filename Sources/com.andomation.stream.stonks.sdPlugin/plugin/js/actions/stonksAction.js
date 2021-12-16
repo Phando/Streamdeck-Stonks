@@ -57,6 +57,14 @@ class StonksAction extends Action {
         this.settings.home = value
     }
 
+    get maxDigits(){
+        return this.settings.maxDigits
+    }
+
+    set maxDigits(value){
+        this.settings.maxDigits = value
+    }
+
     get symbol(){
         return this.settings.symbol
     }
@@ -138,6 +146,7 @@ class StonksAction extends Action {
         
         console.log("StonksAction - onDidReceiveSettings", jsn, this.settings)
         this.home       = this.home || ViewType.VIZ.id
+        this.maxDigits  = this.maxDigits || 5
         this.symbol     = this.symbol || 'GME'
         this.showTrend  = this.showTrend || 'disabled'
         this.showState  = this.showState || 'disabled'
@@ -467,8 +476,8 @@ class StonksAction extends Action {
         
         let zed1 = this.data.price.countDecimalZeros()
         let zed2 = change.countDecimalZeros()
-
-        change = zed1 > 2 && zed1 < zed2 ? change.abbreviateNumber(zed1-zed2) : change.abbreviateNumber()
+        //console.log("ZED ", zed1, zed2)
+        change = zed2 > zed1 ? change.abbreviateNumber(this.maxDigits, zed2-zed1) : change.abbreviateNumber(this.maxDigits)
         percent = percent.toPrecisionPure(2)
         this.drawSmartPair('', percent+'%', color, '', change, color,)
     }
@@ -495,30 +504,30 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawPrice(value){
-        this.drawScaledRight(value.abbreviateNumber(), this.data.foreground, 50, CANVAS_WIDTH-20, 40)
+        this.drawScaledRight(value.abbreviateNumber(this.maxDigits), this.data.foreground, 50, CANVAS_WIDTH-20, 40)
     }
 
     //-----------------------------------------------------------------------------------------
 
     drawVolume(){
-        let volume = this.data.volume.abbreviateNumber(2,4)
+        let volume = this.data.volume.abbreviateNumber(4)
         this.drawRight(volume, COLOR_DIM, 78, 24)
     }
 
     //-----------------------------------------------------------------------------------------
 
     drawRange(){
-        var price  = this.data.close.abbreviateNumber()
-        var high = this.data.high.abbreviateNumber()
-        var low = this.data.low.abbreviateNumber()
+        var price  = this.data.close.abbreviateNumber(this.maxDigits)
+        var high = this.data.high.abbreviateNumber(this.maxDigits)
+        var low = this.data.low.abbreviateNumber(this.maxDigits)
 
         var font = this.currentView.header ? 23 : 26
         var yPos = this.currentView.header ? [81,103,126,88] : [52,89,126,75] 
 
         if( !this.currentView.header ) {
             this.drawLeft('- / +',COLOR_FOREGROUND, 16, 21, 600, 6)
-            high = this.currentView.perc ? this.data.dayHighPerc + '%' : this.data.dayHigh.abbreviateNumber()
-            low = this.currentView.perc ? this.data.dayLowPerc + '%' : this.data.dayLow.abbreviateNumber()
+            high = this.currentView.perc ? this.data.dayHighPerc + '%' : this.data.dayHigh.abbreviateNumber(this.maxDigits)
+            low = this.currentView.perc ? this.data.dayLowPerc + '%' : this.data.dayLow.abbreviateNumber(this.maxDigits)
         }
         else if( this.currentView.perc ){
             high = this.data.highPerc + '%'
@@ -527,8 +536,8 @@ class StonksAction extends Action {
 
         if( this.currentView.header && (this.currentView == ViewType.RANGE || this.currentView == ViewType.RANGE_PERC)){
             if(low.length > 6 || high.length > 6){
-                high = Number(high).abbreviateNumber(2,5)
-                low = Number(low).abbreviateNumber(2,5)
+                high = Number(high).abbreviateNumber(this.maxDigits)
+                low = Number(low).abbreviateNumber(this.maxDigits)
             }
             this.drawSmartPair("Lo", low, COLOR_RED, "Hi", high, COLOR_GREEN)
             return
@@ -556,15 +565,15 @@ class StonksAction extends Action {
         let close = this.data.close
         let min = this.data.low
         let max = this.data.high
-        var low = min.abbreviateNumber()
-        var high = max.abbreviateNumber()
+        var low = min.abbreviateNumber(this.maxDigits)
+        var high = max.abbreviateNumber(this.maxDigits)
         let isPerc = this.limitManager.type == LimitType.PERCENT
         let showLimits = this.visLimits == 'enabled'
 
-        if(low.length > 6 || high.length > 6){
-            high = Number(high).abbreviateNumber(2,5)
-            low = Number(low).abbreviateNumber(2,5)
-        }
+        // if(low.length > 6 || high.length > 6){
+        //     high = Number(high).abbreviateNumber(2,5)
+        //     low = Number(low).abbreviateNumber(2,5)
+        // }
 
         if(this.currentView.perc){
             high = this.data.highPerc + '%'

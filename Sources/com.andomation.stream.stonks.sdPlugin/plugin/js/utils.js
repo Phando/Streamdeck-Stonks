@@ -23,25 +23,25 @@ Number.prototype.countDigits = function () {
   return this.toString().split(".")[0].length || 0;
 };
 
-Number.prototype.countDecimals = function () {
-  if (Math.floor(this.valueOf()) === this.valueOf()) return 0;
-  return this.toStringPure().split(".")[1].length || 0;
-};
+// Number.prototype.countDecimals = function () {
+//   if (Math.floor(this.valueOf()) === this.valueOf()) return 0;
+//   return this.toStringPure().split(".")[1].length || 0;
+// };
 
 Number.prototype.countDecimalZeros = function () {
   if (!this.toStringPure().startsWith("0.")) return 0;
   return (this.toStringPure().split(".")[1].match(/^0+/) || [""])[0].length;
 };
 
-Number.prototype.getPreferredDecimals = function (precision=2, maxLength=MAX_NUMBER_LENGTH) {
-    let value = this.valueOf();
-    let dig = value.countDigits();
-    let zed = value.countDecimalZeros();
+// Number.prototype.getPreferredDecimals = function (precision=2, maxLength=MAX_NUMBER_LENGTH) {
+//     let value = this.valueOf();
+//     let dig = value.countDigits();
+//     let zed = value.countDecimalZeros();
 
-    if (zed > 2) return -zed;
-    if (dig > maxLength) return 0;
-    return Math.min(maxLength - dig, precision);
-};
+//     if (zed > 2) return -zed;
+//     if (dig > maxLength) return 0;
+//     return Math.min(maxLength - dig, precision);
+// };
 
 Number.prototype.toStringPure = function () {
   let value = this.valueOf();
@@ -76,25 +76,14 @@ Number.prototype.toPrecisionPure = function (precision) {
   return whole + "." + fraction;
 };
 
-Number.prototype.abbreviateNumber = function (precision=2, maxLength=MAX_NUMBER_LENGTH) {
-  let prefix = "`0";
+Number.prototype.abbreviateNumber = function (maxLength=MAX_NUMBER_LENGTH, prefixPad=1) {
   let value = this.valueOf();
-  let dig = value.countDigits();
+  let chars =  this.toStringPure()
+  let dig = this.countDigits();
   let zed = value.countDecimalZeros();
 
-  if (zed >= 2) {
-    maxLength -= 1  
-    if (precision < 0)
-      prefix = prefix.padEnd(prefix.length + Math.abs(precision), 0);
-    return (
-      prefix +
-      value
-        .toStringPure()
-        .replace(/^[.|0]*/, "")
-        .substring(0, maxLength - prefix.length + 1)
-    );
-  }
-  if (dig > maxLength) {
+  // Large Numbers
+  if (value >= 100000) {
     let digits = dig % 3 == 0 ? 0 : 3 - Math.round(dig % 3);
     return new Intl.NumberFormat("en-US", {
       maximumFractionDigits: digits,
@@ -102,8 +91,22 @@ Number.prototype.abbreviateNumber = function (precision=2, maxLength=MAX_NUMBER_
       compactDisplay: "short",
     }).format(value);
   }
-
-  return value.toPrecisionPure(Math.min(maxLength - dig, precision));
+  
+  // Small Numbers
+  if (zed > 0) {
+    maxLength = Number(maxLength) - prefixPad  
+    return '`' + chars.replace(/^[.|0]*/, "")
+    .substring(0, maxLength)
+    .padStart(prefixPad + maxLength, '0')
+  }
+  
+  // Handle the decimal point
+  if(maxLength > dig){
+  	chars += !chars.includes('.') ? '.' : ''
+  	maxLength = Number(maxLength) + 1
+  }
+  
+  return chars.padEnd(maxLength, '0').substring(0, Math.max(maxLength, dig))
 };
 
 var Utils = {

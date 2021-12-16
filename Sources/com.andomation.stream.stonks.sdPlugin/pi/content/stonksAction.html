@@ -5,6 +5,28 @@
     <input id="symbol" class="sdpi-item-value" type="text" placeholder="GME" oninput="let p=this.selectionStart;this.value=this.value.toUpperCase();this.setSelectionRange(p, p);"/>
 </div>
 
+<div type="radio" class="sdpi-item" id="max_digits">
+    <div class="sdpi-item-label">Max Digits</div>
+    <div class="sdpi-item-value ">
+        <div class="sdpi-item-child">
+            <input id="maxDigits-radio1" type="radio" value=3 name="maxDigits">
+            <label for="maxDigits-radio1" class="sdpi-item-label"><span></span>3</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="maxDigits-radio2" type="radio" value=4 name="maxDigits" >
+            <label for="maxDigits-radio2" class="sdpi-item-label"><span></span>4</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="maxDigits-radio3" type="radio" value=5 name="maxDigits" >
+            <label for="maxDigits-radio3" class="sdpi-item-label"><span></span>5</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="maxDigits-radio4" type="radio" value=6 name="maxDigits" >
+            <label for="maxDigits-radio4" class="sdpi-item-label"><span></span>6</label>
+        </div>
+    </div>
+</div>
+
 <div type="radio" class="sdpi-item" id="show_trend">
     <div class="sdpi-item-label">Price Trend</div>
     <div class="sdpi-item-value ">
