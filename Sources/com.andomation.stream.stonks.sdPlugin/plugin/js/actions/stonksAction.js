@@ -560,7 +560,7 @@ class StonksAction extends Action {
     drawSlider(){
         let padMin = 0
         let padMax = 0
-        let yPos = 121
+        let yPos = 125
         this.drawingCtx.lineWidth = 3        
         let close = this.data.close
         let min = this.data.low
@@ -588,7 +588,7 @@ class StonksAction extends Action {
         }    
 
         //this.drawScaledPair(low, COLOR_DIM, high, COLOR_FOREGROUND, 103)
-        this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 103)
+        this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 109)
 
         var scale = Math.round(144 * Utils.rangeToPercent(this.data.close, min, max).minmax())
 
@@ -624,7 +624,7 @@ class StonksAction extends Action {
             
             grd = this.drawingCtx.createLinearGradient(0, yPos+2, 0, 144);
             grd.addColorStop(0.4, COLOR_RED)
-            grd.addColorStop(0.8, COLOR_BACKGROUND)
+            grd.addColorStop(0.9, COLOR_BACKGROUND)
             this.drawingCtx.fillStyle = grd
             this.drawingCtx.fillRect(padMin.minmax(6,138), yPos, 3, 25)
         }
@@ -637,7 +637,7 @@ class StonksAction extends Action {
             
             grd = this.drawingCtx.createLinearGradient(0, yPos+2, 0, 144);
             grd.addColorStop(0.4, COLOR_GREEN)
-            grd.addColorStop(0.8, COLOR_BACKGROUND)
+            grd.addColorStop(0.9, COLOR_BACKGROUND)
             this.drawingCtx.fillStyle = grd
             this.drawingCtx.fillRect(padMax.min(138), yPos, 3, 25)
         }
@@ -652,7 +652,7 @@ class StonksAction extends Action {
         // Draw the thumb
         scale = 144 * Utils.rangeToPercent(this.data.price, min, max)
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
-        this.drawingCtx.fillRect(scale.minmax(8,138)-2, yPos-4, 4, 20)
+        this.drawingCtx.fillRect(scale.minmax(8,138)-2, yPos-6, 4, 20)
     }
 
 }

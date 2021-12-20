@@ -5,7 +5,7 @@
 #### Enhancements:
 - Added max digits
 - Added D3 charting
-- Redesigned the Viz slider
+- Simplified the Viz slider
 
 #### Bug Fixes:
 - Fixed chart fill no fill
