@@ -14,6 +14,28 @@ class ActionPI extends StreamDeckClient{
         this.uuid = jsn.context
         this.settings = Utils.getProp(jsn, 'payload.settings', false)
 		console.log("ActionPI - onDidReceiveSettings", jsn, this.settings)
+
+		// Future home of analytics
+		// gtag('event','settings', {
+		// 	"symbol" : this.settings.symbol,
+		// 	"maxDigits" : this.settings.maxDigits,
+		// 	"home" : this.settings.home,
+		// 	"fillCharts" : this.settings.fillCharts,
+		// 	"frameTime" : this.settings.frameTime,
+		// 	"updateClose" : this.settings.updateClose,
+		// 	"limitType" : this.settings.limitType,
+		// 	"lowerLimitEnabled" : this.settings.lowerLimitEnabled,
+		// 	"upperLimitEnabled" : this.settings.upperLimitEnabled,
+		// 	"visLimits" : this.settings.visLimits,
+		// 	"show1DayChart" : this.settings.show1DayChart,
+		// 	"show1MonthChart" : this.settings.show1MonthChart,
+		// 	"show2HourChart" : this.settings.show2HourChart,
+		// 	"show5DayChart" : this.settings.show5DayChart,
+		// 	"show30MinChart" : this.settings.show30MinChart,
+		// 	"showDayDecimal" : this.settings.showDayDecimal,
+		// 	"showState" : this.settings.showState,
+		// 	"showTrend" : this.settings.showTrend
+		// });
     }
 
 	onReceiveGlobalSettings(jsonObj){

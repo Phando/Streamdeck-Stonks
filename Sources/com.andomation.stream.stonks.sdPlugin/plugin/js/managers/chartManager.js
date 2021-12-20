@@ -116,6 +116,7 @@ class ChartManager extends Manager {
         let extent = d3.extent(this.chart.data, function(d) { return d.value; })
         this.chart.min = extent[0]
         this.chart.max = extent[1]
+        this.chart.dataMax = extent[1]
         this.chart.rangeMax = 145
 
         // Testing dynamic rangeMax
@@ -188,9 +189,9 @@ class ChartManager extends Manager {
             .y1(function(d) { return y(d.value); })
             .context(this.drawingCtx);
 
-        var yMax = y(this.chart.max)
-        var grd = this.drawingCtx.createLinearGradient(0, yMax - 10, 0, 144);
-        grd.addColorStop(0.2, this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL);
+        var yMax = y(this.chart.dataMax)
+        var grd = this.drawingCtx.createLinearGradient(0, yMax - 20, 0, 144);
+        grd.addColorStop(0.4, this.chart.isUp ? COLOR_GREEN_CL : COLOR_RED_CL);
         grd.addColorStop(0.9, COLOR_BACKGROUND);
 
         this.drawingCtx.beginPath();
@@ -198,8 +199,10 @@ class ChartManager extends Manager {
         this.drawingCtx.fillStyle = grd
         this.drawingCtx.strokeStyle = this.chart.isUp ? COLOR_GREEN : COLOR_RED
         area(this.chart.data);        
-        this.drawingCtx.fill();
+        if(this.fill == 'enabled')
+            this.drawingCtx.fill();
         this.drawingCtx.stroke();
+        
     }
     
 }

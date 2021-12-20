@@ -560,7 +560,7 @@ class StonksAction extends Action {
     drawSlider(){
         let padMin = 0
         let padMax = 0
-        let yPos = 119
+        let yPos = 121
         this.drawingCtx.lineWidth = 3        
         let close = this.data.close
         let min = this.data.low
@@ -590,43 +590,69 @@ class StonksAction extends Action {
         //this.drawScaledPair(low, COLOR_DIM, high, COLOR_FOREGROUND, 103)
         this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 103)
 
-        var scale = 144 * Utils.rangeToPercent(this.data.close, min, max).minmax()
+        var scale = Math.round(144 * Utils.rangeToPercent(this.data.close, min, max).minmax())
 
-        this.drawingCtx.fillStyle = COLOR_RED_LT
-        this.drawingCtx.strokeStyle = COLOR_RED
-        this.drawingCtx.fillRect(0, yPos, scale, 14)
-        this.drawingCtx.strokeRect(0, yPos, scale, 14)
+        var grd = this.drawingCtx.createLinearGradient(0, yPos, 0, 145);
+        grd.addColorStop(0.1, COLOR_RED_LT);
+        grd.addColorStop(0.9, COLOR_BACKGROUND);
+        this.drawingCtx.fillStyle = grd
+        this.drawingCtx.fillRect(-1, yPos, scale, 25)
+       
+        grd = this.drawingCtx.createLinearGradient(0, yPos, 0, 145);
+        grd.addColorStop(0.1, COLOR_GREEN_LT);
+        grd.addColorStop(0.9, COLOR_BACKGROUND);
+        this.drawingCtx.fillStyle = grd
+        this.drawingCtx.fillRect(scale, yPos, 145, 25)
         
-        this.drawingCtx.fillStyle = COLOR_GREEN_LT
-        this.drawingCtx.strokeStyle = COLOR_GREEN
-        this.drawingCtx.fillRect(scale, yPos, 144, 14)
-        this.drawingCtx.strokeRect(scale, yPos, 144, 14)
+        this.drawingCtx.beginPath()
+        this.drawingCtx.moveTo(-1, yPos)
+        this.drawingCtx.lineTo(scale, yPos)
+        this.drawingCtx.strokeStyle = COLOR_RED
+        this.drawingCtx.stroke()
 
-        // Remove the stroke between the green and red
-        this.drawingCtx.fillRect(scale-1, yPos+1, 4, 12)
+        this.drawingCtx.beginPath()
+        this.drawingCtx.moveTo(scale, yPos)
+        this.drawingCtx.lineTo(145, yPos)
+        this.drawingCtx.strokeStyle = COLOR_GREEN
+        this.drawingCtx.stroke()
 
         // Use the new min/max to draw the lowerLimit
         if(showLimits && this.limitManager.isLowerEnabled){
             padMin = 144 * Utils.rangeToPercent(padMin, min, max)
-            this.drawingCtx.fillStyle = '#200000'
-            this.drawingCtx.fillRect(0, yPos+1, padMin.max(6), 12)
-            this.drawingCtx.fillStyle = COLOR_RED
-            this.drawingCtx.fillRect(padMin.minmax(6,138), yPos, 3, 14)
+            this.drawingCtx.fillStyle = '#300000'
+            this.drawingCtx.fillRect(0, yPos+1, padMin.max(6), 25)
+            
+            grd = this.drawingCtx.createLinearGradient(0, yPos+2, 0, 144);
+            grd.addColorStop(0.4, COLOR_RED)
+            grd.addColorStop(0.8, COLOR_BACKGROUND)
+            this.drawingCtx.fillStyle = grd
+            this.drawingCtx.fillRect(padMin.minmax(6,138), yPos, 3, 25)
         }
         
         // Use the new min/max to draw the upperLimit
         if(showLimits && this.limitManager.isUpperEnabled){
             padMax = 144 * Utils.rangeToPercent(padMax, min, max)
-            this.drawingCtx.fillStyle = '#002000'
-            this.drawingCtx.fillRect(padMax, yPos+1, 144, 12)
-            this.drawingCtx.fillStyle = COLOR_GREEN
-            this.drawingCtx.fillRect(padMax.min(138), yPos, 3, 14)
+            this.drawingCtx.fillStyle = '#003000'
+            this.drawingCtx.fillRect(padMax, yPos+1, 144, 25)
+            
+            grd = this.drawingCtx.createLinearGradient(0, yPos+2, 0, 144);
+            grd.addColorStop(0.4, COLOR_GREEN)
+            grd.addColorStop(0.8, COLOR_BACKGROUND)
+            this.drawingCtx.fillStyle = grd
+            this.drawingCtx.fillRect(padMax.min(138), yPos, 3, 25)
         }
+
+        // Remove the stroke between the green and red
+        this.drawingCtx.beginPath()
+        this.drawingCtx.moveTo(scale-1, yPos)
+        this.drawingCtx.lineTo(scale-1, 145)
+        this.drawingCtx.strokeStyle = COLOR_BACKGROUND
+        this.drawingCtx.stroke()
 
         // Draw the thumb
         scale = 144 * Utils.rangeToPercent(this.data.price, min, max)
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
-        this.drawingCtx.fillRect(scale.minmax(8,138)-2, yPos-4, 4, 22)
+        this.drawingCtx.fillRect(scale.minmax(8,138)-2, yPos-4, 4, 20)
     }
 
 }

@@ -3,10 +3,12 @@
 ## v1.1.2 (12/09/2021) -----
 
 #### Enhancements:
+- Added max digits
 - Added D3 charting
+- Redesigned the Viz slider
 
 #### Bug Fixes:
-- None
+- Fixed chart fill no fill
 
 ## v1.1.1 (12/09/2021) -----
 
