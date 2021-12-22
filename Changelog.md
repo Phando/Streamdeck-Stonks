@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.1.3 (12/22/2021) -----
+
+#### Enhancements:
+- None
+
+#### Bug Fixes:
+- None
+
+
 ## v1.1.2 (12/22/2021) -----
 
 #### Enhancements:
