@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.1.2 (12/09/2021) -----
+## v1.1.2 (12/22/2021) -----
 
 #### Enhancements:
 - Added 30 realtime currency conversions 
