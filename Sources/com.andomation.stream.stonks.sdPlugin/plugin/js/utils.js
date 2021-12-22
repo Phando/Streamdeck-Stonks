@@ -69,12 +69,23 @@ Number.prototype.abbreviateNumber = function (maxLength=MAX_NUMBER_LENGTH, prefi
 
   // Large Numbers
   if (value >= 100000) {
-    let digits = dig % 3 == 0 ? 0 : 3 - Math.round(dig % 3);
-    return new Intl.NumberFormat("en-US", {
-      maximumFractionDigits: digits,
+    let digits = Math.max(0, maxLength - (3-Math.round(dig % 3)))
+    digits = new Intl.NumberFormat("en-US", {
+      maximumSignificantDigits: maxLength,
+      //maximumFractionDigits: digits,
       notation: "compact",
       compactDisplay: "short",
-    }).format(value);
+    }).format(value)
+
+    // Padding with decimal zeros to make maxLength
+    if(digits.length <= maxLength){
+      let symbol = digits.slice(-1)
+      digits = digits.slice(0, -1)
+      digits += digits.includes(".") ? '' : '.' 
+      digits = digits.padEnd(maxLength+1, '0') + symbol
+    }
+
+    return digits
   }
   
   // Small Numbers

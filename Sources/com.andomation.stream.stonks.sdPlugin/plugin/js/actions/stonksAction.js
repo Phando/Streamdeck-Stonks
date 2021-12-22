@@ -49,6 +49,14 @@ class StonksAction extends Action {
         this.type = this.type + ".stonks"
     }
 
+    get currency(){
+        return this.settings.currency
+    }
+
+    set currency(value){
+        this.settings.currency = value
+    }
+
     get home(){
         return this.settings.home
     }
@@ -58,7 +66,7 @@ class StonksAction extends Action {
     }
 
     get maxDigits(){
-        return this.settings.maxDigits
+        return Number(this.settings.maxDigits)
     }
 
     set maxDigits(value){
@@ -146,6 +154,7 @@ class StonksAction extends Action {
         
         console.log("StonksAction - onDidReceiveSettings", jsn, this.settings)
         this.home       = this.home || ViewType.VIZ.id
+        this.currency   = this.currency || "USD"
         this.maxDigits  = this.maxDigits || 5
         this.symbol     = this.symbol || 'GME'
         this.showTrend  = this.showTrend || 'disabled'
@@ -315,8 +324,6 @@ class StonksAction extends Action {
             if(typeof value == 'function') continue
             if(this.settings[value.id] == 'enabled')
                 this.viewList.push(value)
-            // if(value.id == this.home)
-            //     this.clickCount = this.viewList.length-1
         }
         this.clickCount = this.homeIndex
     }
@@ -325,11 +332,10 @@ class StonksAction extends Action {
 
     prepData(jsn){
         var symbol = jsn.payload
-        var payload = {}
-        
-        // Symbol remove currency conversion for Crypto
-        payload.symbol = symbol.symbol//.split('-')[0]
+        var payload = {symbol:symbol.symbol}
+        let rate = rateManager.rateFor(this.currency)
 
+        payload.money       = rateManager.symbolFor(this.currency)
         payload.price       = symbol.regularMarketPrice
         payload.priceMarket = symbol.regularMarketPrice
         payload.open        = symbol.regularMarketOpen
@@ -342,7 +348,7 @@ class StonksAction extends Action {
         // Range
         payload.state   = MarketStateType.REG
         payload.change  = symbol.regularMarketChange
-        payload.percent = symbol.regularMarketChangePercent
+        payload.percent = symbol.regularMarketChangePercent 
         payload.dayLow  = symbol.regularMarketDayLow
         payload.dayHigh = symbol.regularMarketDayHigh
         payload.dayLowPerc = Math.abs(payload.dayLow.percentChange(payload.prevClose)).toPrecisionPure(2)
@@ -364,12 +370,25 @@ class StonksAction extends Action {
                 payload.state   = symbol.marketState == "POST" ? MarketStateType.POST : MarketStateType.CLOSED
             }
         }
+
         
         // Extended values
         payload.low      = this.updateClose == 'enabled' ? Math.min(symbol.regularMarketDayLow, payload.price) : symbol.regularMarketDayLow
         payload.high     = this.updateClose == 'enabled' ? Math.max(symbol.regularMarketDayHigh, payload.price) : symbol.regularMarketDayHigh
         payload.lowPerc  = Math.abs(payload.low.percentChange(payload.close)).toPrecisionPure(2)
         payload.highPerc = Math.abs(payload.high.percentChange(payload.close)).toPrecisionPure(2)
+
+        // Adjust for currency
+        payload.open    *= rate
+        payload.close   *= rate
+        payload.price   *= rate
+        payload.change  *= rate
+        payload.low     *= rate
+        payload.high    *= rate
+        payload.dayLow  *= rate
+        payload.dayHigh *= rate
+        payload.priceMarket *= rate
+        payload.prevClose   *= rate
 
         if(this.showTrend == 'enabled'){
             var color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
@@ -510,14 +529,14 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawVolume(){
-        let volume = this.data.volume.abbreviateNumber(4)
+        let volume = this.data.volume.abbreviateNumber(3)
         this.drawRight(volume, COLOR_DIM, 78, 24)
     }
 
     //-----------------------------------------------------------------------------------------
 
     drawRange(){
-        var price  = this.data.close.abbreviateNumber(this.maxDigits)
+        var price  = this.data.money + this.data.close.abbreviateNumber(this.maxDigits)
         var high = this.data.high.abbreviateNumber(this.maxDigits)
         var low = this.data.low.abbreviateNumber(this.maxDigits)
 
@@ -589,8 +608,7 @@ class StonksAction extends Action {
 
         //this.drawScaledPair(low, COLOR_DIM, high, COLOR_FOREGROUND, 103)
         this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 109)
-
-        var scale = Math.round(144 * Utils.rangeToPercent(this.data.close, min, max).minmax())
+        var scale = Math.round(144 * Utils.rangeToPercent(close, min, max).minmax())
 
         var grd = this.drawingCtx.createLinearGradient(0, yPos, 0, 145);
         grd.addColorStop(0.1, COLOR_RED_LT);

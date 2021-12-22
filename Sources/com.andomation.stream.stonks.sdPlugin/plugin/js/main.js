@@ -2,6 +2,7 @@
 //-----------------------------------------------------------------------------------------
 
 let dataManager = new DataManager()
+let rateManager = new RateManager()
 
 // All actions in the plugin need to be added to the 'actions' array.
 // This is true even if your plugin has a single action.

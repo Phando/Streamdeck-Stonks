@@ -3,6 +3,7 @@
 ## v1.1.2 (12/09/2021) -----
 
 #### Enhancements:
+- Added 30 realtime currency conversions 
 - Added max digits
 - Added D3 charting
 - Simplified the Viz slider

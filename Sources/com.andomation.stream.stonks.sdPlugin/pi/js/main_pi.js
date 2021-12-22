@@ -1,6 +1,7 @@
 var action = {}
 var onchangeevt = "onchange"; // 'oninput';
 let sdpiWrapper = document.querySelector(".sdpi-wrapper");
+let rateManager = new RateManager()
 
 actions.push(new StonksActionPI())
 //actions.push(new ComplexActionPI())

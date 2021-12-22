@@ -3,7 +3,7 @@ class DataManager {
   chartTimer = null;
   dataTimer = null;
   chartURL  = "https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&" //indicators=close&includeTimestamps=false&includePrePost=false
-  symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&fields="
+  symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=EU&corsDomain=finance.yahoo.com&fields="
   symbolFields = [
     'symbol',
     //'shortName',

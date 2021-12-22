@@ -1,8 +1,13 @@
 <div class="sdpi-heading">General</div>
-<summary>For crypto use 'coin-currency' : ETH-USD</summary>
+<summary>For crypto use `coin-USD` : ETH-USD</summary>
 <div class="sdpi-item">
     <div class="sdpi-item-label">Symbol</div>
     <input id="symbol" class="sdpi-item-value" type="text" placeholder="GME" oninput="let p=this.selectionStart;this.value=this.value.toUpperCase();this.setSelectionRange(p, p);"/>
+</div>
+
+<div class="sdpi-item" id="currency_select">
+    <div class="sdpi-item-label">Currency</div>
+    <select class="sdpi-item-value select sdProperty" id="currency" default="USD"></select>
 </div>
 
 <div type="radio" class="sdpi-item" id="max_digits">

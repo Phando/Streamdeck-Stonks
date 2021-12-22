@@ -414,9 +414,9 @@ class LimitManager extends Manager{
     updateInfoView(jsn, editable = false){
         var yPos = 76
         this.uuid = jsn.context
-        var upper = this.upperLimit.abbreviateNumber(this.context.maxDigits)
-        var lower = this.lowerLimit.abbreviateNumber(this.context.maxDigits)
-        var price = this.data.close.abbreviateNumber(this.context.maxDigits)
+        var upper = this.upperLimit.abbreviateNumber(this.settings.maxDigits)
+        var lower = this.lowerLimit.abbreviateNumber(this.settings.maxDigits)
+        var price = this.data.money + this.data.close.abbreviateNumber(this.settings.maxDigits)
         
         if(this.type == LimitType.PERCENT){
             upper = '+' + this.upperLimit + '%'

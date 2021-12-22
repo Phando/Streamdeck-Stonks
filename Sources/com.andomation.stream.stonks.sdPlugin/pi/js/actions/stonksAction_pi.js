@@ -12,6 +12,11 @@ class StonksActionPI extends ActionPI {
 
     onContentLoaded = () => {
         console.log("onContentLoaded")
+        var parent = document.getElementById('currency')
+        
+        $.each( Currencies, function( key, value ) {
+            $(parent).append($('<option>', {value:key, text:value.name})); 
+        })
     };
 
     onSymbolResult() {

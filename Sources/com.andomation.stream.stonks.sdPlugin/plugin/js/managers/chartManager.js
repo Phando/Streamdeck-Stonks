@@ -96,6 +96,8 @@ class ChartManager extends Manager {
 
         this.chart = Object.assign({}, jsn.payload.response[0].meta)
         let raw = jsn.payload.response[0].indicators.quote[0].close
+        raw = raw.map(x => x * rateManager.rateFor(this.settings.currency))
+
         if(Utils.isUndefined(raw) || raw.length == 0){
             console.log("ChartManager - REFRESH")
             dataManager.scheduleData()
@@ -119,14 +121,7 @@ class ChartManager extends Manager {
         this.chart.dataMax = extent[1]
         this.chart.rangeMax = 145
 
-        // Testing dynamic rangeMax
-        // if(this.type.label == '1d'){
-        //     this.chart.data = this.chart.data.slice(-100)
-        // }
-
         if(this.isDay){
-            // console.log(this.chart.data.length, this.type.subset, this.chart.data.length / this.type.subset)
-            // this.chart.rangeMax *= this.chart.data.length / this.type.subset
             this.chart.min = this.data.prevClose.min(this.chart.min)
             this.chart.max = this.data.prevClose.max(this.chart.max)
             this.chart.isUp = this.data.prevClose < this.chart.data[this.chart.data.length-1].value
@@ -134,7 +129,6 @@ class ChartManager extends Manager {
         else
             this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1].value
 
-        // console.log(this.chart.raw.length, this.chart.data.length, this.chart.data)
         return
     }
 
