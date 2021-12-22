@@ -26,7 +26,7 @@ Check the [changelog](Changelog.md) for the latest updates.
 
 **Stocks** use the stock symbol. AMC, GME, TSLA... 
 
-**Crypto** uses the symbol and currency.  BTC-EUR, ETH-USD, SHIB-USD...
+**Crypto** uses the symbol and `-USD`, there is a currency setting which should be used to translate values. BTC-USD, ETH-USD, SHIB-USD...
 
 In the Property Inspector, enter your favorite asset symbol and let the data pour in. It should look something like the screen below. 
 
@@ -97,7 +97,8 @@ It is possible to enable/disable and adjust the limits right on the device! A **
 
 * **Title** - Ignored
 * **Symbol** - The asset you are looking to track
-* **Max Digits** - The number of characters not including the decimal to show. 
+* **Currency** - The currency numeric values will be displayed in. 
+* **Max Digits** - The number of significant characters to show. 
 * **Price Trend** - Color the price to indicate higher or lower than previous close
 * **Market State** - Display the Market State Indicator
 * **Fill Charts** - Show area charts or line charts
