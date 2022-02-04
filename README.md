@@ -6,6 +6,8 @@ This plugin is intended for diamond handed investors to keep an eye on their inv
 
 If you find bugs or want to see new features please log a ticket in the [github repo](https://github.com/Phando/Streamdeck-Stonks/issues).
 
+[Donate](https://buy.stripe.com/cN26rW40l4Vl3YsdQQ){: .btn .btn-purple }
+
 ## Features:
 
 - Stock Lookups
@@ -14,9 +16,10 @@ If you find bugs or want to see new features please log a ticket in the [github 
 - Multiple layouts
 - Limit notifications
 - On device limit adjustments
+- Currency Conversion
 - Cross-platform (macOS, Windows)
 
-Alternate locales and currencies will be supported in future releases.
+Alternate locales and currencies will be supported as they become available.
 
 Check the [changelog](Changelog.md) for the latest updates.
 
@@ -26,7 +29,7 @@ Check the [changelog](Changelog.md) for the latest updates.
 
 **Stocks** use the stock symbol. AMC, GME, TSLA... 
 
-**Crypto** uses the symbol and `-USD`, there is a currency setting which should be used to translate values. BTC-USD, ETH-USD, SHIB-USD...
+**Crypto** uses the symbol and -USD, there is a currency setting which can be used to translate Crypto values.  BTC-USD, ETH-USD, SHIB-USD...
 
 In the Property Inspector, enter your favorite asset symbol and let the data pour in. It should look something like the screen below. 
 
@@ -117,6 +120,8 @@ It is possible to enable/disable and adjust the limits right on the device! A **
 
 ## Technical Details
 
+For crypto **always** use the **-USD** extension: ETH-USD. The currency setting below the symbol is used to specify value translations.
+
 Tiny numbers like the price of SHIB are shown in an abbreviated form. The abbreviation trims all but one leading zero and adds a tick. **0.00003968** is shown as **`03968**
 
 To view the output of the plugin you can point a browser to 
@@ -129,3 +134,4 @@ If you find bugs or want to see new features please log at ticket in the [github
 
 Stream Deck 4.1 or later.
 
+[Donate](https://buy.stripe.com/cN26rW40l4Vl3YsdQQ){: .btn .btn-purple }
