@@ -6,7 +6,7 @@ This plugin is intended for diamond handed investors to keep an eye on their inv
 
 If you find bugs or want to see new features please log a ticket in the [github repo](https://github.com/Phando/Streamdeck-Stonks/issues).
 
-[Donate](https://buy.stripe.com/cN26rW40l4Vl3YsdQQ){: .btn .btn-purple }
+Enjoying the plugin, please [donate](https://buy.stripe.com/cN26rW40l4Vl3YsdQQ)
 
 ## Features:
 
@@ -134,4 +134,4 @@ If you find bugs or want to see new features please log at ticket in the [github
 
 Stream Deck 4.1 or later.
 
-[Donate](https://buy.stripe.com/cN26rW40l4Vl3YsdQQ){: .btn .btn-purple }
+Enjoying the plugin, please [donate](https://buy.stripe.com/cN26rW40l4Vl3YsdQQ)
