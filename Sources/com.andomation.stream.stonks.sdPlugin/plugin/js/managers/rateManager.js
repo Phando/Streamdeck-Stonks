@@ -101,7 +101,7 @@ const Currencies = Object.freeze({
     "PHP":{code:"PHP",symbol:"₱",name:"Philippine Peso"},
     "GBP":{code:"GBP",symbol:"£",name:"Pound Sterling"},
     //"BWP":{code:"BWP",symbol:"P",name:"Pula"},
-    //"PLN":{code:"PLN",symbol:"zł",name:"PZloty"},
+    "PLN":{code:"PLN",symbol:"zł",name:"Polish Zloty"},
     //"QAR":{code:"QAR",symbol:"ر.ق",name:"Qatari Rial"},
     //"GTQ":{code:"GTQ",symbol:"Q",name:"Quetzal"},
     //"ZAR":{code:"ZAR",symbol:"R",name:"Rand"},
