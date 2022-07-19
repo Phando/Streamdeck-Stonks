@@ -1,12 +1,12 @@
 # Changelog
 
-## v1.1.3 (12/22/2021) -----
+## v1.1.3 (7/19/2022) -----
 
 #### Enhancements:
-- None
+- Added Polish Zloty
 
 #### Bug Fixes:
-- None
+- Verified charts are working
 
 
 ## v1.1.2 (12/22/2021) -----
