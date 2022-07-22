@@ -5,7 +5,7 @@ class ComplexAction extends Action {
     super();
     this.type = this.type + ".complex";
   }
-
+ 
 }
 
 // Manifest Entry

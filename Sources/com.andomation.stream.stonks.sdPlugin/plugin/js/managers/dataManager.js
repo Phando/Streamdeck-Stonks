@@ -119,7 +119,7 @@ class DataManager {
       
       if(!chart) return
       types[chart.type] = chart
-    })
+    }) 
 
     for (const [key, value] of Object.entries(types)) {
       var url = this.chartURL + "range="+ value.range +"&interval="+ value.interval + this.symbolString

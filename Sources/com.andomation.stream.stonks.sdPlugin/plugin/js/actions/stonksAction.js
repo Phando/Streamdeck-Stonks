@@ -516,8 +516,15 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSymbol(){
-        let symbol = this.symbol.split('-')[0]
-        this.drawRight(symbol, COLOR_DIM, 18, 24, 600, 2)
+        let trimList = ['-','=X']
+        var symbol = this.symbol
+       
+        console.log("Symbol : " + symbol);
+        for (const element of trimList) {
+            symbol = symbol.split(element)[0]
+        }
+
+        this.drawScaledRight(symbol, COLOR_DIM, 18, 98, 24, 600, 2)
     }
 
     //-----------------------------------------------------------------------------------------
@@ -544,7 +551,7 @@ class StonksAction extends Action {
         var yPos = this.currentView.header ? [81,103,126,88] : [52,89,126,75] 
 
         if( !this.currentView.header ) {
-            this.drawLeft('- / +',COLOR_FOREGROUND, 16, 21, 600, 6)
+            //this.drawLeft('-|+',COLOR_FOREGROUND, 16, 21, 600, 6)
             high = this.currentView.perc ? this.data.dayHighPerc + '%' : this.data.dayHigh.abbreviateNumber(this.maxDigits)
             low = this.currentView.perc ? this.data.dayLowPerc + '%' : this.data.dayLow.abbreviateNumber(this.maxDigits)
         }
