@@ -519,7 +519,6 @@ class StonksAction extends Action {
         let trimList = ['-','=X']
         var symbol = this.symbol
        
-        console.log("Symbol : " + symbol);
         for (const element of trimList) {
             symbol = symbol.split(element)[0]
         }

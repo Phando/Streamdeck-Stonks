@@ -1,4 +1,5 @@
 class DataManager {
+  chartInc = 0;
   batchTimer = null;
   chartTimer = null;
   dataTimer = null;
@@ -80,7 +81,7 @@ class DataManager {
     if(this.batchTimer != null)
       return
 
-    this.batchTimer = setInterval(this.fetchData.bind(this), 250)
+    this.batchTimer = setTimeout(this.fetchData.bind(this), 1000)
   }
 
   //-----------------------------------------------------------------------------------------
@@ -92,7 +93,11 @@ class DataManager {
     }
 
     this.fetchSymbolData()
-    setTimeout(this.fetchChartData.bind(this), 250)
+    
+    if(this.chartInc == 0)
+      setTimeout(this.fetchChartData.bind(this),10)
+    
+    this.chartInc = this.chartInc == 4 ? 0 : this.chartInc + 1
   }
 
   //-----------------------------------------------------------------------------------------

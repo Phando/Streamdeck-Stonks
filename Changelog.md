@@ -3,6 +3,7 @@
 ## v1.1.5 (7/22/2022) -----
 
 #### Enhancements:
+- Tuned polling for chart data
 - Truncating tickers ending in '=x'
 - Updated the symbol drawing font size to account for ticker/symbol length. 
 - Abbreviated chart labels to 2 characters
