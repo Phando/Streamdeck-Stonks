@@ -81,6 +81,14 @@ class StonksAction extends Action {
         this.settings.symbol = value
     }
 
+    get symbolLabel(){
+        return this.settings.symbolLabel
+    }
+
+    set symbolLabel(value){
+        this.settings.symbolLabel = value
+    }
+
     get showState(){
         return this.settings.showState
     }
@@ -157,6 +165,7 @@ class StonksAction extends Action {
         this.currency   = this.currency || "USD"
         this.maxDigits  = this.maxDigits || 5
         this.symbol     = this.symbol || 'GME'
+        this.symbolLabel= this.symbolLabel || this.symbol
         this.showTrend  = this.showTrend || 'disabled'
         this.showState  = this.showState || 'disabled'
         this.updateClose = this.updateClose || 'disabled'
@@ -516,14 +525,14 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSymbol(){
-        let trimList = ['-','=X']
-        var symbol = this.symbol
+        //let trimList = ['-','=X']
+        var label = this.symbolLabel
        
-        for (const element of trimList) {
-            symbol = symbol.split(element)[0]
-        }
+        // for (const element of trimList) {
+        //     label = label.split(element)[0]
+        // }
 
-        this.drawScaledRight(symbol, COLOR_DIM, 18, 98, 24, 600, 2)
+        this.drawScaledRight(label, COLOR_DIM, 18, 98, 24, 600, 2)
     }
 
     //-----------------------------------------------------------------------------------------

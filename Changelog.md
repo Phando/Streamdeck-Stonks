@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.1.6 (9/7/2022) -----
+
+#### Enhancements:
+- Removed automatic ticker truncation
+- Added custom ticker labels
+
+#### Bug Fixes:
+- None
+  
+  
 ## v1.1.5 (7/22/2022) -----
 
 #### Enhancements:

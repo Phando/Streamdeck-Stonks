@@ -17,6 +17,16 @@ class StonksActionPI extends ActionPI {
         $.each( Currencies, function( key, value ) {
             $(parent).append($('<option>', {value:key, text:value.name})); 
         })
+
+        // Making the Label automatically match the symbol when changed
+        var source = document.getElementById('symbol');
+        var target = document.getElementById('symbolLabel');
+        source.addEventListener('input', function (evt) {
+            target.value = this.value;
+        });
+        source.addEventListener('focusout', function (evt) {
+            $SD.emit("piDataChanged", {key:'symbolLabel',value:this.value,group:false})
+        });
     };
 
     onSymbolResult() {
