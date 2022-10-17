@@ -126,7 +126,7 @@ class StonksAction extends Action {
     }
 
     get homeIndex(){
-        return this.viewList.findIndex(item => item.id === this.home)
+        return this.viewList.findIndex(item => item.id === this.home.id)
     }
 
     get state(){
