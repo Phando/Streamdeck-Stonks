@@ -59,6 +59,10 @@ class DataManager {
     return '&symbols=' + this.symbols.join()
   }
 
+  partialSymbolString(i, count){
+    return '&symbols=' + this.symbols.slice(i * count, (i + 1) * count).join()
+  }
+
   //-----------------------------------------------------------------------------------------
 
   startPolling() {
@@ -127,12 +131,14 @@ class DataManager {
     }) 
 
     for (const [key, value] of Object.entries(types)) {
-      var url = this.chartURL + "range="+ value.range +"&interval="+ value.interval + this.symbolString
+      for (const i of Array(Math.ceil(this.symbols.length / 10)).keys()){
+        var url = this.chartURL + "range="+ value.range +"&interval="+ value.interval + this.partialSymbolString(i, 10)
 
-      this.requestData(url, 
-        (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
-        (response, event) => this.handleError(response, 'didReceiveChartError'),
-        value)
+        this.requestData(url, 
+          (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
+          (response, event) => this.handleError(response, 'didReceiveChartError'),
+          value)
+      }
     }
   }
 
@@ -163,7 +169,9 @@ class DataManager {
       
       if(!symbol) return
       symbol = symbol.toUpperCase()
-      $SD.emit(item.action + '.' + event, {context:item.context, payload:data[symbol]})
+      if (symbol in data){
+        $SD.emit(item.action + '.' + event, {context:item.context, payload:data[symbol]})
+      }
     })
   }
 
