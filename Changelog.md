@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.1.7 (11/15/2022) -----
+
+#### Enhancements:
+- Introduced long press options: Open Url or Edit Limits. [Issue #16](https://github.com/Phando/Streamdeck-Stonks/issues/16) 
+- Added plugin catalog preview images
+
+#### Bug Fixes:
+- Verified the plugin to work with Streamdeck past 6.0 (currently not working in 6.0)
+- Landed [PR #21](https://github.com/Phando/Streamdeck-Stonks/pull/21) - Chunking up large API requests.
+- Landed [PR #20](https://github.com/Phando/Streamdeck-Stonks/pull/20) - Smarter plugin instance targeting.
+
 ## v1.1.6 (9/7/2022) -----
 
 #### Enhancements:

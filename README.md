@@ -27,9 +27,13 @@ Check the [changelog](Changelog.md) for the latest updates.
 
 ### Set the symbol:
 
+This plugin is streaming data from [Yahoo Finance](https://finance.yahoo.com). If ever you have trouble locating a symbol, do a lookup on the Yahoo Finance website and copy the found symbol into your Stonks settings. 
+
 **Stocks** use the stock symbol. AMC, GME, TSLA... 
 
 **Crypto** uses the symbol and -USD, there is a currency setting which can be used to translate Crypto values.  BTC-USD, ETH-USD, SHIB-USD...
+
+**Exchanges** uses the currency1 + currency2 + =X, EURUSD=X, EURGBP=X...
 
 In the Property Inspector, enter your favorite asset symbol and let the data pour in. It should look something like the screen below. 
 
@@ -77,6 +81,10 @@ There are many views packed into this plugin and you can pick and choose the one
 
 The market state is a small indicator to the left of the asset price. During regular trading hours it is invisible. In pre market the top half is colored and the rest is grey. In post market, the bottom half is colored and the rest is grey. When the market is closed, the whole market state indicator is grey. The market state indicator does not show up for crypto assets as the market is always open. 
 
+## Long Press
+
+Using the **long press** setting, you can choose between opening a URL or going into the Limits settings outlined in the next section.
+
 ## Limits
 
 ![Limits](images/limits.png)
@@ -113,7 +121,7 @@ It is possible to enable/disable and adjust the limits right on the device! A **
 * **Screen Time** - Sets the duration timer for the Limits View adjustments
 * **Increment** - The increment amount to be used when clicking the button in *Limits View*
 * **Upper Limit Enabled** - Enable or disable the Upper Limit
-* **Upper Limit** - The threshold value to trigger the Upper Limit
+* **Upper Limit** - The threshold value to trigger the Upper Limit  
 * **Lower Limit Enabled** - Enable or disable the Lower Limit
 * **Lower Limit** - The threshold value to trigger the Lower Limit
 * **Restore Defaults** - Click this button to reset all the plugin settings. 
@@ -135,3 +143,7 @@ If you find bugs or want to see new features please log at ticket in the [github
 Stream Deck 4.1 or later.
 
 Enjoying the plugin, please [donate](https://buy.stripe.com/cN26rW40l4Vl3YsdQQ)
+
+### DEBUGGING
+To Debug you will need to run:
+defaults write com.elgato.StreamDeck html_remote_debugging_enabled -bool YES
