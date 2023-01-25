@@ -10,7 +10,6 @@ git add .
 git commit -m "Deploying for Release"
 git push
 
-exit
 echo "Prepping - Stage Branch"
 git checkout -b stageSpace
 

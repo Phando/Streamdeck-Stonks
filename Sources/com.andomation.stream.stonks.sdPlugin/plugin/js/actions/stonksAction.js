@@ -1,3 +1,10 @@
+const QuoteType = Object.freeze({
+    CRYPTO  : 'Cryptocurrency',
+    EQUITY  : 'Equity',
+    FUND    : 'Fund',
+    INDEX   : 'Index'
+});
+
 const MarketStateType = Object.freeze({
     PRE     : 'marketPre',
     REG     : 'marketReg',
@@ -362,9 +369,8 @@ class StonksAction extends Action {
     prepData(jsn){
         var symbol = jsn.payload
         var payload = {symbol:symbol.symbol}
-        let rate = rateManager.rateFor(this.currency)
-
-        payload.money       = rateManager.symbolFor(this.currency)
+        
+        payload.typeDisp    = symbol.typeDisp
         payload.price       = symbol.regularMarketPrice
         payload.priceMarket = symbol.regularMarketPrice
         payload.open        = symbol.regularMarketOpen
@@ -378,8 +384,8 @@ class StonksAction extends Action {
         payload.state   = MarketStateType.REG
         payload.change  = symbol.regularMarketChange
         payload.percent = symbol.regularMarketChangePercent 
-        payload.dayLow  = symbol.regularMarketDayLow
-        payload.dayHigh = symbol.regularMarketDayHigh
+        payload.dayLow  = symbol.regularMarketDayLow || payload.priceMarket
+        payload.dayHigh = symbol.regularMarketDayHigh || payload.priceMarket
         payload.dayLowPerc = Math.abs(payload.dayLow.percentChange(payload.prevClose)).toPrecisionPure(2)
         payload.dayHighPerc = Math.abs(payload.dayHigh.percentChange(payload.prevClose)).toPrecisionPure(2)
         
@@ -399,15 +405,22 @@ class StonksAction extends Action {
                 payload.state   = symbol.marketState == "POST" ? MarketStateType.POST : MarketStateType.CLOSED
             }
         }
-
         
         // Extended values
-        payload.low      = this.updateClose == 'enabled' ? Math.min(symbol.regularMarketDayLow, payload.price) : symbol.regularMarketDayLow
-        payload.high     = this.updateClose == 'enabled' ? Math.max(symbol.regularMarketDayHigh, payload.price) : symbol.regularMarketDayHigh
+        payload.low      = this.updateClose == 'enabled' ? Math.min(payload.dayLow, payload.price) : payload.dayLow
+        payload.high     = this.updateClose == 'enabled' ? Math.max(payload.dayHigh, payload.price) : payload.dayHigh
         payload.lowPerc  = Math.abs(payload.low.percentChange(payload.close)).toPrecisionPure(2)
         payload.highPerc = Math.abs(payload.high.percentChange(payload.close)).toPrecisionPure(2)
 
+        // Apply Trend is Enabled
+        if(this.showTrend == 'enabled'){
+            var color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
+            payload.foreground = payload.price < payload.close ? COLOR_RED : color
+        }
+
         // Adjust for currency
+        let rate = rateManager.rateFor(this.currency)
+        payload.money   = rateManager.symbolFor(this.currency)
         payload.open    *= rate
         payload.close   *= rate
         payload.price   *= rate
@@ -418,11 +431,6 @@ class StonksAction extends Action {
         payload.dayHigh *= rate
         payload.priceMarket *= rate
         payload.prevClose   *= rate
-
-        if(this.showTrend == 'enabled'){
-            var color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
-            payload.foreground = payload.price < payload.close ? COLOR_RED : color
-        }
 
         this.data = payload
         this.limitManager.prepData(jsn)
@@ -558,6 +566,9 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawVolume(){
+        if(Utils.isUndefined(this.data.volume))
+            return
+            
         let volume = this.data.volume.abbreviateNumber(3)
         this.drawRight(volume, COLOR_DIM, 78, 24)
     }
@@ -573,7 +584,6 @@ class StonksAction extends Action {
         var yPos = this.currentView.header ? [81,103,126,88] : [52,89,126,75] 
 
         if( !this.currentView.header ) {
-            //this.drawLeft('-|+',COLOR_FOREGROUND, 16, 21, 600, 6)
             high = this.currentView.perc ? this.data.dayHighPerc + '%' : this.data.dayHigh.abbreviateNumber(this.maxDigits)
             low = this.currentView.perc ? this.data.dayLowPerc + '%' : this.data.dayLow.abbreviateNumber(this.maxDigits)
         }
@@ -635,7 +645,6 @@ class StonksAction extends Action {
             max = Math.max(max, padMax)
         }    
 
-        //this.drawScaledPair(low, COLOR_DIM, high, COLOR_FOREGROUND, 103)
         this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 109)
         var scale = Math.round(144 * Utils.rangeToPercent(close, min, max).minmax())
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.1.8 (1/24/2023) -----
+
+#### Enhancements:
+- Added a checkbox to remove chart labels (partial fix for issue [Issue #24](https://github.com/Phando/Streamdeck-Stonks/issues/24))
+- Expanded quote handling to include mutual funds and indexes [Issue #25](https://github.com/Phando/Streamdeck-Stonks/issues/25) 
+
+#### Bug Fixes:
+- None
+
 ## v1.1.7 (11/15/2022) -----
 
 #### Enhancements:

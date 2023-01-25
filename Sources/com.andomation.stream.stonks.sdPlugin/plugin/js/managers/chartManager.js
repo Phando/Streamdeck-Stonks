@@ -40,6 +40,14 @@ class ChartManager extends Manager {
         this.settings.fillCharts = value
     }
 
+    get showChartLabel(){
+        return this.settings.showChartLabel
+    }
+
+    set showChartLabel(value){
+        this.settings.showChartLabel = value
+    }
+
     get type(){
         if(Utils.isUndefined(this.context.chartType))
             this.initType()
@@ -78,6 +86,7 @@ class ChartManager extends Manager {
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
         this.fill = this.fill || 'enabled'
+        this.showChartLabel = this.showChartLabel || 'enabled'
         this.initType()
     } 
 
@@ -96,6 +105,11 @@ class ChartManager extends Manager {
 
         this.chart = Object.assign({}, jsn.payload.response[0].meta)
         let raw = jsn.payload.response[0].indicators.quote[0].close
+        if(Utils.isUndefined(raw)){
+            console.log('---------------> Undefined')
+            return
+        }
+
         raw = raw.map(x => x * rateManager.rateFor(this.settings.currency))
 
         if(Utils.isUndefined(raw) || raw.length == 0){
@@ -136,7 +150,9 @@ class ChartManager extends Manager {
 
     updateDisplay(jsn){
         super.updateDisplay(jsn)
-        this.drawLeft(this.type.label,COLOR_FOREGROUND, 16, 20, 600, 6)
+        
+        if(this.showChartLabel == 'enabled')
+            this.drawLeft(this.type.label,COLOR_FOREGROUND, 16, 20, 600, 6)
         
         if(!this.chart.hasOwnProperty('data') || this.chart.data.length == 0){
             this.drawingCtx.textAlign = "center"
