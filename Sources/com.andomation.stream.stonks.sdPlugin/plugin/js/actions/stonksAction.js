@@ -47,6 +47,7 @@ class StonksAction extends Action {
     constructor() {
         super() 
         this.type = this.type + ".stonks"
+        console.log("Starting Stonks: " + this.type)
     }
 
     get currency(){
@@ -65,12 +66,53 @@ class StonksAction extends Action {
         this.settings.home = value
     }
 
+    get homeIndex(){
+        return this.viewList.findIndex(item => item.id === this.home)
+    }
+
+    get isChart() {
+        return this.currentView.id.includes('Chart')
+    }
+
+    get linkURL(){
+        return this.settings.linkURL
+    }
+
+    set linkURL(value){
+        this.settings.linkURL = value
+    }
+
     get maxDigits(){
         return Number(this.settings.maxDigits)
     }
 
     set maxDigits(value){
         this.settings.maxDigits = value
+    }
+
+    get showState(){
+        return this.settings.showState
+    }
+
+    set showState(value){
+        this.settings.showState = value
+    }
+
+    get showTrend(){
+        return this.settings.showTrend
+    }
+
+    set showTrend(value){
+        this.settings.showTrend = value
+    } 
+
+    get state(){
+        return this.context.stateName
+    }
+
+    set state(stateName){
+        this.clickCount = stateName == STATE_DEFAULT ? this.homeIndex : 0
+        this.context.stateName = stateName
     }
 
     get symbol(){
@@ -89,22 +131,6 @@ class StonksAction extends Action {
         this.settings.symbolLabel = value
     }
 
-    get showState(){
-        return this.settings.showState
-    }
-
-    set showState(value){
-        this.settings.showState = value
-    }
-
-    get showTrend(){
-        return this.settings.showTrend
-    }
-
-    set showTrend(value){
-        this.settings.showTrend = value
-    }
-
     get updateClose(){
         return this.settings.updateClose
     }
@@ -113,29 +139,20 @@ class StonksAction extends Action {
         this.settings.updateClose = value
     }
 
+    get useLink(){
+        return this.settings.useLink
+    }
+
+    set useLink(value){
+        this.settings.useLink = value
+    }
+
     get visLimits(){
         return this.settings.visLimits
     }
 
     set visLimits(value){
         this.settings.visLimits = value
-    }
-
-    get isChart() {
-        return this.currentView.id.includes('Chart')
-    }
-
-    get homeIndex(){
-        return this.viewList.findIndex(item => item.id === this.home)
-    }
-
-    get state(){
-        return this.context.stateName
-    }
-
-    set state(stateName){
-        this.clickCount = stateName == STATE_DEFAULT ? this.homeIndex : 0
-        this.context.stateName = stateName
     }
 
     // Streamdeck Event Handlers
@@ -163,12 +180,14 @@ class StonksAction extends Action {
         console.log("StonksAction - onDidReceiveSettings", jsn, this.settings)
         this.home       = this.home || ViewType.VIZ.id
         this.currency   = this.currency || "USD"
+        this.linkURL    = this.linkURL || "http://finance.yahoo.com"
         this.maxDigits  = this.maxDigits || 5
-        this.symbol     = this.symbol || 'GME'
-        this.symbolLabel= this.symbolLabel || this.symbol
         this.showTrend  = this.showTrend || 'disabled'
         this.showState  = this.showState || 'disabled'
+        this.symbol     = this.symbol || 'GME'
+        this.symbolLabel= this.symbolLabel || this.symbol
         this.updateClose = this.updateClose || 'disabled'
+        this.useLink    = this.useLink || 'disabled'
         this.visLimits  = this.visLimits || 'enabled'
         
         this.prepViewList()
@@ -197,6 +216,11 @@ class StonksAction extends Action {
             this.limitManager.onKeyUp(jsn)
             return
         }
+
+        if(this.isLongPress == true){    
+            this.isLongPress = false
+            return
+        }
         
         super.onKeyUp(jsn)
         this.clickCount += 1
@@ -219,6 +243,11 @@ class StonksAction extends Action {
     onLongPress(jsn){
         super.onLongPress(jsn)
         
+        if( this.useLink == 'enabled' ){    
+            $SD.api.showUrl2(this.uuid,this.linkURL)
+            return
+        }
+
         switch(this.state){
             case STATE_DEFAULT : 
                 this.state = STATE_LIMITS

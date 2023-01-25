@@ -1,5 +1,5 @@
 <div class="sdpi-heading">General</div>
-<summary>For crypto use `coin-USD` : ETH-USD</summary>
+<summary>Lookup symbols at <a href="finance.yahoo.com">Yahoo Finance</a></summary>
 <div class="sdpi-item">
     <div class="sdpi-item-label">Symbol</div>
     <input id="symbol" class="sdpi-item-value" type="text" placeholder="GME" oninput="let p=this.selectionStart;this.value=this.value.toUpperCase();this.setSelectionRange(p, p);"/>
@@ -84,11 +84,11 @@
     <div class="sdpi-item-value ">
         <div class="sdpi-item-child">
             <input id="updateClose-radio1" type="radio" value="enabled" name="updateClose">
-            <label for="updateClose-radio1" class="sdpi-item-label"><span></span>True</label>
+            <label for="updateClose-radio1" class="sdpi-item-label"><span></span>Yes</label>
         </div>
         <div class="sdpi-item-child">
             <input id="updateClose-radio2" type="radio" value="disabled" name="updateClose" >
-            <label for="updateClose-radio2" class="sdpi-item-label"><span></span>False</label>
+            <label for="updateClose-radio2" class="sdpi-item-label"><span></span>No</label>
         </div>
     </div>
 </div>
@@ -100,6 +100,24 @@
     <select class="sdpi-item-value select sdProperty" id="home" default="range"></select>
 </div>
 
+<hr>
+<div type="radio" class="sdpi-item" id="use_link">
+    <div class="sdpi-item-label">Long Press</div>
+    <div class="sdpi-item-value ">
+        <div class="sdpi-item-child">
+            <input id="useLink-radio1" type="radio" value="enabled" name="useLink">
+            <label for="useLink-radio1" class="sdpi-item-label"><span></span>Open URL</label>
+        </div>
+        <div class="sdpi-item-child">
+            <input id="useLink-radio2" type="radio" value="disabled" name="useLink">
+            <label for="useLink-radio2" class="sdpi-item-label"><span></span>Edit Limits</label>
+        </div>
+    </div>
+</div>
+<div class="sdpi-item">
+    <div class="sdpi-item-label">URL</div>
+    <input id="linkURL" class="sdpi-item-value" type="url" placeholder="http://finance.yahoo.com"/>
+</div>
 <hr>
 
 <div type="checkbox" class="sdpi-item" id="summary-views">

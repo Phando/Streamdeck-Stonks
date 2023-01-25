@@ -178,9 +178,11 @@ class DataManager {
   //-----------------------------------------------------------------------------------------
 
   requestData(url, callback, errorCallback, userInfo={}) {
+    // console.log(url)
     const fetchPromise = fetch(url);
     fetchPromise
       .then( response => {
+        console.log(response)
         if (response.ok) {
           return response.json();
         } else {

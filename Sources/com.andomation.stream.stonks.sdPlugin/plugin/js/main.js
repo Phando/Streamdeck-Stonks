@@ -1,6 +1,5 @@
 // Global Variables
 //-----------------------------------------------------------------------------------------
-
 let dataManager = new DataManager()
 let rateManager = new RateManager()
 
@@ -17,7 +16,6 @@ actions.push(new StonksAction())
 // and handles communication to/from the software's PluginManager.
 //-----------------------------------------------------------------------------------------
 $SD = StreamDeck.getInstance();
-
 // The 'connected' event is sent to your plugin, after the plugin's instance
 // is registered with Stream Deck software. It carries the current websocket
 // and other information about the current environmet in a JSON object
