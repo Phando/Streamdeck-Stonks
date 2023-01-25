@@ -308,15 +308,6 @@ class StonksAction extends Action {
             return
         }
 
-        if(symbol.quoteType == "MUTUALFUND"){
-            var payload = {context : jsn.context, error:{}}
-            payload.error.message = 'Mutual Funds'
-            payload.error.message1 = 'Not Supported'
-            payload.error.message2 = 'Yet'
-            this.renderError(payload)
-            return
-        }
-
         this.prepData(jsn)
         this.updateDisplay(jsn)
     }
@@ -554,13 +545,7 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSymbol(){
-        //let trimList = ['-','=X']
         var label = this.symbolLabel
-       
-        // for (const element of trimList) {
-        //     label = label.split(element)[0]
-        // }
-
         this.drawScaledRight(label, COLOR_DIM, 18, 98, 24, 600, 2)
     }
 

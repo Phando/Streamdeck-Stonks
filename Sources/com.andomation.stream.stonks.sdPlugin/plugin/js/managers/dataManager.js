@@ -59,6 +59,8 @@ class DataManager {
     return '&symbols=' + this.symbols.join()
   }
 
+  //-----------------------------------------------------------------------------------------
+
   partialSymbolString(i, count){
     return '&symbols=' + this.symbols.slice(i * count, (i + 1) * count).join()
   }
