@@ -6,6 +6,11 @@ if [[ "$branch_name" != *"development"* ]]; then
     exit 0
 fi
 
+git add .
+git commit -m "Deploying for Release"
+git push
+
+exit
 echo "Prepping - Stage Branch"
 git checkout -b stageSpace
 
