@@ -1,4 +1,6 @@
 #!/bin/sh
+./build.sh
+
 branch_name=$(git symbolic-ref -q HEAD)
 
 if [[ "$branch_name" != *"development"* ]]; then
