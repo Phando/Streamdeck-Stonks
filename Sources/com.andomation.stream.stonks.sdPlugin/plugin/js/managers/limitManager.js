@@ -23,34 +23,34 @@ class LimitManager extends Manager{
  
     constructor() {
         super()
-        this.countdown = 5
-        for (const [key, value] of Object.entries(LimitViewType))
-            this.viewList.push(value)
+        // this.countdown = 5
+        // for (const [key, value] of Object.entries(LimitViewType))
+        //     this.viewList.push(value)
     }
 
-    get countDown(){
-        return this.context.countDown
-    }
+    // get countDown(){
+    //     return this.context.countDown
+    // }
 
-    set countDown(value){
-        this.context.countDown = value
-    }
+    // set countDown(value){
+    //     this.context.countDown = value
+    // }
 
-    get frameTime(){
-        return this.settings.frameTime
-    }
+    // get frameTime(){
+    //     return this.settings.frameTime
+    // }
 
-    set frameTime(value){
-        this.settings.frameTime = value
-    }
+    // set frameTime(value){
+    //     this.settings.frameTime = value
+    // }
 
-    get increment(){
-        return Number(this.settings.limitIncrement)
-    }
+    // get increment(){
+    //     return Number(this.settings.limitIncrement)
+    // }
 
-    set increment(value){
-        this.settings.limitIncrement = value
-    }
+    // set increment(value){
+    //     this.settings.limitIncrement = value
+    // }
 
     get lowerEnabled(){
         return this.settings.lowerLimitEnabled
@@ -122,63 +122,63 @@ class LimitManager extends Manager{
         return this.isUpperEnabled || this.isLowerEnabled
     }
 
-    get isEnabledView(){
-        return this.currentView == LimitViewType.UPPER_ENABLED || this.currentView == LimitViewType.LOWER_ENABLED
-    }
+    // get isEnabledView(){
+    //     return this.currentView == LimitViewType.UPPER_ENABLED || this.currentView == LimitViewType.LOWER_ENABLED
+    // }
 
-    get isInfoView(){
-        return this.currentView == LimitViewType.POST_INFO
-    }
+    // get isInfoView(){
+    //     return this.currentView == LimitViewType.POST_INFO
+    // }
 
-    get isUpper(){
-        return this.currentView == LimitViewType.UPPER_ENABLED || this.currentView == LimitViewType.UPPER_DEC || this.currentView == LimitViewType.UPPER_INC
-    }
+    // get isUpper(){
+    //     return this.currentView == LimitViewType.UPPER_ENABLED || this.currentView == LimitViewType.UPPER_DEC || this.currentView == LimitViewType.UPPER_INC
+    // }
 
-    get isInc(){
-        return this.currentView == LimitViewType.LOWER_INC || this.currentView == LimitViewType.UPPER_INC
-    }
+    // get isInc(){
+    //     return this.currentView == LimitViewType.LOWER_INC || this.currentView == LimitViewType.UPPER_INC
+    // }
 
-    get isInteractive(){
-        return  this.isEnabledView || 
-                this.currentView ==  LimitViewType.LOWER_INC ||  this.currentView ==  LimitViewType.LOWER_DEC || 
-                this.currentView ==  LimitViewType.UPPER_INC ||  this.currentView ==  LimitViewType.UPPER_DEC
-    }
+    // get isInteractive(){
+    //     return  this.isEnabledView || 
+    //             this.currentView ==  LimitViewType.LOWER_INC ||  this.currentView ==  LimitViewType.LOWER_DEC || 
+    //             this.currentView ==  LimitViewType.UPPER_INC ||  this.currentView ==  LimitViewType.UPPER_DEC
+    // }
     
-    get timer(){
-        return this.context.limitTimer
-    }
+    // get timer(){
+    //     return this.context.limitTimer
+    // }
 
-    set timer(value){
-        this.context.limitTimer = value
-    }
+    // set timer(value){
+    //     this.context.limitTimer = value
+    // }
 
     // Overrides
     //-----------------------------------------------------------------------------------------
 
-    get currentView(){
-        return this.viewList[this.clickCount]
-    }
+    // get currentView(){
+    //     return this.viewList[this.clickCount]
+    // }
 
-    set currentView(value){
-        this.clickCount = this.viewList.findIndex(item => item == value)
-        this.updateDisplay(this.context)
-    }
+    // set currentView(value){
+    //     this.clickCount = this.viewList.findIndex(item => item == value)
+    //     this.updateDisplay(this.context)
+    // }
 
-    get viewList(){
-        return this._viewList
-    }
+    // get viewList(){
+    //     return this._viewList
+    // }
 
-    set viewList(value){
-        this._viewList = value
-    }
+    // set viewList(value){
+    //     this._viewList = value
+    // }
 
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveSettings(jsn) {
         super.onDidReceiveSettings(jsn)
         
-        this.increment = this.increment || 1
-        this.frameTime = this.frameTime || 5
+        // this.increment = this.increment || 1
+        // this.frameTime = this.frameTime || 5
         this.type      = this.type || LimitType.NUMERIC
 
         this.upperLimit = this.upperLimit || 0
@@ -187,47 +187,47 @@ class LimitManager extends Manager{
         this.lowerLimit = this.lowerLimit || 0
         this.lowerEnabled   = this.lowerEnabled || 'disabled'
 
-        this.countdown = this.frameTime
+        // this.countdown = this.frameTime
     } 
 
     //-----------------------------------------------------------------------------------------
 
-    onKeyDown(jsn){
-        super.onKeyDown(jsn)
+    // onKeyDown(jsn){
+    //     super.onKeyDown(jsn)
         
-        if(!this.isInteractive)
-            this.clickCount++
-    }
+    //     if(!this.isInteractive)
+    //         this.clickCount++
+    // }
 
     //-----------------------------------------------------------------------------------------
 
-    onKeyUp(jsn){
-        super.onKeyUp(jsn)
+    // onKeyUp(jsn){
+    //     super.onKeyUp(jsn)
         
-        // Ignore the long press click
-        if(this.isLongPress){
-            this.isLongPress = false
-        }
-        else if(this.isInteractive) {        
-            if(this.isEnabledView)
-                this.handleEnabled(jsn)
-            else 
-                this.handleAdjustment(jsn)
+    //     // Ignore the long press click
+    //     if(this.isLongPress){
+    //         this.isLongPress = false
+    //     }
+    //     else if(this.isInteractive) {        
+    //         if(this.isEnabledView)
+    //             this.handleEnabled(jsn)
+    //         else 
+    //             this.handleAdjustment(jsn)
 
-            $SD.api.setSettings(this.uuid, this.settings)
-        }
+    //         $SD.api.setSettings(this.uuid, this.settings)
+    //     }
 
-        this.startTimer(jsn)
-        this.updateDisplay(jsn)
-    }
+    //     this.startTimer(jsn)
+    //     this.updateDisplay(jsn)
+    // }
 
     //-----------------------------------------------------------------------------------------
 
-    onLongPress(jsn){
-        super.onLongPress(jsn)
-        this.clickCount = 0
-        this.updateDisplay(jsn)
-    }
+    // onLongPress(jsn){
+    //     super.onLongPress(jsn)
+    //     this.clickCount = 0
+    //     this.updateDisplay(jsn)
+    // }
 
     //-----------------------------------------------------------------------------------------
 
@@ -316,83 +316,83 @@ class LimitManager extends Manager{
 
     //-----------------------------------------------------------------------------------------
 
-    handleTimer(jsn){
-        this.uuid = jsn.context
-        this.countdown--
+    // handleTimer(jsn){
+    //     this.uuid = jsn.context
+    //     this.countdown--
         
-        // Note: Update countdown timer if not below limit
-        if(this.countdown >= 0){
-            this.updateDisplay(jsn)
-            return
-        }
+    //     // Note: Update countdown timer if not below limit
+    //     if(this.countdown >= 0){
+    //         this.updateDisplay(jsn)
+    //         return
+    //     }
 
-        this.stopTimer(jsn)
-        console.log("Current View", this.currentView, this.isUpperEnabled, this.isLowerEnabled)
-        // Show the next screen
-        if(this.currentView == LimitViewType.UPPER_ENABLED && !this.isUpperEnabled){
-            this.clickCount = this.viewList.findIndex(item => item == LimitViewType.LOWER_ENABLED)
-        } 
-        else if(this.currentView == LimitViewType.LOWER_ENABLED && !this.isLowerEnabled){
-            this.clickCount = this.viewList.findIndex(item => item == LimitViewType.EXIT_LIMITS)
-        }
-        else {
-            this.clickCount++
-        }
+    //     this.stopTimer(jsn)
+    //     console.log("Current View", this.currentView, this.isUpperEnabled, this.isLowerEnabled)
+    //     // Show the next screen
+    //     if(this.currentView == LimitViewType.UPPER_ENABLED && !this.isUpperEnabled){
+    //         this.clickCount = this.viewList.findIndex(item => item == LimitViewType.LOWER_ENABLED)
+    //     } 
+    //     else if(this.currentView == LimitViewType.LOWER_ENABLED && !this.isLowerEnabled){
+    //         this.clickCount = this.viewList.findIndex(item => item == LimitViewType.EXIT_LIMITS)
+    //     }
+    //     else {
+    //         this.clickCount++
+    //     }
         
-        console.log("Current View2", this.currentView, this.isUpperEnabled, this.isLowerEnabled)
-        // Exit : No more adjustment screens
-        if( this.currentView == LimitViewType.EXIT_LIMITS ) {
-            this.exitlLimits(jsn)
-            return
-        }
+    //     console.log("Current View2", this.currentView, this.isUpperEnabled, this.isLowerEnabled)
+    //     // Exit : No more adjustment screens
+    //     if( this.currentView == LimitViewType.EXIT_LIMITS ) {
+    //         this.exitlLimits(jsn)
+    //         return
+    //     }
 
-        this.startTimer(jsn)
-        this.updateDisplay(jsn)
-    }
+    //     this.startTimer(jsn)
+    //     this.updateDisplay(jsn)
+    // }
 
     //-----------------------------------------------------------------------------------------
 
-    startTimer(jsn){
-        this.uuid = jsn.context
-        this.stopTimer(jsn)
-        this.countdown = this.frameTime
-        this.timer = setInterval( (jasnObj) => this.handleTimer(jasnObj), 900, this.context )
-    }
+    // startTimer(jsn){
+    //     this.uuid = jsn.context
+    //     this.stopTimer(jsn)
+    //     this.countdown = this.frameTime
+    //     this.timer = setInterval( (jasnObj) => this.handleTimer(jasnObj), 900, this.context )
+    // }
 
     //-----------------------------------------------------------------------------------------
 
-    stopTimer(jsn){
-        this.uuid = jsn.context
-        clearInterval(this.timer)
-    }
+    // stopTimer(jsn){
+    //     this.uuid = jsn.context
+    //     clearInterval(this.timer)
+    // }
 
     //-----------------------------------------------------------------------------------------
 
-    updateDisplay(jsn){
-        super.updateDisplay(jsn)
-        this.drawingCtx.fillStyle = COLOR_BACKGROUND
-        this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    // updateDisplay(jsn){
+    //     super.updateDisplay(jsn)
+    //     this.drawingCtx.fillStyle = COLOR_BACKGROUND
+    //     this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         
-        switch(this.currentView){    
-            case LimitViewType.POST_INFO :
-                this.updateInfoView(jsn)
-                break
-            case LimitViewType.UPPER_ENABLED :
-            case LimitViewType.LOWER_ENABLED :
-            case LimitViewType.LOWER_INC :
-            case LimitViewType.LOWER_DEC :
-            case LimitViewType.UPPER_INC :
-            case LimitViewType.UPPER_DEC :
-                this.updateInfoView(jsn, true)
-                break
-            case LimitViewType.LOWER_INFO :
-            case LimitViewType.UPPER_INFO :
-                this.updateDetailView()
-                break
-        }
+    //     switch(this.currentView){    
+    //         case LimitViewType.POST_INFO :
+    //             this.updateInfoView(jsn)
+    //             break
+    //         case LimitViewType.UPPER_ENABLED :
+    //         case LimitViewType.LOWER_ENABLED :
+    //         case LimitViewType.LOWER_INC :
+    //         case LimitViewType.LOWER_DEC :
+    //         case LimitViewType.UPPER_INC :
+    //         case LimitViewType.UPPER_DEC :
+    //             this.updateInfoView(jsn, true)
+    //             break
+    //         case LimitViewType.LOWER_INFO :
+    //         case LimitViewType.UPPER_INFO :
+    //             this.updateDetailView()
+    //             break
+    //     }
         
-        $SD.api.setImage(this.uuid, this.canvas.toDataURL());
-    }
+    //     $SD.api.setImage(this.uuid, this.canvas.toDataURL());
+    // }
 
     //-----------------------------------------------------------------------------------------
 
@@ -423,8 +423,8 @@ class LimitManager extends Manager{
             lower = '-' + this.lowerLimit + '%'
        }
         
-        if(editable)
-            this.drawEditableContent()
+        // if(editable)
+        //     this.drawEditableContent()
         
         this.drawingCtx.fillStyle = COLOR_POST
         this.drawingCtx.beginPath()
@@ -440,33 +440,33 @@ class LimitManager extends Manager{
 
     //-----------------------------------------------------------------------------------------
 
-    drawEditableContent(){
-        var enablePos = this.isUpper ? 50 : 122
-        var iconPos = this.isUpper ? 60 : 133
-        var linePos = this.isUpper ? 32 : 106
-        var enabled = this.isUpper ? this.isUpperEnabled : this.isLowerEnabled
+    // drawEditableContent(){
+    //     var enablePos = this.isUpper ? 50 : 122
+    //     var iconPos = this.isUpper ? 60 : 133
+    //     var linePos = this.isUpper ? 32 : 106
+    //     var enabled = this.isUpper ? this.isUpperEnabled : this.isLowerEnabled
         
-        this.drawHeader('Limits')
-        this.drawingCtx.lineWidth = 1
-        this.drawingCtx.fillStyle = '#444444'
-        this.drawingCtx.fillRect(-2, linePos, CANVAS_WIDTH+4, 34)
+    //     this.drawHeader('Limits')
+    //     this.drawingCtx.lineWidth = 1
+    //     this.drawingCtx.fillStyle = '#444444'
+    //     this.drawingCtx.fillRect(-2, linePos, CANVAS_WIDTH+4, 34)
 
-        switch(this.currentView){    
-            case LimitViewType.UPPER_ENABLED :
-            case LimitViewType.LOWER_ENABLED :
-                this.drawSwitch(8, enablePos, enabled)
-                break
-            default :
-                this.drawArrow(6, iconPos, this.isInc)    
-                break
-        }
-    }
+    //     switch(this.currentView){    
+    //         case LimitViewType.UPPER_ENABLED :
+    //         case LimitViewType.LOWER_ENABLED :
+    //             this.drawSwitch(8, enablePos, enabled)
+    //             break
+    //         default :
+    //             this.drawArrow(6, iconPos, this.isInc)    
+    //             break
+    //     }
+    // }
 
     //-----------------------------------------------------------------------------------------
 
-    updateDetailView(){
-        this.drawRight('Not Implemented', COLOR_RED, 20)
-    }
+    // updateDetailView(){
+    //     this.drawRight('Not Implemented', COLOR_RED, 20)
+    // }
 
     //-----------------------------------------------------------------------------------------
 
@@ -507,14 +507,14 @@ class LimitManager extends Manager{
 
     //-----------------------------------------------------------------------------------------
 
-    drawSwitch(xPos, yPos, state){
-        this.drawingCtx.strokeStyle = COLOR_FOREGROUND
-        this.drawingCtx.fillStyle = state ? COLOR_GREEN : COLOR_DISABLED
-        this.drawingCtx.beginPath();
-        this.drawingCtx.arc(xPos, yPos, 8, 0, 2 * Math.PI, false);
-        this.drawingCtx.rect(0, yPos-8, xPos, 16);
-        this.drawingCtx.fill();
-        //this.drawingCtx.stroke();
-    }
+    // drawSwitch(xPos, yPos, state){
+    //     this.drawingCtx.strokeStyle = COLOR_FOREGROUND
+    //     this.drawingCtx.fillStyle = state ? COLOR_GREEN : COLOR_DISABLED
+    //     this.drawingCtx.beginPath();
+    //     this.drawingCtx.arc(xPos, yPos, 8, 0, 2 * Math.PI, false);
+    //     this.drawingCtx.rect(0, yPos-8, xPos, 16);
+    //     this.drawingCtx.fill();
+    //     //this.drawingCtx.stroke();
+    // }
 
 }

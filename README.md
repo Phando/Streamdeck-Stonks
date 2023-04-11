@@ -83,7 +83,7 @@ The market state is a small indicator to the left of the asset price. During reg
 
 ## Long Press
 
-Using the **long press** setting, you can choose between opening a URL or going into the Limits settings outlined in the next section.
+Using the **long press** you can define a URL to open in your browser.
 
 ## Limits
 
@@ -93,16 +93,7 @@ Limits are implemented so users know when to take action or when to let their di
 
 ![Limits View](images/limitsView.png)
 
-It is possible to enable/disable and adjust the limits right on the device! A **long press** will take the plugin into Limits View. This view is governed by a timer. If the view is left alone, it will dismiss itself back to the selected initial view. Once in the Limits View clicking the button will adjust whatever section is highlighted. Limits can be adjusted numerically or by percent. There are several settings around limits explained in the settings details section. 
-
-### Limit Adjustment Order
-
-* **Upper Limit Enable/Disable**
-* **Upper Limit Increment** - Skipped if disabled
-* **Upper Limit Decrement** - Skipped if disabled
-* **Lower Limit Enable/Disable**
-* **Lower Limit Decrement** - Skipped if disabled
-* **Lower Limit Increment** - Skipped if disabled
+Use the property inspector to enable/disable and adjust the limits.
 
 ## Settings Details
 
@@ -118,8 +109,6 @@ It is possible to enable/disable and adjust the limits right on the device! A **
 * **View Checkboxes** - Choose which views to display when clicking the Streamdeck button
 * **Type** - Choose between numerical or percentage limits
 * **Viz Limits** - Show the limits on the *Viz* footers
-* **Screen Time** - Sets the duration timer for the Limits View adjustments
-* **Increment** - The increment amount to be used when clicking the button in *Limits View*
 * **Upper Limit Enabled** - Enable or disable the Upper Limit
 * **Upper Limit** - The threshold value to trigger the Upper Limit  
 * **Lower Limit Enabled** - Enable or disable the Lower Limit

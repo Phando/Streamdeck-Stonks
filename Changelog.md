@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.1.9 (4/10/2023) -----
+
+#### Enhancements:
+- Removed on device limit modification, just use the property inspector.
+- Updated the documentation to reflect the changes in this release.
+
+#### Bug Fixes:
+- Fixed prices for tickers that are being returned in currencies other than USD. [Issue #26](https://github.com/Phando/Streamdeck-Stonks/issues/26) 
+- Fixed chart colors. Opening prices are being used instead of closing [Issue #28](https://github.com/Phando/Streamdeck-Stonks/issues/28)
+
 ## v1.1.8 (1/24/2023) -----
 
 #### Enhancements:

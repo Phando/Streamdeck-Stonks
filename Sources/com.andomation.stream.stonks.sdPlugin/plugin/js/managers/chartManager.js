@@ -123,6 +123,7 @@ class ChartManager extends Manager {
             return typeof item == 'number' && isFinite(item);
         })
         .map(function (value, index){
+
             return {index:index, value:value}
         })
         
@@ -135,14 +136,25 @@ class ChartManager extends Manager {
         this.chart.dataMax = extent[1]
         this.chart.rangeMax = 145
 
+        console.log(this.data)
+        // BUG
+        // Price Chart Is Incorrectly Colored
+        // https://github.com/Phando/Streamdeck-Stonks/issues/28
+        // if(this.isDay){
+        //     this.chart.min = this.data.open.min(this.chart.min)
+        //     this.chart.max = this.data.open.max(this.chart.max)
+        //     this.chart.isUp = this.data.open < this.chart.data[this.chart.data.length-1].value
+        // }
+        // else
+        //     this.chart.isUp = this.chart.data[0].value < this.chart.data[this.chart.data.length-1].value
         if(this.isDay){
-            this.chart.min = this.data.prevClose.min(this.chart.min)
-            this.chart.max = this.data.prevClose.max(this.chart.max)
-            this.chart.isUp = this.data.prevClose < this.chart.data[this.chart.data.length-1].value
+            extent = d3.extent(this.chart.raw, function(d) { return d.value; })
+            this.chart.min = extent[0]
+            this.chart.max = extent[1]
+            this.chart.open = this.chart.raw[0].value
         }
-        else
-            this.chart.isUp = this.chart.data[0] < this.chart.data[this.chart.data.length-1].value
-
+        this.chart.isUp = this.chart.raw.shift().value < this.chart.raw.pop().value
+            
         return
     }
 
@@ -170,7 +182,7 @@ class ChartManager extends Manager {
     //-----------------------------------------------------------------------------------------
 
     drawCharLine(){
-        let scale = Utils.rangeToPercent(this.data.prevClose, this.chart.min, this.chart.max)
+        let scale = Utils.rangeToPercent(this.chart.open, this.chart.min, this.chart.max)
         
         this.drawingCtx.setLineDash([6, 3]);
         this.drawingCtx.lineWidth = 2
@@ -212,7 +224,6 @@ class ChartManager extends Manager {
         if(this.fill == 'enabled')
             this.drawingCtx.fill();
         this.drawingCtx.stroke();
-        
     }
     
 }

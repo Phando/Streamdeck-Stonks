@@ -25,7 +25,7 @@ rm temp.zip
 
 echo "Start - Stream Deck"
 open -a "Elgato Stream Deck"
-sleep 3
+sleep 4
 open -a "Google Chrome" http://localhost:23654
 echo "Done!"
 exit 0

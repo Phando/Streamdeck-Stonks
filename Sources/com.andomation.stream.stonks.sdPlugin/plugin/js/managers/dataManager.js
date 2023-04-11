@@ -7,6 +7,7 @@ class DataManager {
   symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=EU&corsDomain=finance.yahoo.com&fields="
   symbolFields = [
     'symbol',
+    'currency',
     //'shortName',
     //'longName',
     //'priceHint',
@@ -34,6 +35,7 @@ class DataManager {
     'postMarketChange',
     'postMarketChangePercent',
   ]
+
 
   constructor(){
   }
@@ -148,7 +150,7 @@ class DataManager {
 
   handleError(response, event){
     Object.values(contextList).forEach(item => {
-      item.payload = error
+      item.payload = event
       $SD.emit(item.action + '.' + event, item)
     })
   }

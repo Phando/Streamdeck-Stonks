@@ -118,7 +118,8 @@ class StonksAction extends Action {
     }
 
     set state(stateName){
-        this.clickCount = stateName == STATE_DEFAULT ? this.homeIndex : 0
+        // this.clickCount = stateName == STATE_DEFAULT ? this.homeIndex : 0
+        this.clickCount = this.homeIndex
         this.context.stateName = stateName
     }
 
@@ -146,13 +147,13 @@ class StonksAction extends Action {
         this.settings.updateClose = value
     }
 
-    get useLink(){
-        return this.settings.useLink
-    }
+    // get useLink(){
+    //     return this.settings.useLink
+    // }
 
-    set useLink(value){
-        this.settings.useLink = value
-    }
+    // set useLink(value){
+    //     this.settings.useLink = value
+    // }
 
     get visLimits(){
         return this.settings.visLimits
@@ -194,7 +195,7 @@ class StonksAction extends Action {
         this.symbol     = this.symbol || 'GME'
         this.symbolLabel= this.symbolLabel || this.symbol
         this.updateClose = this.updateClose || 'disabled'
-        this.useLink    = this.useLink || 'disabled'
+        // this.useLink    = this.useLink || 'disabled'
         this.visLimits  = this.visLimits || 'enabled'
         
         this.prepViewList()
@@ -210,19 +211,19 @@ class StonksAction extends Action {
     onKeyDown(jsn) {
         super.onKeyDown(jsn)
 
-        if( this.state == STATE_LIMITS ){    
-            this.limitManager.onKeyDown(jsn)
-            return
-        }
+        // if( this.state == STATE_LIMITS ){    
+        //     this.limitManager.onKeyDown(jsn)
+        //     return
+        // }
     }
 
     //-----------------------------------------------------------------------------------------
 
     onKeyUp(jsn){
-        if( this.state == STATE_LIMITS ){    
-            this.limitManager.onKeyUp(jsn)
-            return
-        }
+        // if( this.state == STATE_LIMITS ){    
+        //     this.limitManager.onKeyUp(jsn)
+        //     return
+        // }
 
         if(this.isLongPress == true){    
             this.isLongPress = false
@@ -250,17 +251,17 @@ class StonksAction extends Action {
     onLongPress(jsn){
         super.onLongPress(jsn)
         
-        if( this.useLink == 'enabled' ){    
+        // if( this.useLink == 'enabled' ){    
             $SD.api.showUrl2(this.uuid,this.linkURL)
-            return
-        }
+            // return
+        // }
 
-        switch(this.state){
-            case STATE_DEFAULT : 
-                this.state = STATE_LIMITS
-                this.limitManager.onLongPress(jsn)
-                break
-        }
+        // switch(this.state){
+        //     case STATE_DEFAULT : 
+        //         this.state = STATE_LIMITS
+        //         this.limitManager.onLongPress(jsn)
+        //         break
+        // }
     }
 
     //-----------------------------------------------------------------------------------------
@@ -268,7 +269,7 @@ class StonksAction extends Action {
     onPropertyInspectorDidAppear(jsn) {
         this.uuid = jsn.context
         super.onPropertyInspectorDidAppear(jsn)
-        this.limitManager.stopTimer(jsn)
+        // this.limitManager.stopTimer(jsn)
         
         this.clickCount = 0
         this.context.stateName = STATE_DEFAULT
@@ -364,11 +365,44 @@ class StonksAction extends Action {
         this.clickCount = this.homeIndex
     }
 
+    
+    //-----------------------------------------------------------------------------------------
+
+    applyRate(payload, rate) { 
+        payload.open    *= rate
+        payload.close   *= rate
+        payload.price   *= rate
+        payload.change  *= rate
+        payload.low     *= rate
+        payload.high    *= rate
+        payload.dayLow  *= rate
+        payload.dayHigh *= rate
+        payload.priceMarket *= rate
+        payload.prevClose   *= rate
+        return payload
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    verifyRate(payload) {
+        let rate = 1.0;
+        this.quoteCurrency = payload.currency
+        if(this.currency == payload.currency) return payload;
+        
+        if(payload.currency != "USD"){
+            rate /= rateManager.rateFor(payload.currency)
+            payload = this.applyRate(payload, rate);
+        }
+
+        rate = rateManager.rateFor(this.currency)
+        return this.applyRate(payload, rate);
+    }
+
     //-----------------------------------------------------------------------------------------
 
     prepData(jsn){
-        var symbol = jsn.payload
-        var payload = {symbol:symbol.symbol}
+        let symbol = this.applyRate(jsn.payload)
+        let payload = { currency:symbol.currency, symbol:symbol.symbol }
         
         payload.typeDisp    = symbol.typeDisp
         payload.price       = symbol.regularMarketPrice
@@ -379,7 +413,8 @@ class StonksAction extends Action {
         payload.volume      = symbol.regularMarketVolume
         payload.foreground  = COLOR_FOREGROUND
         payload.background  = COLOR_BACKGROUND
-        
+        payload.money       = rateManager.symbolFor(this.currency)
+
         // Range
         payload.state   = MarketStateType.REG
         payload.change  = symbol.regularMarketChange
@@ -419,20 +454,7 @@ class StonksAction extends Action {
         }
 
         // Adjust for currency
-        let rate = rateManager.rateFor(this.currency)
-        payload.money   = rateManager.symbolFor(this.currency)
-        payload.open    *= rate
-        payload.close   *= rate
-        payload.price   *= rate
-        payload.change  *= rate
-        payload.low     *= rate
-        payload.high    *= rate
-        payload.dayLow  *= rate
-        payload.dayHigh *= rate
-        payload.priceMarket *= rate
-        payload.prevClose   *= rate
-
-        this.data = payload
+        this.data = this.verifyRate(payload);
         this.limitManager.prepData(jsn)
     }
 
@@ -453,10 +475,10 @@ class StonksAction extends Action {
     updateDisplay(jsn) {
         super.updateDisplay(jsn)
 
-        if(this.state == STATE_LIMITS){
-            this.limitManager.updateDisplay(jsn)
-            return
-        }
+        // if(this.state == STATE_LIMITS){
+        //     this.limitManager.updateDisplay(jsn)
+        //     return
+        // }
 
         this.drawingCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         // this.drawingCtx.fillStyle = COLOR_BACKGROUND
@@ -487,7 +509,7 @@ class StonksAction extends Action {
                 break
             case ViewType.LIMITS:
                 this.drawSymbol(jsn);
-                this.drawLeft('limit', COLOR_FOREGROUND, 16, 21, 600, 6)
+                this.drawLeft('lmt', COLOR_FOREGROUND, 16, 21, 600, 6)
                 this.limitManager.updateInfoView(jsn)
                 break
             case ViewType.DAY_DEC:
