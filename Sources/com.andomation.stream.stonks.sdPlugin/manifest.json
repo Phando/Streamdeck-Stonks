@@ -22,7 +22,7 @@
   "Name": "Stonks", 
   "Icon": "images/plugin/appStore", 
   "URL": "https://github.com/Phando/Streamdeck-Stonks", 
-  "Version": "1.1.8", 
+  "Version": "1.1.9", 
   "OS": [
     {
         "Platform": "mac", 
