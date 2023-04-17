@@ -6,7 +6,7 @@
 - See Below
 
 #### Bug Fixes:
-- Added the Columbian Peso. [Issue #30](https://github.com/Phando/Streamdeck-Stonks/issues/30) 
+- Added the Colombian Peso. [Issue #30](https://github.com/Phando/Streamdeck-Stonks/issues/30) 
 
 ## v1.1.9 (4/10/2023) -----
 
