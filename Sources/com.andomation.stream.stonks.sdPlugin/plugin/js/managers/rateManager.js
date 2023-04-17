@@ -26,7 +26,7 @@ const Currencies = Object.freeze({
     //"XAF":{code:"XAF",symbol:"₣",name:"CFA Franc BCEAO"},
     //"XPF":{code:"XPF",symbol:"₣",name:"CFP Franc"},
     //"CLP":{code:"CLP",symbol:"$",name:"Chilean Peso"},
-    //"COP":{code:"COP",symbol:"$",name:"Colombian Peso"},
+    "COP":{code:"COP",symbol:"$",name:"Colombian Peso"},
     //"CDF":{code:"CDF",symbol:"₣",name:"Congolese Franc"},
     //"NIO":{code:"NIO",symbol:"C$",name:"Cordoba Oro"},
     "CRC":{code:"CRC",symbol:"₡",name:"Costa Rican Colon"},

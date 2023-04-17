@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.10 (4/17/2023) -----
+
+#### Enhancements:
+- See Below
+
+#### Bug Fixes:
+- Added the Columbian Peso. [Issue #30](https://github.com/Phando/Streamdeck-Stonks/issues/30) 
+
 ## v1.1.9 (4/10/2023) -----
 
 #### Enhancements:

@@ -34,4 +34,5 @@ git checkout .
 git branch -D stageSpace
 
 echo "Done"
+echo "Did you update the version number in the Manifest"
 exit 0
