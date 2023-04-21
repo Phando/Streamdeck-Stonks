@@ -30,6 +30,7 @@ $SD.on("connected", (jsn) => {
     if(item.type == actionType){
 		  item.init(jsn)
       action = item
+      console.log(`ACTION ${action}`)
     }
   });
 

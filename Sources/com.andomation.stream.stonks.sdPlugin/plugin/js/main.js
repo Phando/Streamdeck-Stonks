@@ -43,5 +43,6 @@ $SD.on('didReceiveGlobalSettings', (jsn) => {
     $SD.api.setGlobalSettings($SD.uuid, globalSettings)
   }
 
-  dataManager.startPolling()
+  dataManager.startPolling();
 });
+

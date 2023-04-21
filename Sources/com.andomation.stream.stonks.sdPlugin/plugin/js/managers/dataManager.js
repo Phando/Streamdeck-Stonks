@@ -1,5 +1,6 @@
 class DataManager {
   chartInc = 0;
+  sessionId = null;
   batchTimer = null;
   chartTimer = null;
   dataTimer = null;
@@ -38,6 +39,34 @@ class DataManager {
 
 
   constructor(){
+    this.getSession();
+  }
+
+  //-----------------------------------------------------------------------------------------
+
+  async getSession(){
+    fetch('https://query1.finance.yahoo.com/v1/test/getcrumb')
+      .then(response => {
+        this.sessionId = '';
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        return reader.read().then(result => {
+          if (result.done) {
+            this.sessionId = this.sessionId.trim();
+            console.log(`Response body: ${this.sessionId}`);
+            return;
+          }
+
+          const chunk = decoder.decode(result.value, {stream: true});
+          this.sessionId += chunk;
+          return reader.read();//.then(processResult);
+        });
+      })
+      .catch(error => {
+        console.error(`Error: ${error}`);
+      }
+    );
   }
 
   //-----------------------------------------------------------------------------------------
@@ -94,13 +123,18 @@ class DataManager {
 
   //-----------------------------------------------------------------------------------------
 
-  fetchData(){
+  async fetchData(){
+    if(this.sessionId == null){
+      this.scheduleData();
+      return; 
+    }
+
     if(this.batchTimer != null){
       clearInterval(this.batchTimer)
       this.batchTimer = null
     }
 
-    this.fetchSymbolData()
+    await this.fetchSymbolData()
     
     if(this.chartInc == 0)
       setTimeout(this.fetchChartData.bind(this),10)
@@ -110,10 +144,10 @@ class DataManager {
 
   //-----------------------------------------------------------------------------------------
 
-  fetchSymbolData(){
+  async fetchSymbolData(){
     if(this.symbols.length == 0) return 
 
-    var url = this.symbolURL + this.symbolFields.join() + this.symbolString
+    var url = this.symbolURL + this.symbolFields.join() + this.symbolString +"&crumb="+ this.sessionId;
     console.log("fetchSymbolData:", url)
     
     this.requestData(url, 
@@ -136,7 +170,7 @@ class DataManager {
 
     for (const [key, value] of Object.entries(types)) {
       for (const i of Array(Math.ceil(this.symbols.length / 10)).keys()){
-        var url = this.chartURL + "range="+ value.range +"&interval="+ value.interval + this.partialSymbolString(i, 10)
+        var url = this.chartURL +"range="+ value.range +"&interval="+ value.interval + this.partialSymbolString(i, 10) +"&crumb="+ this.sessionId;
 
         this.requestData(url, 
           (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
@@ -205,7 +239,6 @@ class DataManager {
       })
       .then( response => callback(response))
       .catch( error => {
-        console.log(error)
         errorCallback(error)
       });
   }

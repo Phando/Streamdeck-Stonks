@@ -331,7 +331,9 @@ class StreamDeckClient {
     //-----------------------------------------------------------------------------------------
 
     renderError(jsn) {
-        //console.log('StonksAction - renderError', jsn)
+        console.log('StonksAction - renderError')
+        console.log(jsn)
+
         this.uuid = jsn.context
         this.drawingCtx.fillStyle = COLOR_BACKGROUND
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
@@ -345,7 +347,12 @@ class StreamDeckClient {
         // Render Message
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
         this.drawingCtx.font = 600 + " " + 19 + "px Arial";
-        this.drawingCtx.fillText(jsn.error.message, CANVAS_WIDTH/2, 40);
+        
+        if(jsn.error.hasOwnProperty('message'))
+            this.drawingCtx.fillText(jsn.error.message, CANVAS_WIDTH/2, 40);
+        else if(jsn.hasOwnProperty('payload')){
+            this.drawingCtx.fillText(jsn.payload, CANVAS_WIDTH/2, 40);
+        }
 
         if(jsn.error.hasOwnProperty('message1'))
             this.drawingCtx.fillText(jsn.error.message1, CANVAS_WIDTH/2, 70);

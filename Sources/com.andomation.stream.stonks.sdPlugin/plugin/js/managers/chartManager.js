@@ -136,7 +136,6 @@ class ChartManager extends Manager {
         this.chart.dataMax = extent[1]
         this.chart.rangeMax = 145
 
-        console.log(this.data)
         // BUG
         // Price Chart Is Incorrectly Colored
         // https://github.com/Phando/Streamdeck-Stonks/issues/28

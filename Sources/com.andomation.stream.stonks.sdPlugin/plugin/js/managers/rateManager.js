@@ -224,16 +224,26 @@ class RateManager {
     //-----------------------------------------------------------------------------------------
 
     getCurrency(code){    
-        if (Currencies[code]) return Currencies[code];
-        console.log("Currency ", code, " not found!")
+        if(Currencies[code] != undefined) 
+            return Currencies[code];
+
+        console.log(`No currency found for: ${code}`)
         return {}
     }
 
     rateFor(code){    
-        return this.rates[code]
+        if(this.rates[code] != undefined)
+            return this.rates[code];
+
+        console.log(`No rate available for: ${this.rates[code]}`);
+        return 1.0
     }
 
-    symbolFor(code){    
-        return this.getCurrency(code).symbol
+    symbolFor(code){   
+        if(this.rates[code] != undefined)
+            return this.getCurrency(code).symbol;
+
+        console.log(`No symbol available for: ${this.rates[code]}`);
+        return 'ERROR'
     }
 }

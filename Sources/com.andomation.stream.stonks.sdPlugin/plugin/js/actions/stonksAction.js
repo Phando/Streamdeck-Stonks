@@ -334,6 +334,16 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveSymbolError(jsn) {
+        console.log(`ERROR:`)
+        console.log(jsn)
+        this.renderError(jsn)
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    onDidReceiveChartError(jsn) {
+        console.log(`ERROR:`)
+        console.log(jsn)
         this.renderError(jsn)
     }
 

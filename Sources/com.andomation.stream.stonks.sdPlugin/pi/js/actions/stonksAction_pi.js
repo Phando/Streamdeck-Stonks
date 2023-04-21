@@ -8,6 +8,7 @@ class StonksActionPI extends ActionPI {
     init(jsn) {
         super.init(jsn)
         this.injectContent("content/stonksAction.html", this.onContentLoaded);
+        console.log(jsn);
     }
 
     onContentLoaded = () => {
