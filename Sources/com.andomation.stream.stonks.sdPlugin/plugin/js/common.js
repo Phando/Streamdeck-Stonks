@@ -348,7 +348,7 @@ class StreamDeckClient {
         this.drawingCtx.fillStyle = COLOR_FOREGROUND
         this.drawingCtx.font = 600 + " " + 19 + "px Arial";
         
-        if(jsn.error.hasOwnProperty('message'))
+        if(jsn.hasOwnProperty("error") && jsn.error.hasOwnProperty('message'))
             this.drawingCtx.fillText(jsn.error.message, CANVAS_WIDTH/2, 40);
         else if(jsn.hasOwnProperty('payload')){
             this.drawingCtx.fillText(jsn.payload, CANVAS_WIDTH/2, 40);

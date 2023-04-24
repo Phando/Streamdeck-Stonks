@@ -15,7 +15,6 @@ Enjoying the plugin, please [donate](https://buy.stripe.com/cN26rW40l4Vl3YsdQQ)
 - Charting
 - Multiple layouts
 - Limit notifications
-- On device limit adjustments
 - Currency Conversion
 - Cross-platform (macOS, Windows)
 

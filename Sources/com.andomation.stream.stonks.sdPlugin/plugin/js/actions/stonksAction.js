@@ -306,10 +306,9 @@ class StonksAction extends Action {
     onDidReceiveSymbolData(jsn) {
         console.log("StonksAction - onDidReceiveSymbol: ", jsn)
         this.uuid = jsn.context
-        var symbol = jsn.payload
-
-        if(Utils.isUndefined(symbol)){
-            var payload = {context : jsn.context, error:{}}
+        
+        if(Utils.isUndefined(jsn.payload)){
+            let payload = {context : jsn.context, error:{}}
             payload.error.message = this.symbol
             payload.error.message1 = 'Not Found'
             this.renderError(payload)
@@ -334,16 +333,14 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveSymbolError(jsn) {
-        console.log(`ERROR:`)
-        console.log(jsn)
+        console.log(`ERROR: onDidReceiveSymbolError`)
         this.renderError(jsn)
     }
 
     //-----------------------------------------------------------------------------------------
 
     onDidReceiveChartError(jsn) {
-        console.log(`ERROR:`)
-        console.log(jsn)
+        console.log(`ERROR: onDidReceiveChartError`)
         this.renderError(jsn)
     }
 
@@ -459,7 +456,7 @@ class StonksAction extends Action {
 
         // Apply Trend is Enabled
         if(this.showTrend == 'enabled'){
-            var color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
+            let color = payload.price > payload.close ? COLOR_GREEN : payload.foreground
             payload.foreground = payload.price < payload.close ? COLOR_RED : color
         }
 
@@ -475,7 +472,7 @@ class StonksAction extends Action {
         this.drawingCtx.fillStyle = COLOR_BACKGROUND
         this.drawingCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
         
-        var img = document.getElementById('action');
+        let img = document.getElementById('action');
         this.drawingCtx.drawImage(img, 10, 10, 124, 124);
         $SD.api.setImage(this.uuid, this.canvas.toDataURL())
     }
@@ -585,7 +582,7 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawSymbol(){
-        var label = this.symbolLabel
+        let label = this.symbolLabel
         this.drawScaledRight(label, COLOR_DIM, 18, 98, 24, 600, 2)
     }
 
@@ -608,12 +605,12 @@ class StonksAction extends Action {
     //-----------------------------------------------------------------------------------------
 
     drawRange(){
-        var price  = this.data.money + this.data.close.abbreviateNumber(this.maxDigits)
-        var high = this.data.high.abbreviateNumber(this.maxDigits)
-        var low = this.data.low.abbreviateNumber(this.maxDigits)
+        let price  = this.data.money + this.data.close.abbreviateNumber(this.maxDigits)
+        let high = this.data.high.abbreviateNumber(this.maxDigits)
+        let low = this.data.low.abbreviateNumber(this.maxDigits)
 
-        var font = this.currentView.header ? 23 : 26
-        var yPos = this.currentView.header ? [81,103,126,88] : [52,89,126,75] 
+        let font = this.currentView.header ? 23 : 26
+        let yPos = this.currentView.header ? [81,103,126,88] : [52,89,126,75] 
 
         if( !this.currentView.header ) {
             high = this.currentView.perc ? this.data.dayHighPerc + '%' : this.data.dayHigh.abbreviateNumber(this.maxDigits)
@@ -655,8 +652,8 @@ class StonksAction extends Action {
         let close = this.data.close
         let min = this.data.low
         let max = this.data.high
-        var low = min.abbreviateNumber(this.maxDigits)
-        var high = max.abbreviateNumber(this.maxDigits)
+        let low = min.abbreviateNumber(this.maxDigits)
+        let high = max.abbreviateNumber(this.maxDigits)
         let isPerc = this.limitManager.type == LimitType.PERCENT
         let showLimits = this.visLimits == 'enabled'
 
@@ -678,9 +675,9 @@ class StonksAction extends Action {
         }    
 
         this.drawScaledPair(low, COLOR_RED, high, COLOR_GREEN, 109)
-        var scale = Math.round(144 * Utils.rangeToPercent(close, min, max).minmax())
+        let scale = Math.round(144 * Utils.rangeToPercent(close, min, max).minmax())
 
-        var grd = this.drawingCtx.createLinearGradient(0, yPos, 0, 145);
+        let grd = this.drawingCtx.createLinearGradient(0, yPos, 0, 145);
         grd.addColorStop(0.1, COLOR_RED_LT);
         grd.addColorStop(0.9, COLOR_BACKGROUND);
         this.drawingCtx.fillStyle = grd
