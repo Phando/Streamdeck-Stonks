@@ -37,6 +37,29 @@ class DataManager {
     'postMarketChangePercent',
   ]
 
+  //-----------------------------------------------------------------------------------------
+
+  headers = new Headers({
+    "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language" : "en-US,en;q=0.5",
+    "Accept-Encoding" : "gzip, deflate, br",
+    "Connection" : "keep-alive",
+    "Upgrade-Insecure-Requests" : "1",
+    "Sec-Fetch-Dest" : "document",
+    "Sec-Fetch-Mode" :  "navigate",
+    "Sec-Fetch-Site" : "none",
+    "Sec-Fetch-User" : "?1",
+    "DNT" : "1",
+  });
+
+  //-----------------------------------------------------------------------------------------
+
+  requestOptions = {
+    method: 'GET', // or 'POST', 'PUT', 'DELETE', etc.
+    headers: this.headers
+  };
+  
+  //-----------------------------------------------------------------------------------------
 
   constructor(){
     this.getSession();
@@ -200,7 +223,7 @@ class DataManager {
       (response, event) => this.handleResponse(response, 'didReceiveSymbolData'), 
       (response, event) => this.handleError(response, 'didReceiveSymbolError'))
   }
-  
+
   //-----------------------------------------------------------------------------------------
 
   fetchChartData(){
@@ -260,23 +283,10 @@ class DataManager {
   }
 
   //-----------------------------------------------------------------------------------------
-  
 
   requestData(url, callback, errorCallback, userInfo={}) {
     // console.log(url)
-    const fetchPromise = fetch(url);
-    fetchPromise.headers = {
-      "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-      "Accept-Language" : "en-US,en;q=0.5",
-      "Accept-Encoding" : "gzip, deflate, br",
-      "DNT" : "1",
-      "Connection" : "keep-alive",
-      "Upgrade-Insecure-Requests" : "1",
-      "Sec-Fetch-Dest" : "document",
-      "Sec-Fetch-Mode" :  "navigate",
-      "Sec-Fetch-Site" : "none",
-      "Sec-Fetch-User" : "?1",
-    }
+    const fetchPromise = fetch(url, this.requestOptions);
     fetchPromise
       .then( response => {
         console.log(response)
