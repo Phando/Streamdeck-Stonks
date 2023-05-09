@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.11 (5/9/2023) -----
+
+#### Enhancements:
+- Added currency symbols as well as labels
+
+#### Bug Fixes:
+- Added more header info and error handling to try and solve. [Issue #33](https://github.com/Phando/Streamdeck-Stonks/issues/33) 
+
 ## v1.1.10 (4/21/2023) -----
 
 #### Enhancements:

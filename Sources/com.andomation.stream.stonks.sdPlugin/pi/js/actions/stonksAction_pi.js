@@ -16,7 +16,7 @@ class StonksActionPI extends ActionPI {
         let parent = document.getElementById('currency')
         
         $.each( Currencies, function( key, value ) {
-            let label = `${key} - ${value.name}`;
+            let label = `${key}: ${value.name}`;
             $(parent).append($('<option>', {value:key, text:label})); 
         })
 

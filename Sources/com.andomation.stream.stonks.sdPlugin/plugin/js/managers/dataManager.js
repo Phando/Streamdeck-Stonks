@@ -71,6 +71,52 @@ class DataManager {
 
   //-----------------------------------------------------------------------------------------
 
+  // getCookieValue(name) {
+  //   const cookies = document.cookie.split(';');
+  //   for (let i = 0; i < cookies.length; i++) {
+  //     const cookie = cookies[i].trim().split('=');
+  //     if (cookie[0] === name) {
+  //       return cookie[1];
+  //     }
+  //   }
+  //   return null;
+  // }
+  
+  //-----------------------------------------------------------------------------------------
+  
+  // async fetchDataWithCookie() {
+  //   const proxyUrl = 'https://your-proxy-server.com';
+  //   const targetUrl = 'https://finance.yahoo.com/quote/AAPL?p=AAPL&.tsrc=fin-srch';
+  //   const cookieName = 'your_cookie_name'; // Replace this with the actual cookie name you're looking for
+  
+  //   // Fetch the finance.yahoo.com page
+  //   const response = await fetch(proxyUrl + targetUrl);
+  //   const text = await response.text();
+  
+  //   // Set the cookie in the document
+  //   const cookieValue = getCookieValue(cookieName);
+  //   if (cookieValue) {
+  //     document.cookie = `${cookieName}=${cookieValue}; path=/; domain=.your-domain.com`;
+  //   }
+  
+  //   // Use the cookie in a subsequent request
+  //   const subsequentRequestUrl = 'https://your-domain.com/some-resource';
+  //   const subsequentResponse = await fetch(subsequentRequestUrl, {
+  //     headers: {
+  //       'Cookie': `${cookieName}=${cookieValue}`,
+  //     },
+  //   });
+  
+  //   // Process the subsequent response
+  //   const subsequentData = await subsequentResponse.json();
+  //   console.log(subsequentData);
+  // }
+  
+  // Call the function
+  //fetchDataWithCookie();
+
+  //-----------------------------------------------------------------------------------------
+
   get symbols(){
     let symbols = []
     Object.values(contextList).forEach(item => {
@@ -214,10 +260,23 @@ class DataManager {
   }
 
   //-----------------------------------------------------------------------------------------
+  
 
   requestData(url, callback, errorCallback, userInfo={}) {
     // console.log(url)
     const fetchPromise = fetch(url);
+    fetchPromise.headers = {
+      "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "Accept-Language" : "en-US,en;q=0.5",
+      "Accept-Encoding" : "gzip, deflate, br",
+      "DNT" : "1",
+      "Connection" : "keep-alive",
+      "Upgrade-Insecure-Requests" : "1",
+      "Sec-Fetch-Dest" : "document",
+      "Sec-Fetch-Mode" :  "navigate",
+      "Sec-Fetch-Site" : "none",
+      "Sec-Fetch-User" : "?1",
+    }
     fetchPromise
       .then( response => {
         console.log(response)

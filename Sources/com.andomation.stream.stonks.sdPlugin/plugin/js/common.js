@@ -354,10 +354,10 @@ class StreamDeckClient {
             this.drawingCtx.fillText(jsn.payload, CANVAS_WIDTH/2, 40);
         }
 
-        if(jsn.error.hasOwnProperty('message1'))
+        if(jsn.hasOwnProperty("error") && jsn.error.hasOwnProperty('message1'))
             this.drawingCtx.fillText(jsn.error.message1, CANVAS_WIDTH/2, 70);
 
-        if(jsn.error.hasOwnProperty('message2'))
+        if(jsn.hasOwnProperty("error") && jsn.error.hasOwnProperty('message2'))
             this.drawingCtx.fillText(jsn.error.message2, CANVAS_WIDTH/2, 100);
 
         $SD.api.setImage(this.uuid, this.canvas.toDataURL());
