@@ -1,6 +1,6 @@
 class DataManager {
   chartInc = 0;
-  sessionId = null;
+  crumb = 'hello';
   batchTimer = null;
   chartTimer = null;
   dataTimer = null;
@@ -62,81 +62,25 @@ class DataManager {
   //-----------------------------------------------------------------------------------------
 
   constructor(){
-    this.getSession();
   }
 
   //-----------------------------------------------------------------------------------------
 
   async getSession(){
-    fetch('https://query1.finance.yahoo.com/v1/test/getcrumb')
-      .then(response => {
-        this.sessionId = '';
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-
-        return reader.read().then(result => {
-          if (result.done) {
-            this.sessionId = this.sessionId.trim();
-            console.log(`Response body: ${this.sessionId}`);
-            return;
-          }
-
-          const chunk = decoder.decode(result.value, {stream: true});
-          this.sessionId += chunk;
-          return reader.read();//.then(processResult);
-        });
+    let crumbURL = 'https://query1.finance.yahoo.com/v1/test/getcrumb';
+    
+    const fetchPromise = fetch(crumbURL, this.requestOptions);
+    const data = await fetchPromise
+      .then(response => response.text())
+      .then(data => {
+        console.log("GetCrumb", data);
+        return data;
       })
       .catch(error => {
-        console.error(`Error: ${error}`);
-      }
-    );
+        console.error('Error:', error);
+      });
+    return data;
   }
-
-  //-----------------------------------------------------------------------------------------
-
-  // getCookieValue(name) {
-  //   const cookies = document.cookie.split(';');
-  //   for (let i = 0; i < cookies.length; i++) {
-  //     const cookie = cookies[i].trim().split('=');
-  //     if (cookie[0] === name) {
-  //       return cookie[1];
-  //     }
-  //   }
-  //   return null;
-  // }
-  
-  //-----------------------------------------------------------------------------------------
-  
-  // async fetchDataWithCookie() {
-  //   const proxyUrl = 'https://your-proxy-server.com';
-  //   const targetUrl = 'https://finance.yahoo.com/quote/AAPL?p=AAPL&.tsrc=fin-srch';
-  //   const cookieName = 'your_cookie_name'; // Replace this with the actual cookie name you're looking for
-  
-  //   // Fetch the finance.yahoo.com page
-  //   const response = await fetch(proxyUrl + targetUrl);
-  //   const text = await response.text();
-  
-  //   // Set the cookie in the document
-  //   const cookieValue = getCookieValue(cookieName);
-  //   if (cookieValue) {
-  //     document.cookie = `${cookieName}=${cookieValue}; path=/; domain=.your-domain.com`;
-  //   }
-  
-  //   // Use the cookie in a subsequent request
-  //   const subsequentRequestUrl = 'https://your-domain.com/some-resource';
-  //   const subsequentResponse = await fetch(subsequentRequestUrl, {
-  //     headers: {
-  //       'Cookie': `${cookieName}=${cookieValue}`,
-  //     },
-  //   });
-  
-  //   // Process the subsequent response
-  //   const subsequentData = await subsequentResponse.json();
-  //   console.log(subsequentData);
-  // }
-  
-  // Call the function
-  //fetchDataWithCookie();
 
   //-----------------------------------------------------------------------------------------
 
@@ -167,9 +111,11 @@ class DataManager {
 
   //-----------------------------------------------------------------------------------------
 
-  startPolling() {
+  async startPolling() {
     console.log('Polling - Start')
-    this.fetchData()
+    this.crumb = await this.getSession()
+    console.log("Crumb ==> ", this.crumb);
+    this.fetchData();
     this.dataTimer = setInterval(this.fetchData.bind(this), globalSettings.interval * 1000)
   }
 
@@ -193,11 +139,8 @@ class DataManager {
   //-----------------------------------------------------------------------------------------
 
   async fetchData(){
-    if(this.sessionId == null){
-      this.scheduleData();
-      return; 
-    }
-
+    // TODO : Check for crumb here and do the refresh
+    
     if(this.batchTimer != null){
       clearInterval(this.batchTimer)
       this.batchTimer = null
@@ -216,7 +159,7 @@ class DataManager {
   async fetchSymbolData(){
     if(this.symbols.length == 0) return 
 
-    var url = this.symbolURL + this.symbolFields.join() + this.symbolString +"&crumb="+ this.sessionId;
+    var url = this.symbolURL + this.symbolFields.join() + this.symbolString +"&crumb="+ this.crumb;
     console.log("fetchSymbolData:", url)
     
     this.requestData(url, 
@@ -239,7 +182,7 @@ class DataManager {
 
     for (const [key, value] of Object.entries(types)) {
       for (const i of Array(Math.ceil(this.symbols.length / 10)).keys()){
-        var url = this.chartURL +"range="+ value.range +"&interval="+ value.interval + this.partialSymbolString(i, 10) +"&crumb="+ this.sessionId;
+        var url = this.chartURL +"range="+ value.range +"&interval="+ value.interval + this.partialSymbolString(i, 10) +"&crumb="+ this.crumb;
 
         this.requestData(url, 
           (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
@@ -285,7 +228,6 @@ class DataManager {
   //-----------------------------------------------------------------------------------------
 
   requestData(url, callback, errorCallback, userInfo={}) {
-    // console.log(url)
     const fetchPromise = fetch(url, this.requestOptions);
     fetchPromise
       .then( response => {
@@ -382,3 +324,6 @@ https://query2.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=
 // https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=2m
 // https://query1.finance.yahoo.com/v8/finance/chart/AAPL?symbol=AAPL&period1=0&period2=9999999999&interval=1d&includePrePost=true&events=div%2Csplit
 // https://query1.finance.yahoo.com/v8/finance/chart/AAPL?symbol=AAPL&period1=0&period2=9999999999&interval=1d&includePrePost=true&events=div%2Csplit
+
+// Version 2
+// https://query2.finance.yahoo.com/v10/finance/quoteSummary/aapl?modules=summaryDetail
