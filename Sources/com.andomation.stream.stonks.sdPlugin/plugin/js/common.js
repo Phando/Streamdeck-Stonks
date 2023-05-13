@@ -77,7 +77,7 @@ class StreamDeckClient {
     }
 
     get currentView(){
-        return this.viewList[this.clickCount]
+        return this.context.viewList[this.clickCount]
     }
     
     get data(){
