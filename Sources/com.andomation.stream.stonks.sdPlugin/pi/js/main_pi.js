@@ -22,7 +22,6 @@ $SD.on("connected", (jsn) => {
   console.log("PI Connected", jsn);
   
   let actionType = Utils.getProp(jsn, "actionInfo.action", "")
-  
   actions.forEach((item) => {
     console.log("Action Type", item.type)
     contextList[jsn.actionInfo.context] = new Context(jsn.actionInfo)

@@ -31,6 +31,7 @@ var _drawingCtx = null
 let actions = []
 let globalSettings = {}
 let contextList = {}
+let $pluginVersion = ''
 
 //-----------------------------------------------------------------------------------------
 
@@ -140,7 +141,7 @@ class StreamDeckClient {
         var symbol = settings.symbol || "GME"
         this.initDisplay(jsn)
         
-        if(settings.version != $pluginVersion){
+        if($pluginVersion && settings.version != $pluginVersion){
             let instanceV = settings.version.split('.')
             let pluginV = $pluginVersion.split('.')
             
