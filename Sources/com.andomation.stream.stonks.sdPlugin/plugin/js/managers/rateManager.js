@@ -54,7 +54,7 @@ const Currencies = Object.freeze({
     "HKD":{code:"HKD",symbol:"$",name:"Hong Kong Dollar"},
     //"UAH":{code:"UAH",symbol:"₴",name:"Hryvnia"},
     "ISK":{code:"ISK",symbol:"Kr",name:"Iceland Krona"},
-    //"INR":{code:"INR",symbol:"₹",name:"Indian Rupee"},
+    "INR":{code:"INR",symbol:"₹",name:"Indian Rupee"},
     //"IRR":{code:"IRR",symbol:"﷼",name:"Iranian Rial"},
     //"IQD":{code:"IQD",symbol:"ع.د",name:"Iraqi Dinar"},
     //"JMD":{code:"JMD",symbol:"$",name:"Jamaican Dollar"},

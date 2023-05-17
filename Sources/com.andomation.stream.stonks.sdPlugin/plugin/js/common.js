@@ -31,6 +31,7 @@ var _drawingCtx = null
 let actions = []
 let globalSettings = {}
 let contextList = {}
+let $pluginVersion = ''
 
 //-----------------------------------------------------------------------------------------
 
@@ -77,7 +78,8 @@ class StreamDeckClient {
     }
 
     get currentView(){
-        return this.viewList[this.clickCount]
+        // return this.viewList[this.clickCount]
+        return this.context.viewList[this.clickCount]
     }
     
     get data(){
@@ -140,7 +142,8 @@ class StreamDeckClient {
         var symbol = settings.symbol || "GME"
         this.initDisplay(jsn)
         
-        if(settings.version != $pluginVersion){
+        // if(settings.version != $pluginVersion){
+        if($pluginVersion && settings.version != $pluginVersion){
             let instanceV = settings.version.split('.')
             let pluginV = $pluginVersion.split('.')
             

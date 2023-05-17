@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.1.12 (5/12/2023) -----
+
+#### Enhancements:
+- None
+
+#### Bug Fixes:
+- Another try at fixing. 
+- [Issue #33](https://github.com/Phando/Streamdeck-Stonks/issues/33) 
+- [Issue #34](https://github.com/Phando/Streamdeck-Stonks/issues/34) 
+- [Issue #35](https://github.com/Phando/Streamdeck-Stonks/issues/35) 
+- [Issue #36](https://github.com/Phando/Streamdeck-Stonks/issues/36) 
+
+
 ## v1.1.11 (5/9/2023) -----
 
 #### Enhancements:

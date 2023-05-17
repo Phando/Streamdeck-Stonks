@@ -1,6 +1,6 @@
 class DataManager {
   chartInc = 0;
-  crumb = 'hello';
+  crumb = '';
   batchTimer = null;
   chartTimer = null;
   dataTimer = null;
@@ -67,14 +67,18 @@ class DataManager {
   //-----------------------------------------------------------------------------------------
 
   async getSession(){
-    let crumbURL = 'https://query1.finance.yahoo.com/v1/test/getcrumb';
+    // let crumbURL = 'https://query1.finance.yahoo.com/v1/test/getcrumb';
+    let crumbURL = 'https://finance.yahoo.com/quote/CRM/history';
     
     const fetchPromise = fetch(crumbURL, this.requestOptions);
     const data = await fetchPromise
       .then(response => response.text())
       .then(data => {
-        console.log("GetCrumb", data);
-        return data;
+        // console.log("GetCrumb", data);
+        const match = data.match(/"crumb":"(.*?)"/);
+        const crumb = match ? match[1] : null;
+        console.log(crumb);
+        return crumb;
       })
       .catch(error => {
         console.error('Error:', error);
@@ -113,8 +117,6 @@ class DataManager {
 
   async startPolling() {
     console.log('Polling - Start')
-    this.crumb = await this.getSession()
-    console.log("Crumb ==> ", this.crumb);
     this.fetchData();
     this.dataTimer = setInterval(this.fetchData.bind(this), globalSettings.interval * 1000)
   }
@@ -140,7 +142,10 @@ class DataManager {
 
   async fetchData(){
     // TODO : Check for crumb here and do the refresh
-    
+    if(this.crumb == ''){
+      this.crumb = await this.getSession();
+    }
+
     if(this.batchTimer != null){
       clearInterval(this.batchTimer)
       this.batchTimer = null
