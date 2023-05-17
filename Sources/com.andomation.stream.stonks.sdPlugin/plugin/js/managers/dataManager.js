@@ -1,11 +1,11 @@
 class DataManager {
   chartInc = 0;
-  crumb = 'Cnt5euNG2mG';
+  crumb = null;
   batchTimer = null;
   chartTimer = null;
   dataTimer = null;
   chartURL  = "https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&" //indicators=close&includeTimestamps=false&includePrePost=false
-  symbolURL = "https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=EU&corsDomain=finance.yahoo.com&fields="
+  symbolURL = "https://query1.finance.yahoo.com/v6/finance/quote?lang=en-US&region=EU&corsDomain=finance.yahoo.com&fields="
   symbolFields = [
     'symbol',
     'currency',
@@ -62,28 +62,41 @@ class DataManager {
   //-----------------------------------------------------------------------------------------
 
   constructor(){
+    // this.generateCrumb();
   }
+
+  // ----------------------------------------------------------------------------------------
+
+  // generateCrumb(){    
+  //   this.crumb = ''
+  //   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  //   const charactersLength = characters.length;
+  
+  //   for (let i = 0; i < 11; i++) {
+  //     this.crumb += characters.charAt(Math.floor(Math.random() * charactersLength));
+  //   }
+  // }
 
   //-----------------------------------------------------------------------------------------
 
-  async getSession(){
-    let crumbURL = 'https://query1.finance.yahoo.com/v1/test/getcrumb';
+  // async getSession(){
+  //   let crumbURL = 'https://query1.finance.yahoo.com/v1/test/getcrumb';
     
-    const fetchPromise = fetch(crumbURL, this.requestOptions);
-    const data = await fetchPromise
-      .then(response => response.text())
-      .then(data => {
-        // console.log("GetCrumb", data);
-        const match = data.match(/"crumb":"(.*?)"/);
-        const crumb = match ? match[1] : null;
-        console.log(crumb);
-        return crumb;
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
-    return data;
-  }
+  //   const fetchPromise = fetch(crumbURL, this.requestOptions);
+  //   const data = await fetchPromise
+  //     .then(response => response.text())
+  //     .then(data => {
+  //       // console.log("GetCrumb", data);
+  //       const match = data.match(/"crumb":"(.*?)"/);
+  //       const crumb = match ? match[1] : null;
+  //       console.log(crumb);
+  //       return crumb;
+  //     })
+  //     .catch(error => {
+  //       console.error('Error:', error);
+  //     });
+  //   return data;
+  // }
 
   //-----------------------------------------------------------------------------------------
 
@@ -163,7 +176,7 @@ class DataManager {
   async fetchSymbolData(){
     if(this.symbols.length == 0) return 
 
-    var url = this.symbolURL + this.symbolFields.join() + this.symbolString +"&crumb="+ this.crumb;
+    var url = this.symbolURL + this.symbolFields.join() + this.symbolString; // +"&crumb="+ this.crumb;
     console.log("fetchSymbolData:", url)
     
     this.requestData(url, 
@@ -186,7 +199,7 @@ class DataManager {
 
     for (const [key, value] of Object.entries(types)) {
       for (const i of Array(Math.ceil(this.symbols.length / 10)).keys()){
-        var url = this.chartURL +"range="+ value.range +"&interval="+ value.interval + this.partialSymbolString(i, 10) +"&crumb="+ this.crumb;
+        var url = this.chartURL +"range="+ value.range +"&interval="+ value.interval + this.partialSymbolString(i, 10); // +"&crumb="+ this.crumb;
 
         this.requestData(url, 
           (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
