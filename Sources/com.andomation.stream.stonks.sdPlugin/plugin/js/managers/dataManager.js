@@ -1,6 +1,6 @@
 class DataManager {
   chartInc = 0;
-  crumb = '';
+  crumb = 'Cnt5euNG2mG';
   batchTimer = null;
   chartTimer = null;
   dataTimer = null;
@@ -67,8 +67,7 @@ class DataManager {
   //-----------------------------------------------------------------------------------------
 
   async getSession(){
-    // let crumbURL = 'https://query1.finance.yahoo.com/v1/test/getcrumb';
-    let crumbURL = 'https://finance.yahoo.com/quote/CRM/history';
+    let crumbURL = 'https://query1.finance.yahoo.com/v1/test/getcrumb';
     
     const fetchPromise = fetch(crumbURL, this.requestOptions);
     const data = await fetchPromise
@@ -142,9 +141,9 @@ class DataManager {
 
   async fetchData(){
     // TODO : Check for crumb here and do the refresh
-    if(this.crumb == ''){
-      this.crumb = await this.getSession();
-    }
+    // if(this.crumb == ''){
+    //   this.crumb = await this.getSession();
+    // }
 
     if(this.batchTimer != null){
       clearInterval(this.batchTimer)

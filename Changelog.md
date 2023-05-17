@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.1.14 (5/17/2023) -----
+Skipping v1.1.14 because, you know ;)
+
+#### Enhancements:
+- This is an attempt to fix the crumb issue while staying on the v7 API. The Crumb is being parsed from an http response from the yahoo finance website. If this release doesn't work I will move to the v6 API and use a hard coded crumb value. 
+- Added the Indian Rupee
+
+#### Bug Fixes:
+- Another try at fixing. 
+- [Issue #33](https://github.com/Phando/Streamdeck-Stonks/issues/33) 
+- [Issue #34](https://github.com/Phando/Streamdeck-Stonks/issues/34) 
+- [Issue #35](https://github.com/Phando/Streamdeck-Stonks/issues/35) 
+- [Issue #36](https://github.com/Phando/Streamdeck-Stonks/issues/36) 
+
+
 ## v1.1.12 (5/12/2023) -----
 
 #### Enhancements:
