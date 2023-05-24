@@ -4,7 +4,8 @@
 Skipping v1.1.14 because, you know ;)
 
 #### Enhancements:
-- This is an attempt to fix the crumb issue while staying on the v7 API. The Crumb is being parsed from an http response from the yahoo finance website. If this release doesn't work I will move to the v6 API and use a hard coded crumb value. 
+- This is an attempt to fix the crumb issue by moving to the v6 API. 
+- Implementing several fixes from matextrem's PR, thank you! https://github.com/Phando/Streamdeck-Stonks/pull/37
 - Added the Indian Rupee
 
 #### Bug Fixes:

@@ -4,8 +4,8 @@ class DataManager {
   batchTimer = null;
   chartTimer = null;
   dataTimer = null;
-  chartURL  = "https://query1.finance.yahoo.com/v7/finance/spark?includePrePost=true&" //indicators=close&includeTimestamps=false&includePrePost=false
-  symbolURL = "https://query1.finance.yahoo.com/v6/finance/quote?lang=en-US&region=EU&corsDomain=finance.yahoo.com&fields="
+  chartURL  = "https://query1.finance.yahoo.com/v5/finance/spark?includePrePost=true&" //indicators=close&includeTimestamps=false&includePrePost=false
+  symbolURL = "https://query1.finance.yahoo.com/v5/finance/quote?lang=en-US&region=EU&corsDomain=finance.yahoo.com&fields="
   symbolFields = [
     'symbol',
     'currency',
