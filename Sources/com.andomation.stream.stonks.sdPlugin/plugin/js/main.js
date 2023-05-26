@@ -39,7 +39,7 @@ $SD.on('didReceiveGlobalSettings', (jsn) => {
   // Initialize the globalSettings here if needed
   if(Object.keys(globalSettings).length == 0) {
     console.log("Init GlobalSettings")
-    globalSettings.interval = 20
+    globalSettings.interval = 90
     $SD.api.setGlobalSettings($SD.uuid, globalSettings)
   }
 

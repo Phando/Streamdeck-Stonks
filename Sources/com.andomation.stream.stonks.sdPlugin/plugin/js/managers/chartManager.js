@@ -78,7 +78,7 @@ class ChartManager extends Manager {
 
     dataMatch(jsn) {
         this.uuid = jsn.context
-        return !Utils.isUndefined(this.type) && this.type.type == jsn.payload.userInfo.type
+        return this.type.range == jsn.payload.range && this.type.interval == jsn.payload.interval
     }
 
     //-----------------------------------------------------------------------------------------
@@ -103,13 +103,9 @@ class ChartManager extends Manager {
         super.onDidReceiveData(jsn)
         console.log("ChartManager - onDidReceiveData: ", jsn)
 
-        this.chart = Object.assign({}, jsn.payload.response[0].meta)
-        let raw = jsn.payload.response[0].indicators.quote[0].close
-        if(Utils.isUndefined(raw)){
-            console.log('---------------> Undefined')
-            return
-        }
-
+        this.chart = Object.assign({}, jsn.payload)
+        let raw = jsn.payload.chart
+    
         raw = raw.map(x => x * rateManager.rateFor(this.settings.currency))
 
         if(Utils.isUndefined(raw) || raw.length == 0){
@@ -136,24 +132,14 @@ class ChartManager extends Manager {
         this.chart.dataMax = extent[1]
         this.chart.rangeMax = 145
 
-        // BUG
-        // Price Chart Is Incorrectly Colored
-        // https://github.com/Phando/Streamdeck-Stonks/issues/28
-        // if(this.isDay){
-        //     this.chart.min = this.data.open.min(this.chart.min)
-        //     this.chart.max = this.data.open.max(this.chart.max)
-        //     this.chart.isUp = this.data.open < this.chart.data[this.chart.data.length-1].value
-        // }
-        // else
-        //     this.chart.isUp = this.chart.data[0].value < this.chart.data[this.chart.data.length-1].value
         if(this.isDay){
             extent = d3.extent(this.chart.raw, function(d) { return d.value; })
             this.chart.min = extent[0]
             this.chart.max = extent[1]
             this.chart.open = this.chart.raw[0].value
         }
-        this.chart.isUp = this.chart.raw.shift().value < this.chart.raw.pop().value
-            
+
+        this.chart.isUp = this.chart.raw.shift().value < this.chart.raw.pop().value    
         return
     }
 

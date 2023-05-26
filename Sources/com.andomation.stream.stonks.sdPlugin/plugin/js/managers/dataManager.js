@@ -4,38 +4,41 @@ class DataManager {
   batchTimer = null;
   chartTimer = null;
   dataTimer = null;
-  chartURL  = "https://query1.finance.yahoo.com/v6/finance/spark?includePrePost=true&" //indicators=close&includeTimestamps=false&includePrePost=false
-  symbolURL = "https://query1.finance.yahoo.com/v6/finance/quote?lang=en-US&corsDomain=finance.yahoo.com&fields="
-  symbolFields = [
-    'symbol',
-    'currency',
-    //'shortName',
-    //'longName',
-    //'priceHint',
-    //'quantity',
-    //'sparkline',
-    //'marketCap',
-    //'fiftyTwoWeekHigh',
-    //'fiftyTwoWeekLow',
-    'marketState',
-    'preMarketPrice',
-    'preMarketVolume',
-    'preMarketChange',
-    'preMarketChangePercent',
-    'regularMarketDayHigh',
-    'regularMarketDayLow',
-    'regularMarketPrice',
-    'regularMarketVolume',
-    'regularMarketChange',
-    'regularMarketChangePercent',
-    'regularMarketOpen',
-    'regularMarketPreviousClose',
-    'regularMarketOpen',
-    'postMarketPrice',
-    'postMarketVolume',
-    'postMarketChange',
-    'postMarketChangePercent',
-  ]
+  // chartURL  = "https://query1.finance.yahoo.com/v6/finance/spark?includePrePost=true&" //indicators=close&includeTimestamps=false&includePrePost=false
+  // symbolURL = "https://query1.finance.yahoo.com/v6/finance/quote?lang=en-US&corsDomain=finance.yahoo.com&fields="
+  chartURL = "https://query1.finance.yahoo.com/v8/finance/chart"
+  symbolURL = "https://query2.finance.yahoo.com/v10/finance/quoteSummary";
+  symbolFields = "modules=price&formatted=false"; //summaryDetail
+  // symbolFields = [
+  //   'symbol',
+  //   'currency',
+  //   //'shortName',
+  //   //'longName',
+  //   //'priceHint',
+  //   //'quantity',
+  //   //'sparkline',
+  //   //'marketCap',
+  //   //'fiftyTwoWeekHigh',
+  //   //'fiftyTwoWeekLow',
+  //   'marketState',
+  //   'preMarketPrice',
+  //   'preMarketVolume',
+  //   'preMarketChange',
+  //   'preMarketChangePercent',
+  //   'regularMarketDayHigh',
+  //   'regularMarketDayLow',
+  //   'regularMarketPrice',
+  //   'regularMarketVolume',
+  //   'regularMarketChange',
+  //   'regularMarketChangePercent',
+  //   'regularMarketOpen',
+  //   'regularMarketPreviousClose',
+  //   'regularMarketOpen',
+  //   'postMarketPrice',
+  //   'postMarketVolume',
+  //   'postMarketChange',
+  //   'postMarketChangePercent',
+  // ]
 
   //-----------------------------------------------------------------------------------------
 
@@ -124,7 +127,7 @@ class DataManager {
   partialSymbolString(i, count){
     return '&symbols=' + this.symbols.slice(i * count, (i + 1) * count).join()
   }
-
+  
   //-----------------------------------------------------------------------------------------
 
   async startPolling() {
@@ -175,38 +178,57 @@ class DataManager {
 
   async fetchSymbolData(){
     if(this.symbols.length == 0) return 
-
-    var url = this.symbolURL + this.symbolFields.join() + this.symbolString; // +"&crumb="+ this.crumb;
-    console.log("fetchSymbolData:", url)
     
-    this.requestData(url, 
-      (response, event) => this.handleResponse(response, 'didReceiveSymbolData'), 
-      (response, event) => this.handleError(response, 'didReceiveSymbolError'))
+    const urls = this.symbols.map(value => `${this.symbolURL}/${value}?${this.symbolFields}`);    
+    const requests = urls.map(url => fetch(url));
+
+    Promise.all(requests)
+    .then(responseArray => Promise.all(responseArray.map(response => response.json())))
+    .then(dataArray => {
+      let data = dataArray.map(item => item.quoteSummary.result[0].price);
+      this.handleResponse(data, 'didReceiveSymbolData')
+    })
+    .catch(error => {
+      this.handleError(error, 'didReceiveSymbolError')
+    });
   }
 
   //-----------------------------------------------------------------------------------------
 
-  fetchChartData(){
-    let types = {}
+  async fetchChartData(){
+    const types = {}
+    const urls = [];
     if(this.symbols.length == 0) return 
 
     Object.values(contextList).forEach(item => {
       let chart = Utils.getProp(item, "chartType", false);
       
       if(!chart) return
-      types[chart.type] = chart
+      urls.push(`${this.chartURL}/${item.settings.symbol}?range=${chart.range}&interval=${chart.interval}`)
     }) 
 
-    for (const [key, value] of Object.entries(types)) {
-      for (const i of Array(Math.ceil(this.symbols.length / 10)).keys()){
-        var url = this.chartURL +"range="+ value.range +"&interval="+ value.interval + this.partialSymbolString(i, 10); // +"&crumb="+ this.crumb;
-
-        this.requestData(url, 
-          (response, event) => this.handleResponse(response, 'didReceiveChartData'), 
-          (response, event) => this.handleError(response, 'didReceiveChartError'),
-          value)
-      }
-    }
+    const requests = urls.map(url => fetch(url));
+    
+    Promise.all(requests)
+    .then(responseArray => Promise.all(responseArray.map(response => response.json())))
+    .then(dataArray => {
+      let data = dataArray.map(item => {
+        let data1 = {
+          symbol:item.chart.result[0].meta.symbol,
+          range:item.chart.result[0].meta.range,
+          interval:item.chart.result[0].meta.dataGranularity,
+          chart:item.chart.result[0].indicators.quote[0].close
+        }
+        console.log(data1);
+        return data1;
+      })
+      console.log("Okay",data)
+      this.handleResponse(data, 'didReceiveChartData')
+    })
+    .catch(error => {
+      console.log("ERRor",error)
+      this.handleError(error, 'didReceiveChartError')
+    });
   }
 
   //-----------------------------------------------------------------------------------------
@@ -221,15 +243,20 @@ class DataManager {
   //-----------------------------------------------------------------------------------------
 
   handleResponse(response, event){
-    var data = {}
-    var result = response.hasOwnProperty("spark") ? response.spark.result : response.quoteResponse.result
-    
-    result.forEach(function(item){
-      if(item.symbol == "") return
-      item.symbol = item.symbol.toUpperCase()
-      item.userInfo = response.userInfo
-      data[item.symbol] = item
-    })
+    console.log("handleResponse:", response);
+
+    let data = response.reduce((acc, item) => {
+        console.log(item);
+        acc[item.symbol] = item;
+        return acc;
+    }, {});
+
+    // response.forEach(function(item){
+    //   if(item.symbol == "") return
+    //   item.symbol = item.symbol.toUpperCase()
+    //   // item.userInfo = response.userInfo
+    //   data[item.symbol] = item
+    // })
     
     Object.values(contextList).forEach(item => {
       let symbol = Utils.getProp(item, "settings.symbol", false);
