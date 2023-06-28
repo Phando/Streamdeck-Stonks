@@ -179,18 +179,60 @@ class DataManager {
   async fetchSymbolData(){
     if(this.symbols.length == 0) return 
     
-    const urls = this.symbols.map(value => `${this.symbolURL}/${value}?${this.symbolFields}`);    
+    const urls = this.symbols.map(value => `${this.symbolURL}/${value}?${this.symbolFields}`);  
+    // console.log(urls);  
     const requests = urls.map(url => fetch(url));
-
+    // console.log(requests)
     Promise.all(requests)
-    .then(responseArray => Promise.all(responseArray.map(response => response.json())))
+    .then(responseArray => Promise.allSettled(responseArray.map(response => response.json())))
     .then(dataArray => {
-      let data = dataArray.map(item => item.quoteSummary.result[0].price);
-      this.handleResponse(data, 'didReceiveSymbolData')
+      let errorArray = [];
+      dataArray.forEach((result, index) => {
+        if(result.value.quoteSummary.error == null){
+          let data = result.value.quoteSummary.result[0].price;
+          this.handleResponse([data], 'didReceiveSymbolData')
+        } else {
+          const text = result.value.quoteSummary.error.description;
+          const lastSpacePosition = text.lastIndexOf(" ");
+          result.value.quoteSummary.symbol = text.substring(lastSpacePosition + 1);
+          console.log(result.value.quoteSummary)
+          errorArray.push(result.value.quoteSummary)
+        }
+      });
+      return errorArray;
     })
-    .catch(error => {
-      this.handleError(error, 'didReceiveSymbolError')
-    });
+    .then(errorArray => {
+      for (const item of errorArray) {
+        this.handleError(item, 'didReceiveSymbolError')
+      }
+    })
+    // Promise.allSettled(requests)
+    // .then(results => {
+    //   // Loop through each result
+    //   results.forEach((result, index) => {
+    //     //console.log(result.value);
+    //     if (result.value.status != '200') {
+    //       console.log(result.value);
+    //       // result.value.json().then(dataArray => {
+    //       //   console.log(dataArray);
+    //       //   // let data = dataArray.map(item => item.quoteSummary.result[0].price);
+    //       //   // this.handleResponse(data, 'didReceiveSymbolData')
+    //       // });
+    //     } else {
+    //       this.handleError("Symbol Not Found", 'didReceiveSymbolError')
+    //     }
+    //   });
+    // })
+    // .then(responseArray => Promise.all(responseArray.map(response => response.json())))
+    // .then(dataArray => {
+    //   let data = dataArray.map(item => item.quoteSummary.result[0].price);
+    //   this.handleResponse(data, 'didReceiveSymbolData')
+    // })
+    // .catch(error => {
+    //   this.handleError(error, 'didReceiveSymbolError')
+    // });
+
+    
   }
 
   //-----------------------------------------------------------------------------------------
@@ -235,8 +277,14 @@ class DataManager {
 
   handleError(response, event){
     Object.values(contextList).forEach(item => {
-      item.payload = event
-      $SD.emit(item.action + '.' + event, item)
+      if(item.settings.symbol == response.symbol){
+        item.payload = event
+        $SD.emit(item.action + '.' + event, item) 
+      }
+      // console.log(item.settings.symbol)
+      // console.log(response);
+      // item.payload = event
+      // $SD.emit(item.action + '.' + event, item)
     })
   }
 

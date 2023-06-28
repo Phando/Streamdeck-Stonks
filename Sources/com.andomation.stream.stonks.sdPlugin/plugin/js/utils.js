@@ -15,7 +15,9 @@ Number.prototype.minmax = function (min=0, max=1) {
 };
 
 Number.prototype.percentChange = function (whole) {
-    return ((this.valueOf()-whole)/whole)*100
+    var difference = ((this.valueOf() - whole) / Math.abs(whole)) * 100;
+    console.log("Change",this.valueOf(), whole, difference);
+    return difference;
 };
 
 Number.prototype.countDigits = function () {

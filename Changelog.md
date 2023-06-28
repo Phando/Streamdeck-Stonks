@@ -1,5 +1,24 @@
 # Changelog
 
+## v1.1.16 (7/28/2023) -----
+
+#### Enhancements:
+- Added support for per instance error messages.
+
+#### Bug Fixes:
+- Percent change was off - [Issue #40](https://github.com/Phando/Streamdeck-Stonks/issues/40) 
+
+## v1.1.15 (5/25/2023) -----
+
+#### Enhancements:
+- Yahoo discontinued the v6 API. I have moved charts to v8 and quotes to v10. 
+
+#### Bug Fixes:
+- [Issue #38](https://github.com/Phando/Streamdeck-Stonks/issues/38) 
+
+#### Known Issues:
+- Sub Day Charts Flat - [Issue #39](https://github.com/Phando/Streamdeck-Stonks/issues/39) 
+
 ## v1.1.14 (5/17/2023) -----
 Skipping v1.1.14 because, you know ;)
 
